@@ -10,13 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserDAO {
     private final UserMapper userMapper;
-    @Transactional
-    public void test() {
-        try{
-            User user = userMapper.findById(1);
+
+    public void findById() {
+            User user = userMapper.findById();
             System.out.println(user);
-        }catch(Exception e) {
-            e.printStackTrace();
-        }
     }
 }

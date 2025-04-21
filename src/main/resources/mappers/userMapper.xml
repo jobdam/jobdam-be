@@ -5,7 +5,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.jobdam.jobdam_be.user.mapper.UserMapper">
 
-    <select id="com.jobdam.jobdam_be.user.mapper.UserMapper.findById" resultType="com.jobdam.jobdam_be.user.model.User">
+    <select id="findById" resultType="com.jobdam.jobdam_be.user.model.User">
     select * from user where user_id = 1
     </select>
 </mapper>
