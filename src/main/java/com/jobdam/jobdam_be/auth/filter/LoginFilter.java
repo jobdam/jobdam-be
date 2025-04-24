@@ -12,6 +12,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Map;
 
+@Slf4j
 @RequiredArgsConstructor
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
@@ -73,6 +75,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         // Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
         // GrantedAuthority auth = iterator.next();
         // String role = auth.getAuthority();
+
+        // 기존 refresh 토큰 삭제
+        refreshDAO.deleteByUserId(user.getId());
 
         //토큰 생성
         String access = jwtProvider.createJwt("access", email, 600000L);        // 10분

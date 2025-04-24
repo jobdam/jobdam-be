@@ -9,5 +9,11 @@
         VALUES (
                 #{refreshToken}, #{expiration}, #{userId}
                )
+            AS new
+        ON DUPLICATE KEY UPDATE
+                                     expires_at = new.expires_at
     </insert>
+    <delete id="deleteByUserId">
+        DELETE FROM refresh_token WHERE user_id = #{user_id}
+    </delete>
 </mapper>

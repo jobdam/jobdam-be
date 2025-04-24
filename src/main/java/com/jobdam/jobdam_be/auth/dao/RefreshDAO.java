@@ -12,4 +12,8 @@ public class RefreshDAO {
     public void save(RefreshToken refreshToken) {
         refreshTokenMapper.save(refreshToken);
     }
+
+    public void deleteByUserId(long user_id) {
+        refreshTokenMapper.deleteByUserId(user_id);
+    }
 }
