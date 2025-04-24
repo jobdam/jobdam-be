@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -23,6 +25,15 @@ public class AuthService {
     private final EmailProvider emailProvider;
 
     private final UserDAO userDAO;
+
+    public ResponseEntity<Map<String, Boolean>> checkEmail(String email) {
+        Map<String, Boolean> response = new HashMap<>();
+        boolean isDuplicate = userDAO.existsByEmail(email);
+
+        response.put("isDuplicate", isDuplicate);
+
+        return ResponseEntity.ok().body(response);
+    }
 
     public ResponseEntity<?> emailVerification(EmailVerificationRequestDto dto) {
         try {
