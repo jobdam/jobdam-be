@@ -1,5 +1,6 @@
-package com.jobdam.jobdam_be.websokect.sessionTracker;
+package com.jobdam.jobdam_be.websokect.sessionTracker.registry;
 
+import com.jobdam.jobdam_be.websokect.sessionTracker.WebSocketSessionTracker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
