@@ -20,7 +20,7 @@ public class JwtService {
     }
 
     public Cookie createRefreshCookie(String token) {
-        Cookie cookie = new Cookie("refresh", token);
+        Cookie cookie = new Cookie("REFRESH_TOKEN", token);
         cookie.setHttpOnly(true);
         cookie.setMaxAge(24 * 60 * 60);
         return cookie;

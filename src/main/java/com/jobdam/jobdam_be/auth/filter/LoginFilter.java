@@ -80,10 +80,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         refreshDAO.deleteByUserId(user.getId());
 
         //토큰 생성
-        String access = jwtProvider.createJwt("access", email, 600000L);        // 10분
-        String refresh = jwtProvider.createJwt("refresh", email, 86400000L);    // 1일
+        String access = jwtProvider.createJwt("ACCESS_TOKEN", email, 600000L);        // 10분
+        String refresh = jwtProvider.createJwt("REFRESH_TOKEN", email, 86400000L);    // 1일
 
-        response.setHeader("access", access);
+        response.setHeader("Authorization", "Bearer " + access);
         Cookie refreshCookie = jwtService.createRefreshCookie(refresh);
         response.addCookie(refreshCookie);
 

@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -29,7 +30,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         // 헤더에서 access키에 담긴 토큰을 꺼냄
-        String accessToken = request.getHeader("access");
+        String accessToken = parseBearerToken(request);
+        log.info("Access token: {}", accessToken);
 
         // 토큰이 없는 경우(ex 로그인 전 요청)는 인증 없이 다음 필터로 넘김
         if (accessToken == null) {
@@ -71,11 +73,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         User user = userDAO.findByEmail(email);
         if(user == null) {
-            //response body
             PrintWriter writer = response.getWriter();
             writer.print("잘못된 이메일입니다.");
 
-            //response status code
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
@@ -85,5 +85,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
         filterChain.doFilter(request, response);
+    }
+
+    private String parseBearerToken(HttpServletRequest request) {
+        String authorization = request.getHeader("Authorization");
+
+        boolean hasAuthorization = StringUtils.hasText(authorization);
+        if (!hasAuthorization) return null;
+
+        boolean isBearer = authorization.startsWith("Bearer ");
+        if(!isBearer) return null;
+
+        String token = authorization.substring(7);
+        return token;
+
     }
 }
