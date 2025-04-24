@@ -1,0 +1,7 @@
+package com.jobdam.jobdam_be.websokect.sessionTracker;
+
+public interface WebSocketSessionTracker {
+    String getKeyHeader();
+    void addSession(String roomId, String sessionId);//여기서 key는 roomId
+    void removeSession(String sessionId);
+}
