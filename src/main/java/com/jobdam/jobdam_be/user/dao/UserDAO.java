@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 public class UserDAO {
     private final UserMapper userMapper;
 
-    public void findById() {
+    public void findById(String id) {
             User user = userMapper.findById();
             System.out.println(user);
     }
@@ -21,5 +21,9 @@ public class UserDAO {
 
     public boolean save(User user) {
         return userMapper.save(user) > 0;
+    }
+
+    public User findByEmail(String email) {
+        return userMapper.findByEmail(email);
     }
 }

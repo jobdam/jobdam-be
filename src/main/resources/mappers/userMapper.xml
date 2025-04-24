@@ -36,4 +36,7 @@
     <select id="existsByEmail" resultType="java.lang.Boolean">
         SELECT  COUNT(*) > 0 FROM user WHERE email = #{email}
     </select>
+    <select id="findByEmail" resultType="com.jobdam.jobdam_be.user.model.User">
+        select * from user where email = #{email}
+    </select>
 </mapper>

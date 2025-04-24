@@ -7,6 +7,8 @@ import org.apache.ibatis.annotations.Mapper;
 public interface UserMapper {
     User findById();
 
+    User findByEmail(String email);
+
     boolean existsByEmail(String email);
 
     int save(User user);
