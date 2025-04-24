@@ -17,6 +17,9 @@ public class UserDAO {
 
     public boolean existsByEmail(String email) {
         return userMapper.existsByEmail(email);
+    }
 
+    public boolean save(User user) {
+        return userMapper.save(user) > 0;
     }
 }

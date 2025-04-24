@@ -9,8 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class CheckVerificationRequestDto {
-
+public class CheckVerificationDto {
     @Email
     @NotBlank
     private String email;
