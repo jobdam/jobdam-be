@@ -2,7 +2,6 @@ package com.jobdam.jobdam_be.auth.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jobdam.jobdam_be.auth.dao.RefreshDAO;
-import com.jobdam.jobdam_be.auth.model.RefreshToken;
 import com.jobdam.jobdam_be.auth.provider.JwtProvider;
 import com.jobdam.jobdam_be.auth.service.JwtService;
 import com.jobdam.jobdam_be.user.dao.UserDAO;
@@ -21,7 +20,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.Map;
 
 @Slf4j
