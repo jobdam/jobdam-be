@@ -1,6 +1,6 @@
 package com.jobdam.jobdam_be.auth.controller;
 
-import com.jobdam.jobdam_be.auth.dto.EmailCertificationRequestDto;
+import com.jobdam.jobdam_be.auth.dto.CheckVerificationRequestDto;
 import com.jobdam.jobdam_be.auth.dto.EmailVerificationRequestDto;
 import com.jobdam.jobdam_be.auth.service.AuthService;
 import jakarta.validation.Valid;
@@ -21,5 +21,10 @@ public class AuthController {
     @PostMapping("/email-verification")
     public ResponseEntity<?> emailVerification(@RequestBody @Valid EmailVerificationRequestDto requestBody) {
         return authService.emailVerification(requestBody);
+    }
+
+    @PostMapping("/check-verification")
+    public ResponseEntity<?> checkVerification(@RequestBody @Valid CheckVerificationRequestDto requestBody) {
+        return authService.checkVerification(requestBody);
     }
 }

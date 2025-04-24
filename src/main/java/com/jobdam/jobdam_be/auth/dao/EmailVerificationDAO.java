@@ -13,4 +13,8 @@ public class EmailVerificationDAO {
     public void saveOrUpdateVerification(EmailVerification certification) {
         verificationMapper.saveOrUpdateVerification(certification);
     }
+
+    public EmailVerification findByEmail(String email) {
+        return verificationMapper.findByEmail(email);
+    }
 }

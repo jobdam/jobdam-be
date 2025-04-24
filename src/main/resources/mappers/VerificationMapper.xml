@@ -13,5 +13,8 @@
                                      code = new.code,
                              created_at = new.created_at
     </insert>
+    <select id="findByEmail" resultType="com.jobdam.jobdam_be.auth.model.EmailVerification">
+        SELECT * FROM email_verification WHERE email = #{email}
+    </select>
 
 </mapper>
