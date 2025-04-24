@@ -1,6 +1,10 @@
 package com.jobdam.jobdam_be.config;
 
+import com.jobdam.jobdam_be.auth.dao.RefreshDAO;
+import com.jobdam.jobdam_be.auth.jwt.JwtAuthenticationFilter;
 import com.jobdam.jobdam_be.auth.jwt.LoginFilter;
+import com.jobdam.jobdam_be.auth.provider.JwtProvider;
+import com.jobdam.jobdam_be.user.dao.UserDAO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,6 +14,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -22,8 +27,16 @@ import java.util.Arrays;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
+    private final JwtProvider jwtProvider;
     private final AuthenticationConfiguration authenticationConfiguration;
+
+    private final RefreshDAO refreshDAO;
+    private final UserDAO userDAO;
+
+    @Bean
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
@@ -52,7 +65,10 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
-                );
+                )
+                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, userDAO), LoginFilter.class)
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtProvider, refreshDAO, userDAO), UsernamePasswordAuthenticationFilter.class)
+        ;
         return http.build();
     }
 
