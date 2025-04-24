@@ -31,7 +31,7 @@
                )
     </insert>
     <select id="findById" resultType="com.jobdam.jobdam_be.user.model.User">
-    select * from user where id = 1
+    select * from user where id = #{id}
     </select>
     <select id="existsByEmail" resultType="java.lang.Boolean">
         SELECT  COUNT(*) > 0 FROM user WHERE email = #{email}
