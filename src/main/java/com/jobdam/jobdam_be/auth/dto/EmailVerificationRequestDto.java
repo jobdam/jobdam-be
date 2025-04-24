@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class EmailCertificationRequestDto {
+public class EmailVerificationRequestDto {
     @Email
     @NotBlank
     private String email;

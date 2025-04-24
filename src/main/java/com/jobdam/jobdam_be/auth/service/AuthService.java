@@ -2,9 +2,11 @@ package com.jobdam.jobdam_be.auth.service;
 
 import com.jobdam.jobdam_be.auth.dao.CertificationDAO;
 import com.jobdam.jobdam_be.auth.dto.EmailCertificationRequestDto;
+import com.jobdam.jobdam_be.auth.dao.EmailVerificationDAO;
+import com.jobdam.jobdam_be.auth.dto.EmailVerificationRequestDto;
 import com.jobdam.jobdam_be.auth.model.EmailVerification;
 import com.jobdam.jobdam_be.auth.provider.EmailProvider;
-import com.jobdam.jobdam_be.common.CertificationCode;
+import com.jobdam.jobdam_be.common.VerificationCode;
 import com.jobdam.jobdam_be.user.dao.UserDAO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,27 +20,27 @@ import java.sql.Timestamp;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-    private final CertificationDAO certificationDAO;
+    private final EmailVerificationDAO verificationDAO;
     private final EmailProvider emailProvider;
 
     private final UserDAO userDAO;
 
-    public ResponseEntity<?> emailCertification(EmailCertificationRequestDto emailCertificationRequestDto) {
+    public ResponseEntity<?> emailVerification(EmailVerificationRequestDto dto) {
         try {
-            String email = emailCertificationRequestDto.getEmail();
+            String email = dto.getEmail();
             boolean isExistId = userDAO.existsByEmail(email);
             if (isExistId) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("이미 사용중인 이메일입니다.");
 
 
-            String certificationCode = CertificationCode.getCertificationCode();
-            boolean isSuccess = emailProvider.sendCertificationMail(email, certificationCode);
+            String verificationCode = VerificationCode.getVerificationCode();
+            boolean isSuccess = emailProvider.sendVerificationMail(email, verificationCode);
             if (!isSuccess) return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("메일 전송에 실패하였습니다.");
 
-            EmailVerification certification = new EmailVerification(email,
-                    certificationCode,
+            EmailVerification verification = new EmailVerification(email,
+                    verificationCode,
                     new Timestamp(System.currentTimeMillis()));
 
-            certificationDAO.saveOrUpdateCertification(certification);
+            verificationDAO.saveOrUpdateVerification(verification);
 
         } catch (Exception e) {
             log.error(e.getMessage(), e);

@@ -24,12 +24,12 @@ public class EmailProvider {
      * @param code 인증번호
      * @return AuthenticationManager 내부에서  UserDetailsService를 통해 검사 -> 결과에 따라 성공, 실패 메서드 호출
      */
-    public boolean sendCertificationMail(String email, String code) {
+    public boolean sendVerificationMail(String email, String code) {
         try {
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper messageHelper = new MimeMessageHelper(message, true);
 
-            String htmlContent = getCertificationMessage(code);
+            String htmlContent = getVerificationMessage(code);
 
             messageHelper.setTo(email);     // 대상의 이메일 주소
             messageHelper.setSubject(SUBJECT);      // 제목
@@ -45,10 +45,10 @@ public class EmailProvider {
         return true;
     }
 
-    private String getCertificationMessage(String code) {
-        String certificationMessage = "";
-        certificationMessage += "<h1 style='text-align:center;'> [잡담 - 모의면접 매칭 서비스] 인증 메일 </h1>";
-        certificationMessage += "<h3 style='text-align:center;'> 인증코드 : <string style='font-size: 32px; letter-spacing: 8px;'>" + code + "</string></h3>";
-        return certificationMessage;
+    private String getVerificationMessage(String code) {
+        String verificationMessage = "";
+        verificationMessage += "<h1 style='text-align:center;'> [잡담 - 모의면접 매칭 서비스] 인증 메일 </h1>";
+        verificationMessage += "<h3 style='text-align:center;'> 인증코드 : <string style='font-size: 32px; letter-spacing: 8px;'>" + code + "</string></h3>";
+        return verificationMessage;
     }
 }
