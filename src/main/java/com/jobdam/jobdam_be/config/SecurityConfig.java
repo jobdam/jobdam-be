@@ -4,6 +4,7 @@ import com.jobdam.jobdam_be.auth.dao.RefreshDAO;
 import com.jobdam.jobdam_be.auth.filter.JwtAuthenticationFilter;
 import com.jobdam.jobdam_be.auth.filter.LoginFilter;
 import com.jobdam.jobdam_be.auth.provider.JwtProvider;
+import com.jobdam.jobdam_be.auth.service.JwtService;
 import com.jobdam.jobdam_be.user.dao.UserDAO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -29,6 +30,7 @@ import java.util.Arrays;
 public class SecurityConfig {
     private final JwtProvider jwtProvider;
     private final AuthenticationConfiguration authenticationConfiguration;
+    private final JwtService jwtService;
 
     private final RefreshDAO refreshDAO;
     private final UserDAO userDAO;
@@ -67,7 +69,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, userDAO), LoginFilter.class)
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtProvider, refreshDAO, userDAO), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtProvider, jwtService, refreshDAO, userDAO), UsernamePasswordAuthenticationFilter.class)
         ;
         return http.build();
     }

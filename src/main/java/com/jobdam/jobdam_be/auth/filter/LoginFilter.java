@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jobdam.jobdam_be.auth.dao.RefreshDAO;
 import com.jobdam.jobdam_be.auth.model.RefreshToken;
 import com.jobdam.jobdam_be.auth.provider.JwtProvider;
+import com.jobdam.jobdam_be.auth.service.JwtService;
 import com.jobdam.jobdam_be.user.dao.UserDAO;
 import com.jobdam.jobdam_be.user.model.User;
 import jakarta.servlet.FilterChain;
@@ -26,6 +27,7 @@ import java.util.Map;
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JwtProvider jwtProvider;
+    private final JwtService jwtService;
 
     private final RefreshDAO refreshDAO;
     private final UserDAO userDAO;
@@ -77,10 +79,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String refresh = jwtProvider.createJwt("refresh", email, 86400000L);    // 1일
 
         response.setHeader("access", access);
-        response.addCookie(createCookie("refresh", refresh));
+        Cookie refreshCookie = jwtService.createRefreshCookie(refresh);
+        response.addCookie(refreshCookie);
 
-        // refresh 정보 저장
-        addRefreshEntity(user.getId(), refresh, 86400000L);
+        jwtService.saveRefreshToken(user.getId(), refresh, 86400000L);
 
         response.setStatus(HttpServletResponse.SC_OK);
     }
@@ -91,28 +93,5 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     }
 
-    private Cookie createCookie(String key, String value) {
-
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(24 * 60 * 60);
-        //cookie.setSecure(true);       // https 의 경우
-        //cookie.setPath("/");
-        cookie.setHttpOnly(true);       // 자바스크립트 접근 불가
-
-        return cookie;
-    }
-
-    private void addRefreshEntity(Long userId, String refresh, Long expiredMs) {
-
-        Timestamp date = new Timestamp(System.currentTimeMillis() + expiredMs);
-
-        RefreshToken refreshToken = new RefreshToken();
-
-        refreshToken.setUserId(userId);
-        refreshToken.setRefreshToken(refresh);
-        refreshToken.setExpiration(date.toString());
-
-        refreshDAO.save(refreshToken);
-    }
 
 }
