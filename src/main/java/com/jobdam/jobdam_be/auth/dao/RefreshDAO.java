@@ -1,0 +1,15 @@
+package com.jobdam.jobdam_be.auth.dao;
+
+import com.jobdam.jobdam_be.auth.mapper.RefreshTokenMapper;
+import com.jobdam.jobdam_be.auth.model.RefreshToken;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
+
+@Repository
+@RequiredArgsConstructor
+public class RefreshDAO {
+    private final RefreshTokenMapper refreshTokenMapper;
+    public void save(RefreshToken refreshToken) {
+        refreshTokenMapper.save(refreshToken);
+    }
+}
