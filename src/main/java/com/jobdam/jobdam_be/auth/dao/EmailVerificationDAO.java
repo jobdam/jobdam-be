@@ -17,4 +17,8 @@ public class EmailVerificationDAO {
     public EmailVerification findByEmail(String email) {
         return verificationMapper.findByEmail(email);
     }
+
+    public void deleteByEmail(String email) {
+        verificationMapper.deleteByEmail(email);
+    }
 }

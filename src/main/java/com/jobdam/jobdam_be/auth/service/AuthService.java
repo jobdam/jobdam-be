@@ -109,6 +109,8 @@ public class AuthService {
         boolean isSaved = userDAO.save(user);
         if(!isSaved) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("데이터베이스 오류 발생");
 
+        verificationDAO.deleteByEmail(email);
+
         return ResponseEntity.ok().body("성공");
     }
 }

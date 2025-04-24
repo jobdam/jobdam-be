@@ -8,4 +8,6 @@ public interface VerificationMapper {
     void saveOrUpdateVerification(EmailVerification certification);
 
     EmailVerification findByEmail(String email);
+
+    void deleteByEmail(String email);
 }
