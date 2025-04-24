@@ -16,4 +16,10 @@
     <delete id="deleteByUserId">
         DELETE FROM refresh_token WHERE user_id = #{user_id}
     </delete>
+    <delete id="deleteByRefreshToken">
+        DELETE FROM refresh_token WHERE refresh_token = #{refresh}
+    </delete>
+    <select id="existsByRefreshToken" resultType="java.lang.Boolean">
+        SELECT count(*) > 0 FROM refresh_token where refresh_token = #{refresh}
+    </select>
 </mapper>

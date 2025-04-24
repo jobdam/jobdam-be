@@ -8,4 +8,8 @@ public interface RefreshTokenMapper {
     void save(RefreshToken refreshToken);
 
     void deleteByUserId(long user_id);
+
+    void deleteByRefreshToken(String refresh);
+
+    boolean existsByRefreshToken(String refresh);
 }

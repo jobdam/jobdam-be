@@ -1,6 +1,7 @@
 package com.jobdam.jobdam_be.config;
 
 import com.jobdam.jobdam_be.auth.dao.RefreshDAO;
+import com.jobdam.jobdam_be.auth.filter.CustomLogoutFilter;
 import com.jobdam.jobdam_be.auth.filter.JwtAuthenticationFilter;
 import com.jobdam.jobdam_be.auth.filter.LoginFilter;
 import com.jobdam.jobdam_be.auth.provider.JwtProvider;
@@ -18,6 +19,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -70,6 +72,7 @@ public class SecurityConfig {
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, userDAO), LoginFilter.class)
                 .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtProvider, jwtService, refreshDAO, userDAO), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new CustomLogoutFilter(jwtProvider, refreshDAO), LogoutFilter.class)
         ;
         return http.build();
     }
