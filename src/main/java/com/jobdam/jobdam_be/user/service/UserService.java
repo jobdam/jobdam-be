@@ -10,6 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
     private final UserDAO userDAO;
     public void test() {
-        userDAO.findById();
+        userDAO.findById("1");
     }
 }
