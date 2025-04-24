@@ -15,21 +15,34 @@ import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final AuthenticationConfiguration authenticationConfiguration;
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                //	JWT는 CSRF 공격 대상 아님 (쿠키 사용 안 함)
                 .csrf(AbstractHttpConfigurer::disable)
-
+                // 기본 로그인 폼 대신 직접 만든 필터 사용
+                .formLogin(AbstractHttpConfigurer::disable)
+                //	HTTP Basic 인증(username과 password를 헤더에 인코딩해서 보내는 방식) 대신 JWT 사용
                 .httpBasic(AbstractHttpConfigurer::disable)
-
+                // 세션 저장 없이 토큰만으로 인증 (stateless)
                 .sessionManagement(sessionManagement -> sessionManagement.
                         sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers(
-                                "/", "/login", "/sign-up", "/js/**", "/WEB-INF/views/**"
+                                "/", "/login", "/sign-up", "/email-certification","/termsAgreement", "/js/**", "/WEB-INF/views/**"
                                 , "/send", "/check-sns", "/test"
                         ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
@@ -42,7 +55,8 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:3000"
+                "http://localhost:3000",
+                "http://localhost:5173"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept"));
@@ -51,10 +65,11 @@ public class SecurityConfig {
         // 개발 중	0 또는 생략 (변경 반영 빠르게)
         // 배포 시 (안정된 정책)	600 ~ 3600 초
         // 보안이 매우 중요한 경우	60 초 이하로 낮게 유지
-        configuration.setMaxAge(600L);
+        configuration.setMaxAge(10L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+
         return source;
     }
 }
