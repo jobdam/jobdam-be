@@ -1,8 +1,8 @@
 package com.jobdam.jobdam_be.config;
 
 import com.jobdam.jobdam_be.auth.dao.RefreshDAO;
-import com.jobdam.jobdam_be.auth.jwt.JwtAuthenticationFilter;
-import com.jobdam.jobdam_be.auth.jwt.LoginFilter;
+import com.jobdam.jobdam_be.auth.filter.JwtAuthenticationFilter;
+import com.jobdam.jobdam_be.auth.filter.LoginFilter;
 import com.jobdam.jobdam_be.auth.provider.JwtProvider;
 import com.jobdam.jobdam_be.user.dao.UserDAO;
 import lombok.RequiredArgsConstructor;

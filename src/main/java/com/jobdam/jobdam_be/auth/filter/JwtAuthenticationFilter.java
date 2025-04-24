@@ -1,4 +1,4 @@
-package com.jobdam.jobdam_be.auth.jwt;
+package com.jobdam.jobdam_be.auth.filter;
 
 import com.jobdam.jobdam_be.auth.dto.CustomUserDetails;
 import com.jobdam.jobdam_be.auth.provider.JwtProvider;
