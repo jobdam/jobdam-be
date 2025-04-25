@@ -51,6 +51,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
                 throw new AuthenticationServiceException("이메일 또는 비밀번호가 누락되었습니다.");
             }
             User findUser = userDAO.findByEmail(email);
+            if (findUser == null) {
+                throw new AuthenticationServiceException("이메일을 찾을 수 없습니다.");
+            }
 
             //스프링 시큐리티에서 userId와 password를 검증하기 위해서는 token에 담아야 함
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(findUser.getId(), password, null);
@@ -86,7 +89,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         Cookie refreshCookie = jwtService.createRefreshCookie(refresh);
         response.addCookie(refreshCookie);
 
-        jwtService.saveRefreshToken(user.getId(), refresh, 86400000L);
+        boolean isSaved = jwtService.saveRefreshToken(user.getId(), refresh, 86400000L);
+        if(!isSaved)  throw new AuthenticationServiceException("데이터베이스 오류가 발생했습니다.");
 
         response.setStatus(HttpServletResponse.SC_OK);
     }

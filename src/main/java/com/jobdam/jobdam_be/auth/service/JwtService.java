@@ -13,10 +13,10 @@ import java.sql.Timestamp;
 public class JwtService {
     private final RefreshDAO refreshDAO;
 
-    public void saveRefreshToken(Long userId, String refreshToken, long expiredMs) {
+    public boolean saveRefreshToken(Long userId, String refreshToken, long expiredMs) {
         Timestamp expiration = new Timestamp(System.currentTimeMillis() + expiredMs);
         RefreshToken entity = new RefreshToken(userId, refreshToken, expiration.toString());
-        refreshDAO.save(entity);
+        return refreshDAO.save(entity);
     }
 
     public Cookie createRefreshCookie(String token) {
