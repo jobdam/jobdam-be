@@ -9,8 +9,8 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class RefreshDAO {
     private final RefreshTokenMapper refreshTokenMapper;
-    public void save(RefreshToken refreshToken) {
-        refreshTokenMapper.save(refreshToken);
+    public boolean save(RefreshToken refreshToken) {
+        return refreshTokenMapper.save(refreshToken) > 0;
     }
 
     public void deleteByUserId(long user_id) {

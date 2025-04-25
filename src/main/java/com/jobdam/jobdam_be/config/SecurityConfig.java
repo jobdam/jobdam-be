@@ -64,8 +64,11 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers(
-                                "/", "/login", "/sign-up", "/check-email", "/email-verification", "/check-verification", "/termsAgreement", "/js/**", "/WEB-INF/views/**"
+                                "/**","/swagger-ui/**", "/login", "/sign-up", "/check-email", "/email-verification", "/check-verification", "/termsAgreement"
                                 , "/send", "/check-sns", "/test"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/css/**", "/js/**", "/img/**", "/static/**", "/favicon.ico",  "/WEB-INF/views/**"
                         ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
