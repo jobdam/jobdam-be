@@ -1,5 +1,4 @@
-package com.jobdam.jobdam_be.auth.dto;
-
+package com.jobdam.jobdam_be.auth.service;
 
 import com.jobdam.jobdam_be.user.model.User;
 import org.springframework.security.core.GrantedAuthority;
@@ -72,6 +71,6 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return user.getEmail();
+        return String.valueOf(user.getId());
     }
 }

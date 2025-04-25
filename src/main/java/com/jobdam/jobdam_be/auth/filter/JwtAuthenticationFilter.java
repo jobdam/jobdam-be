@@ -1,6 +1,6 @@
 package com.jobdam.jobdam_be.auth.filter;
 
-import com.jobdam.jobdam_be.auth.dto.CustomUserDetails;
+import com.jobdam.jobdam_be.auth.service.CustomUserDetails;
 import com.jobdam.jobdam_be.auth.provider.JwtProvider;
 import com.jobdam.jobdam_be.user.dao.UserDAO;
 import com.jobdam.jobdam_be.user.model.User;
@@ -31,7 +31,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 헤더에서 access키에 담긴 토큰을 꺼냄
         String accessToken = parseBearerToken(request);
-        log.info("Access token: {}", accessToken);
 
         // 토큰이 없는 경우(ex 로그인 전 요청)는 인증 없이 다음 필터로 넘김
         if (accessToken == null) {
@@ -56,7 +55,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 토큰이 access인지 확인 (발급시 페이로드에 명시)
         String category = jwtProvider.getCategory(accessToken);
 
-        if (!category.equals("access")) {
+        if (!category.equals("ACCESS_TOKEN")) {
 
             //response body
             PrintWriter writer = response.getWriter();
@@ -66,15 +65,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
+
         // HACK: role 값을 추가한다면 해당 코드에도 변경해야 함
         // email 값을 획득
-        String email = jwtProvider.getEmail(accessToken);
+        Long userId = Long.valueOf(jwtProvider.getUserId(accessToken));
         // String role = jwtProvider.getRole(accessToken);
 
-        User user = userDAO.findByEmail(email);
-        if(user == null) {
+        User user = userDAO.findById(userId);
+        if (user == null) {
             PrintWriter writer = response.getWriter();
-            writer.print("잘못된 이메일입니다.");
+            writer.print("잘못 입력된 계정입니다.");
 
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
@@ -94,7 +94,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (!hasAuthorization) return null;
 
         boolean isBearer = authorization.startsWith("Bearer ");
-        if(!isBearer) return null;
+        if (!isBearer) return null;
 
         return authorization.substring(7);
 

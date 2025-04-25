@@ -50,9 +50,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             if (email == null || password == null) {
                 throw new AuthenticationServiceException("이메일 또는 비밀번호가 누락되었습니다.");
             }
+            User findUser = userDAO.findByEmail(email);
 
-            //스프링 시큐리티에서 username과 password를 검증하기 위해서는 token에 담아야 함
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(email, password, null);
+            //스프링 시큐리티에서 userId와 password를 검증하기 위해서는 token에 담아야 함
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(findUser.getId(), password, null);
 
             //token에 담은 검증을 위한 AuthenticationManager로 전달
             return authenticationManager.authenticate(authToken);
@@ -66,8 +67,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) {
         //유저 정보
-        String email = authentication.getName();
-        User user = userDAO.findByEmail(email);
+        Long userId = Long.valueOf(authentication.getName());
+        User user = userDAO.findById(userId);
         // HACK: role 값 사용시 사용
         // Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         // Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
@@ -78,8 +79,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         refreshDAO.deleteByUserId(user.getId());
 
         //토큰 생성
-        String access = jwtProvider.createJwt("ACCESS_TOKEN", email, 600000L);        // 10분
-        String refresh = jwtProvider.createJwt("REFRESH_TOKEN", email, 86400000L);    // 1일
+        String access = jwtProvider.createJwt("ACCESS_TOKEN", userId, 600000L);        // 10분
+        String refresh = jwtProvider.createJwt("REFRESH_TOKEN", userId, 86400000L);    // 1일
 
         response.setHeader("Authorization", "Bearer " + access);
         Cookie refreshCookie = jwtService.createRefreshCookie(refresh);
