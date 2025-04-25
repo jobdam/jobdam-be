@@ -23,13 +23,13 @@ public class JwtProvider {
      * JWT Token 을 생성하는 메서드
      *
      * @param category - Access 또는 Refresh
-     * @param email - 유저 이메일
+     * @param userId   - 유저 아이디
      * @return JWT Token 를 반환
      */
-    public String createJwt(String category, String email, long expiredMs) {
+    public String createJwt(String category, Long userId, long expiredMs) {
         return Jwts.builder()
                 .claim("category", category)
-                .claim("email", email)
+                .claim("userId", userId)
                 .issuedAt(new Timestamp(System.currentTimeMillis()))
                 .expiration(new Timestamp(System.currentTimeMillis() + expiredMs))
                 .signWith(secretKey)
@@ -40,8 +40,8 @@ public class JwtProvider {
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("category", String.class);
     }
 
-    public String getEmail(String token) {
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("email", String.class);
+    public String getUserId(String token) {
+        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("userId", String.class);
     }
 
     public Boolean isExpired(String token) {
