@@ -44,7 +44,7 @@ public class AuthService {
         try {
             String email = dto.getEmail();
             boolean isExistId = userDAO.existsByEmail(email);
-            if (isExistId) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("이미 사용중인 이메일입니다.");
+            if (isExistId) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("이미 사용 중인 이메일입니다.");
 
 
             String verificationCode = VerificationCode.getVerificationCode();
@@ -59,10 +59,10 @@ public class AuthService {
 
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("데이터베이스 오류 발생");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("데이터베이스 오류가 발생했습니다.");
         }
 
-        return ResponseEntity.ok().body("성공");
+        return ResponseEntity.ok().body("메일 전송 성공");
     }
 
     public ResponseEntity<?> checkVerification(CheckVerificationDto dto) {
@@ -71,14 +71,14 @@ public class AuthService {
             String code = dto.getCode();
 
             EmailVerification emailVerification = verificationDAO.findByEmail(email);
-            if (emailVerification == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("검증 오류 발생");
+            if (emailVerification == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("이메일 또는 비밀번호가 틀립니다.");
 
             boolean isMatched = emailVerification.getEmail().equals(email) && emailVerification.getCode().equals(code);
-            if (!isMatched) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("검증 오류 발생");
+            if (!isMatched) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("이메일 또는 비밀번호가 틀립니다.");
 
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("데이터베이스 오류 발생");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("데이터베이스 오류가 발생했습니다.");
         }
 
         return ResponseEntity.ok().body("성공");
@@ -88,7 +88,7 @@ public class AuthService {
 
         String email = dto.getEmail();
         boolean isExistId = userDAO.existsByEmail(email);
-        if (isExistId) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("이미 사용중인 이메일입니다.");
+        if (isExistId) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("이미 사용 중인 이메일입니다.");
 
         String code = dto.getCode();
 
@@ -105,10 +105,10 @@ public class AuthService {
         User user = new User(dto);
 
         boolean isSaved = userDAO.save(user);
-        if(!isSaved) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("데이터베이스 오류 발생");
+        if(!isSaved) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("데이터베이스 오류가 발생했습니다.");
 
         verificationDAO.deleteByEmail(email);
 
-        return ResponseEntity.ok().body("성공");
+        return ResponseEntity.ok().body("회원가입 성공");
     }
 }
