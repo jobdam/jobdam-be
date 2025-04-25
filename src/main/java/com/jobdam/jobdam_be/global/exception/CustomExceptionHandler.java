@@ -3,13 +3,13 @@ package com.jobdam.jobdam_be.global.exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @Slf4j
-@ControllerAdvice
+@RestControllerAdvice
 public class CustomExceptionHandler {
-
 
     //커스텀한 예외처리 보내기.
     @ExceptionHandler(AbstractException.class)
@@ -24,6 +24,16 @@ public class CustomExceptionHandler {
         return ResponseEntity.status(e.getExceptionResponse().getCode()).body(errorResponse);
     }
 
+    // 잘못된 요청
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoResourceFound(NoResourceFoundException e) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .code(HttpStatus.NOT_FOUND.value())
+                .message("요청하신 자원을 찾을 수 없습니다.")
+                .build();
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
     //nullPoint 예외처리
     @ExceptionHandler(NullPointerException.class)
     public ResponseEntity<ErrorResponse> nullPointExceptionHandle(NullPointerException e){
@@ -36,7 +46,6 @@ public class CustomExceptionHandler {
 
         return ResponseEntity.status(errorCode).body(errorResponse);
     }
-
 
     //나머지 예외처리
     @ExceptionHandler(Exception.class)
