@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 //tracker관리를 위해 만든 설정클래스
 //채팅,시그널링 등의 여러 웹소켓연결을 구분하기 위해
@@ -20,6 +21,9 @@ public class SessionTrackerRegistry {
     public SessionTrackerRegistry(Map<String, WebSocketSessionTracker> beans) {
         this.sessionTrackers.putAll(beans);
     }
+    public boolean checkKey(String purpose) {
+        return sessionTrackers.containsKey(purpose);
+    }
 
     public WebSocketSessionTracker getTracker(String purpose) {
         return sessionTrackers.get(purpose);
@@ -28,4 +32,5 @@ public class SessionTrackerRegistry {
     public Collection<WebSocketSessionTracker> getAllTrackers() {
         return sessionTrackers.values();
     }
+
 }

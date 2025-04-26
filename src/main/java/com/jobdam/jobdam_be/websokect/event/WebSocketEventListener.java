@@ -1,5 +1,6 @@
 package com.jobdam.jobdam_be.websokect.event;
 
+import com.jobdam.jobdam_be.websokect.sessionTracker.domain.model.BaseSessionInfo;
 import com.jobdam.jobdam_be.websokect.sessionTracker.registry.SessionTrackerRegistry;
 import com.jobdam.jobdam_be.websokect.sessionTracker.WebSocketSessionTracker;
 import lombok.RequiredArgsConstructor;
@@ -22,27 +23,34 @@ public class WebSocketEventListener {
     @EventListener
     public void handleSessionConnect(SessionConnectedEvent event){
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-        String purpose = accessor.getFirstNativeHeader("purpose");
-        String sessionId = accessor.getSessionId();
+        String purpose = accessor.getFirstNativeHeader("purpose");//match,chat,signal구분
 
-        //만약 tracker를 사용안하면 purpose가 있냐없냐에 따라서 아래조건하거나말거나 해야함.
-        //현재는 있다는 전제 하에 코드진행 중.
-
-        // purpose를 세션 속성에 저장 (삭제시 빠르게하기위해)
-        Objects.requireNonNull(accessor.getSessionAttributes(),
-                "웹소켓 연결 중 purpose null 발생!").put("purpose", purpose);
-
-        //registry에 저장된 구분값(chat,signal 등등)으로 tracker 가져옴
-        //그안에서 tracker에 저장한 key이름으로 roomId값을 가져옴(ex videoChatRoomId : 3)
+        if(!validatePurpose(purpose)) {
+            return;
+        }
+        //purpose로 일치하는 tracker 가져옴
         WebSocketSessionTracker tracker = trackerRegistry.getTracker(purpose);
-        String roomId = accessor.getFirstNativeHeader(tracker.getKeyHeader());
+        //단계 2 roomID가져오기(클라가 chatroomId : 135ab나 matchroomId : raa3 이런식으로 보내는데)
+        //tracker에서 일치하는 roomkey(chatroomId)를 가져와서 클라헤더에서 id(135ab)를 꺼냄
+        String roomId = accessor.getFirstNativeHeader(tracker.getRoomKeyHeader());
+        if(!validateRoomId(roomId)) {
+            return;
+        }
 
-        //세션속성에 key값 저장
-        accessor.getSessionAttributes().put("roomId",roomId);
-        //jwt로 아이디 추출해야함
+        // 세션 attributes에서 유저 ID 가져오기(검증단계에서 넣음)
+        Long userId = (Long) Objects.requireNonNull(accessor.getSessionAttributes()).get("userId");
+        accessor.getSessionAttributes().remove("userId");//기존 세션속성제거
 
-        tracker.addSession(roomId, sessionId);
-        log.info("[접속] purpose={} roomId={} sessionId={}", purpose, roomId, sessionId);
+        //세션 속성에 기본정보 객체 넣기
+        accessor.getSessionAttributes().put("baseSessionInfo", BaseSessionInfo.builder()
+                .purpose(purpose)
+                .roomId(roomId)
+                .userId(userId)
+                .build());
+
+        //트랙커에 세션저장
+        tracker.addSession(roomId, accessor.getSessionId());
+        log.info("[접속] purpose={} roomId={} userId={}", purpose,roomId,userId);
     }
 
     @EventListener
@@ -56,5 +64,25 @@ public class WebSocketEventListener {
             tracker.removeSession(sessionId);
         });
         log.info("세션 연결 종료: {}", sessionId);
+    }
+
+    private boolean validatePurpose(String purpose){
+        if(Objects.isNull(purpose)){
+            log.warn("[웹소켓 연결 에러] purpose가 없습니다(null!)");
+            return false;
+        }
+        if(!trackerRegistry.checkKey(purpose)){
+            log.warn("[웹소켓 연결 에러] 일치하는 purpose가 없습니다. purpose={}",purpose);
+            return false;
+        }
+        return true;
+    }
+
+    private boolean validateRoomId(String roomId){
+        if(Objects.isNull(roomId)){
+            log.warn("[웹소켓 연결 에러] roomId가 없습니다(null!)");
+            return false;
+        }
+        return true;
     }
 }
