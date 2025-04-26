@@ -67,8 +67,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // HACK: role 값을 추가한다면 해당 코드에도 변경해야 함
-        // email 값을 획득
-        Long userId = Long.valueOf(jwtProvider.getUserId(accessToken));
+        Long userId = jwtProvider.getUserId(accessToken);
         // String role = jwtProvider.getRole(accessToken);
 
         User user = userDAO.findById(userId);
