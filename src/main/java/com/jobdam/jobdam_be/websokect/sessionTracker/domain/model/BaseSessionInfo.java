@@ -8,5 +8,4 @@ import lombok.Getter;
 public class BaseSessionInfo {
     private String purpose;
     private String roomId;
-    private Long userId;
 }

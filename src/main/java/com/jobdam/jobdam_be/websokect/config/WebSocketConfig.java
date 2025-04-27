@@ -20,8 +20,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     //프론트는 /app/sendMessage로 메세지 보내면  @MessageMapping("/sendMessage")로 구분함
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/topic/signal");
-        registry.setApplicationDestinationPrefixes("/app");
+        registry.enableSimpleBroker("/topic/signal");//서버-> 클라 전체응답용
+        registry.setApplicationDestinationPrefixes("/app"); //클라->서버응답용
+        registry.setUserDestinationPrefix("/user");//서버->개인 1:1응답용
     }
 
     //각 웹소켓 연결마다 다른 엔드포인트 설정(프론트에서 서버로 연결시)
