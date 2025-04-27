@@ -1,6 +1,8 @@
 package com.jobdam.jobdam_be.config;
 
 import com.jobdam.jobdam_be.auth.dao.RefreshDAO;
+import com.jobdam.jobdam_be.auth.exception.CustomAccessDeniedHandler;
+import com.jobdam.jobdam_be.auth.exception.CustomAuthenticationEntryPoint;
 import com.jobdam.jobdam_be.auth.filter.CustomLogoutFilter;
 import com.jobdam.jobdam_be.auth.filter.JwtAuthenticationFilter;
 import com.jobdam.jobdam_be.auth.filter.LoginFilter;
@@ -30,8 +32,11 @@ import java.util.Arrays;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final JwtProvider jwtProvider;
     private final AuthenticationConfiguration authenticationConfiguration;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
+
+    private final JwtProvider jwtProvider;
     private final JwtService jwtService;
 
     private final RefreshDAO refreshDAO;
@@ -62,10 +67,15 @@ public class SecurityConfig {
 
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)       // 인증 실패 시
+                        .accessDeniedHandler(customAccessDeniedHandler)                 // 인가 실패 시
+                )
+
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers(
-                                "/**","/swagger-ui/**", "/login", "/sign-up", "/check-email", "/email-verification", "/check-verification", "/termsAgreement"
-                                , "/send", "/check-sns", "/test"
+                                "/swagger-ui/**", "/login", "/sign-up", "/check-email", "/email-verification", "/check-verification", "/termsAgreement"
+                                , "/send", "/check-sns"
                         ).permitAll()
                         .requestMatchers(
                                 "/css/**", "/js/**", "/img/**", "/static/**", "/favicon.ico",  "/WEB-INF/views/**"
@@ -73,7 +83,8 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, userDAO), LoginFilter.class)
+
+                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, userDAO), UsernamePasswordAuthenticationFilter.class)
                 .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtProvider, jwtService, refreshDAO, userDAO), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new CustomLogoutFilter(jwtProvider, refreshDAO), LogoutFilter.class)
         ;

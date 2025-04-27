@@ -2,8 +2,11 @@ package com.jobdam.jobdam_be.auth.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jobdam.jobdam_be.auth.dao.RefreshDAO;
+import com.jobdam.jobdam_be.auth.exception.AuthErrorCode;
+import com.jobdam.jobdam_be.auth.exception.AuthException;
 import com.jobdam.jobdam_be.auth.provider.JwtProvider;
 import com.jobdam.jobdam_be.auth.service.JwtService;
+import com.jobdam.jobdam_be.global.exception.ErrorResponse;
 import com.jobdam.jobdam_be.user.dao.UserDAO;
 import com.jobdam.jobdam_be.user.model.User;
 import jakarta.servlet.FilterChain;
@@ -13,7 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -43,16 +46,16 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             // JSON 요청 바디 파싱
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String, String> loginData = objectMapper.readValue(request.getInputStream(), Map.class);
-
             String email = loginData.get("email");
             String password = loginData.get("password");
-
             if (email == null || password == null) {
-                throw new AuthenticationServiceException("이메일 또는 비밀번호가 누락되었습니다.");
+                sendErrorResponse(response, AuthErrorCode.EMPTY_EMAIL_OR_PASSWORD);
+                return null;
             }
             User findUser = userDAO.findByEmail(email);
             if (findUser == null) {
-                throw new AuthenticationServiceException("이메일을 찾을 수 없습니다.");
+                sendErrorResponse(response, AuthErrorCode.NOT_FOUND_EMAIL);
+                return null;
             }
 
             //스프링 시큐리티에서 userId와 password를 검증하기 위해서는 token에 담아야 함
@@ -62,7 +65,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             return authenticationManager.authenticate(authToken);
 
         } catch (IOException e) {
-            throw new AuthenticationServiceException("로그인 요청 파싱 실패", e);
+            response.setStatus(AuthErrorCode.UNSUPPORTED_TYPE.getCode());
+            return null;
         }
     }
 
@@ -90,16 +94,39 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.addCookie(refreshCookie);
 
         boolean isSaved = jwtService.saveRefreshToken(user.getId(), refresh, 86400000L);
-        if(!isSaved)  throw new AuthenticationServiceException("데이터베이스 오류가 발생했습니다.");
+        if (!isSaved) request.setAttribute("exception", AuthErrorCode.DB_ERROR);
+
 
         response.setStatus(HttpServletResponse.SC_OK);
     }
 
     //로그인 실패시 실행하는 메소드
     @Override
-    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
+
+        AuthErrorCode errorCode;
+        if (failed instanceof AuthException e) {
+            errorCode = e.getErrorCode();
+        } else if (failed instanceof BadCredentialsException) {
+            errorCode = AuthErrorCode.INVALID_PASSWORD;
+        } else {
+            errorCode = AuthErrorCode.UNKNOWN_ERROR;
+        }
+        sendErrorResponse(response, errorCode);
     }
 
+        // 응답을 처리하는 메서드
+        private void sendErrorResponse(HttpServletResponse response, AuthErrorCode errorCode) throws IOException {
+            response.setStatus(errorCode.getCode());
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
 
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .code(errorCode.getCode())
+                    .message(errorCode.getMessage()).build();
+
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+        }
 }
