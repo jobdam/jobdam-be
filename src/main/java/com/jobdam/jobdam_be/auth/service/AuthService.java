@@ -1,17 +1,23 @@
 package com.jobdam.jobdam_be.auth.service;
 
 import com.jobdam.jobdam_be.auth.dao.EmailVerificationDAO;
+import com.jobdam.jobdam_be.auth.dao.RefreshDAO;
 import com.jobdam.jobdam_be.auth.dto.CheckVerificationDto;
 import com.jobdam.jobdam_be.auth.dto.EmailVerificationDto;
 import com.jobdam.jobdam_be.auth.dto.SignUpDto;
+import com.jobdam.jobdam_be.auth.exception.AuthException;
 import com.jobdam.jobdam_be.auth.model.EmailVerification;
 import com.jobdam.jobdam_be.auth.provider.EmailProvider;
+import com.jobdam.jobdam_be.auth.provider.JwtProvider;
 import com.jobdam.jobdam_be.common.VerificationCode;
 import com.jobdam.jobdam_be.user.dao.UserDAO;
 import com.jobdam.jobdam_be.user.model.User;
+import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,6 +25,8 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.jobdam.jobdam_be.auth.exception.AuthErrorCode.*;
 
 @Slf4j
 @Service
@@ -40,16 +48,15 @@ public class AuthService {
         return ResponseEntity.ok().body(response);
     }
 
-    public ResponseEntity<?> emailVerification(EmailVerificationDto dto) {
+    public ResponseEntity<String> emailVerification(EmailVerificationDto dto) {
         try {
             String email = dto.getEmail();
             boolean isExistId = userDAO.existsByEmail(email);
-            if (isExistId) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("이미 사용 중인 이메일입니다.");
-
+            if (isExistId) throw new AuthException(DUPLICATE_EMAIL);
 
             String verificationCode = VerificationCode.getVerificationCode();
             boolean isSuccess = emailProvider.sendVerificationMail(email, verificationCode);
-            if (!isSuccess) return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("메일 전송에 실패하였습니다.");
+            if (!isSuccess) throw new AuthException(MAIL_SEND_ERROR);
 
             EmailVerification verification = new EmailVerification(email,
                     verificationCode,
@@ -59,44 +66,47 @@ public class AuthService {
 
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("데이터베이스 오류가 발생했습니다.");
-        }
+            throw new AuthException(DB_ERROR);
 
+        }
         return ResponseEntity.ok().body("메일 전송 성공");
     }
 
-    public ResponseEntity<?> checkVerification(CheckVerificationDto dto) {
+    public ResponseEntity<String> checkVerification(CheckVerificationDto dto) {
         try {
             String email = dto.getEmail();
             String code = dto.getCode();
 
             EmailVerification emailVerification = verificationDAO.findByEmail(email);
-            if (emailVerification == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("이메일 또는 비밀번호가 틀립니다.");
+            if (emailVerification == null) throw new AuthException(INVALID_EMAIL_OR_PASSWORD);
 
             boolean isMatched = emailVerification.getEmail().equals(email) && emailVerification.getCode().equals(code);
-            if (!isMatched) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("이메일 또는 비밀번호가 틀립니다.");
+            if (!isMatched) throw new AuthException(INVALID_EMAIL_OR_PASSWORD);
 
+        } catch (AuthException e) {
+            log.error(e.getMessage(), e);
+            throw new AuthException(e.getErrorCode());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("데이터베이스 오류가 발생했습니다.");
+            throw new AuthException(DB_ERROR);
         }
 
-        return ResponseEntity.ok().body("성공");
+        return ResponseEntity.ok().body("메일 전송 성공");
     }
 
-    public ResponseEntity<?> signUp(SignUpDto dto) {
+    public ResponseEntity<String> signUp(SignUpDto dto) {
 
         String email = dto.getEmail();
-        boolean isExistId = userDAO.existsByEmail(email);
-        if (isExistId) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("이미 사용 중인 이메일입니다.");
-
         String code = dto.getCode();
+
+        boolean isExistId = userDAO.existsByEmail(email);
+        if (isExistId) throw new AuthException(DUPLICATE_EMAIL);
 
         EmailVerification emailVerification = verificationDAO.findByEmail(email);
 
-        if (emailVerification == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("이메일 인증을 먼저 진행하세요.");
+        if (emailVerification == null) throw new AuthException(EMAIL_VERIFICATION_REQUIRED);
         boolean isMatched = emailVerification.getEmail().equals(email) && emailVerification.getCode().equals(code);
-        if (!isMatched) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("검증 오류 발생");
+        if (!isMatched) throw new AuthException(INVALID_EMAIL_OR_PASSWORD);
 
         String password = dto.getPassword();
         String encodedPassword = passwordEncoder.encode(password);
@@ -105,10 +115,10 @@ public class AuthService {
         User user = new User(dto);
 
         boolean isSaved = userDAO.save(user);
-        if(!isSaved) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("데이터베이스 오류가 발생했습니다.");
+        if(!isSaved) throw new AuthException(DB_ERROR);
 
         verificationDAO.deleteByEmail(email);
 
-        return ResponseEntity.ok().body("회원가입 성공");
+        return ResponseEntity.ok().body("메일 전송 성공");
     }
 }

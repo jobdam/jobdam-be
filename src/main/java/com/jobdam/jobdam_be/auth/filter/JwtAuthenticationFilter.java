@@ -1,7 +1,7 @@
 package com.jobdam.jobdam_be.auth.filter;
 
 import com.jobdam.jobdam_be.auth.exception.AuthErrorCode;
-import com.jobdam.jobdam_be.auth.exception.AuthException;
+import com.jobdam.jobdam_be.auth.exception.JwtAuthException;
 import com.jobdam.jobdam_be.auth.service.CustomUserDetails;
 import com.jobdam.jobdam_be.auth.provider.JwtProvider;
 import com.jobdam.jobdam_be.user.dao.UserDAO;
@@ -41,12 +41,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 토큰 만료 여부 확인, 만료시 다음 필터로 넘기지 않음
         try {
             if (jwtProvider.isExpired(accessToken)) {
-                throw new AuthException(AuthErrorCode.EXPIRED_TOKEN);
+                throw new JwtAuthException(AuthErrorCode.EXPIRED_TOKEN);
             }
             // 토큰이 access인지 확인 (발급시 페이로드에 명시)
             String category = jwtProvider.getCategory(accessToken);
             if (!category.equals("ACCESS_TOKEN")) {
-                throw new AuthException(AuthErrorCode.INVALID_TOKEN);
+                throw new JwtAuthException(AuthErrorCode.INVALID_TOKEN);
             }
 
             // HACK: role 값을 추가한다면 해당 코드에도 변경해야 함
@@ -54,7 +54,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // String role = jwtProvider.getRole(accessToken);
             User user = userDAO.findById(userId);
             if (user == null) {
-                throw new AuthException(AuthErrorCode.INVALID_USER);
+                throw new JwtAuthException(AuthErrorCode.INVALID_USER);
             }
 
             CustomUserDetails customUserDetails = new CustomUserDetails(user);
@@ -64,10 +64,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         } catch (ExpiredJwtException e) {
             request.setAttribute("exception", AuthErrorCode.EXPIRED_TOKEN);
-        } catch (AuthException e) {
+        } catch (JwtAuthException e) {
             request.setAttribute("exception", e.getErrorCode());
         } catch (Exception e) {
-            request.setAttribute("exception", new AuthException(AuthErrorCode.INVALID_TOKEN));
+            request.setAttribute("exception", new JwtAuthException(AuthErrorCode.INVALID_TOKEN));
         }
         filterChain.doFilter(request, response);
     }

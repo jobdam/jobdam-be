@@ -3,7 +3,7 @@ package com.jobdam.jobdam_be.auth.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jobdam.jobdam_be.auth.dao.RefreshDAO;
 import com.jobdam.jobdam_be.auth.exception.AuthErrorCode;
-import com.jobdam.jobdam_be.auth.exception.AuthException;
+import com.jobdam.jobdam_be.auth.exception.JwtAuthException;
 import com.jobdam.jobdam_be.auth.provider.JwtProvider;
 import com.jobdam.jobdam_be.auth.service.JwtService;
 import com.jobdam.jobdam_be.global.exception.ErrorResponse;
@@ -105,10 +105,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
 
         AuthErrorCode errorCode;
-        if (failed instanceof AuthException e) {
+        if (failed instanceof JwtAuthException e) {
             errorCode = e.getErrorCode();
         } else if (failed instanceof BadCredentialsException) {
-            errorCode = AuthErrorCode.INVALID_PASSWORD;
+            errorCode = AuthErrorCode.INVALID_EMAIL_OR_PASSWORD;
         } else {
             errorCode = AuthErrorCode.UNKNOWN_ERROR;
         }
