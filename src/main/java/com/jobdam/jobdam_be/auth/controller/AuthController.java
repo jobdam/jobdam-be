@@ -40,4 +40,9 @@ public class AuthController {
     public ResponseEntity<String> signUp(@RequestBody @Valid SignUpDto requestBody) {
         return authService.signUp(requestBody);
     }
+
+    @PostMapping("/reissue")
+    public ResponseEntity<String> reissue(HttpServletRequest request, HttpServletResponse response) {
+        return authService.reissueRefreshToken(request, response);
+    }
 }

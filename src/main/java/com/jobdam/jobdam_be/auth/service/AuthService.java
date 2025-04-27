@@ -32,12 +32,15 @@ import static com.jobdam.jobdam_be.auth.exception.AuthErrorCode.*;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-
+    private final JwtProvider jwtProvider;
     private final EmailProvider emailProvider;
     private final PasswordEncoder passwordEncoder;
 
+    private final JwtService jwtService;
+
     private final EmailVerificationDAO verificationDAO;
     private final UserDAO userDAO;
+    private final RefreshDAO refreshDAO;
 
     public ResponseEntity<Map<String, Boolean>> checkEmail(String email) {
         Map<String, Boolean> response = new HashMap<>();
@@ -118,6 +121,60 @@ public class AuthService {
         if(!isSaved) throw new AuthException(DB_ERROR);
 
         verificationDAO.deleteByEmail(email);
+
+        return ResponseEntity.ok().body("메일 전송 성공");
+    }
+
+    public ResponseEntity<String> reissueRefreshToken(HttpServletRequest request, HttpServletResponse response) throws AuthException {
+        String refresh = null;
+        // 리프레시 토큰이 존재하는지
+        Cookie[] cookies = request.getCookies();
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals("REFRESH_TOKEN")) {
+                refresh = cookie.getValue();
+            }
+        }
+
+        if (refresh == null) {
+            throw new AuthException(TOKEN_NOT_FOUND);
+        }
+
+        // 리프레시 토큰이 만료되었는지
+        try {
+            jwtProvider.isExpired(refresh);
+        } catch (ExpiredJwtException e) {
+            throw new AuthException(EXPIRED_TOKEN);
+        } catch (io.jsonwebtoken.JwtException e) {
+            throw new AuthException(INVALID_SIGNATURE);
+        }
+
+        // 토큰이 refresh인지 확인 (발급시 페이로드에 명시)
+        String category = jwtProvider.getCategory(refresh);
+        if (!category.equals("REFRESH_TOKEN")) {
+            throw new AuthException(INVALID_TOKEN);
+        }
+
+        // DB에 저장되어 있는지 확인
+        Boolean isExist = refreshDAO.existsByRefreshToken(refresh);
+        if (!isExist) {
+            throw new AuthException(INVALID_TOKEN);
+        }
+
+        // JWT 생성
+        Long userId = jwtProvider.getUserId(refresh);
+        String newAccess = jwtProvider.createJwt("ACCESS_TOKEN", userId, 600000L);
+        String newRefresh = jwtProvider.createJwt("REFRESH_TOKEN", userId, 86400000L);
+
+        // Refresh 토큰 저장 DB에 기존의 Refresh 토큰 삭제 후 새 Refresh 토큰 저장
+        refreshDAO.deleteByRefreshToken(refresh);
+        boolean isSaved = jwtService.saveRefreshToken(userId, refresh, 86400000L);
+        if (!isSaved) {
+            throw new AuthException(DB_ERROR);
+        }
+
+        //response
+        response.setHeader("access", newAccess);
+        response.addCookie( jwtService.createRefreshCookie(newRefresh));
 
         return ResponseEntity.ok().body("메일 전송 성공");
     }
