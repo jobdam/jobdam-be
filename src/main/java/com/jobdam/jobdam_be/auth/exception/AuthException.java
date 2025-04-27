@@ -8,6 +8,5 @@ import lombok.Getter;
 public class AuthException extends AbstractException {
     public AuthException(ErrorCode errorCode) {
         super(errorCode);
-
     }
 }

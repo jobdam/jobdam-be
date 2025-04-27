@@ -74,7 +74,7 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers(
-                                "/swagger-ui/**", "/login", "/sign-up", "/check-email", "/email-verification", "/check-verification", "/termsAgreement"
+                                "/swagger-ui/**", "/login", "/sign-up", "/check-email", "/email-verification", "/check-verification","/reissue", "/termsAgreement"
                                 , "/send", "/check-sns"
                         ).permitAll()
                         .requestMatchers(
