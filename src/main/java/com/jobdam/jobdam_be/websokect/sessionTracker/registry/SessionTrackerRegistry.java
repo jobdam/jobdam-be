@@ -11,8 +11,7 @@ import java.util.Set;
 
 //tracker관리를 위해 만든 설정클래스
 //채팅,시그널링 등의 여러 웹소켓연결을 구분하기 위해
-//빈으로 미리 구분(클라이언트와 connect할때 구분할)값 세팅하고
-//이벤트리스너에서 다형성으로 구분
+//빈으로 미리 구분(클라이언트와 connect할때 구분할)값 세팅하고 구분한다
 @Configuration
 public class SessionTrackerRegistry {
     private final Map<String, WebSocketSessionTracker> sessionTrackers = new HashMap<>();

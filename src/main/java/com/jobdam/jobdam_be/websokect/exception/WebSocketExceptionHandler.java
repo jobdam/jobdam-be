@@ -15,7 +15,7 @@ import java.security.Principal;
 @RequiredArgsConstructor
 public class WebSocketExceptionHandler {
     private final SimpMessagingTemplate messagingTemplate;
-
+    //아직 미사용!
     @MessageExceptionHandler(WebSocketException.class)
     public void handleWebSocketException(WebSocketException e, Principal principal) {
 

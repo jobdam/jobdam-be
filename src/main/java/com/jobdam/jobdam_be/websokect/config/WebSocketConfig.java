@@ -1,6 +1,6 @@
 package com.jobdam.jobdam_be.websokect.config;
 
-import com.jobdam.jobdam_be.websokect.interceptor.JwtChannelInterceptor;
+import com.jobdam.jobdam_be.websokect.interceptor.StompChannelInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
@@ -14,7 +14,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final JwtChannelInterceptor jwtChannelInterceptor;
+    private final StompChannelInterceptor stompChannelInterceptor;
     //메시지 브로커 설정 추가가능("/topic/chat, /topic/signal")
     //app은 프론트에서 메세지보낼때 prefix 설정
     //프론트는 /app/sendMessage로 메세지 보내면  @MessageMapping("/sendMessage")로 구분함
@@ -34,6 +34,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration){
-        registration.interceptors(jwtChannelInterceptor);
+        registration.interceptors(stompChannelInterceptor);
     }
 }

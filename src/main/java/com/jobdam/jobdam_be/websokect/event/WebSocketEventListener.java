@@ -19,7 +19,11 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import java.security.Principal;
 import java.util.Objects;
+import java.util.Optional;
 
+//StompChannelInterCeptor에서 모든검증을 완료하고
+//그다음에 리스너가 작동을한다.
+//리스너에서는 오로지 트랙커 세션의 저장 및 삭제를 담당한다.
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -38,29 +42,34 @@ public class WebSocketEventListener {
         String roomId = baseSessionInfo.getRoomId();
         WebSocketSessionTracker tracker = trackerRegistry.getTracker(purpose);
 
-        //트랙커에 세션저장
         tracker.addSession(roomId, accessor.getSessionId());
 
-        //아래유저아이디는 테스트용으로 확인하는거 실제는 지워야함.
-        long userId = 0L;
-        if (accessor.getUser() instanceof UsernamePasswordAuthenticationToken token) {
-            CustomUserDetails userDetails = (CustomUserDetails) token.getPrincipal();
-            userId = Long.parseLong(userDetails.getUsername());
-        }
-        log.info("[접속] purpose={} roomId={} userId={}", purpose,roomId,userId);
+        log.info("[접속] purpose={} roomId={} sessionId={}" ,purpose,roomId,accessor.getSessionId());
     }
+
 
     @EventListener
     public void handleSessionDisconnect(SessionDisconnectEvent event){
+        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
         String sessionId = event.getSessionId();
 
-        //접속이 끊어지면 각 도메인(chat,signal)마다 지워줘야하는데
-        //예외상황 발생시 key값을 못받아올수도 있음.(오로지 sessionId로만 제거필요)
-        //그래서 전체 bean을 가져와서 지워줘야함
-        trackerRegistry.getAllTrackers().forEach(tracker -> {
-            tracker.removeSession(sessionId);
-        });
-        log.info("세션 연결 종료: {}", sessionId);
+        BaseSessionInfo baseSessionInfo = Optional.ofNullable(accessor.getSessionAttributes())
+                .map(attrs -> (BaseSessionInfo) attrs.get("baseSessionInfo"))
+                .orElse(null);
+
+        if (baseSessionInfo != null) {
+            String purpose = baseSessionInfo.getPurpose();
+            WebSocketSessionTracker tracker = trackerRegistry.getTracker(purpose);
+            tracker.removeSession(baseSessionInfo.getRoomId(), sessionId);
+
+            log.info("[웹소켓 정상 종료] purpose : {}, roomId : {}, sessionId : {}",
+                    purpose, baseSessionInfo.getRoomId(), sessionId);
+        } else{
+            trackerRegistry.getAllTrackers().forEach(tracker -> {
+                tracker.removeSession(sessionId);
+            });
+            log.warn("[웹소켓 비정상 종료] sessionId : {}", sessionId);
+        }
     }
 
 }

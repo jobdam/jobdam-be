@@ -11,51 +11,47 @@ import com.jobdam.jobdam_be.websokect.sessionTracker.registry.SessionTrackerRegi
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.util.StringUtil;
-import org.springframework.http.HttpStatus;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
-import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
-
-import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
+//핸드쉐이크 다음 진행되는 인터셉터이다.
+//sockJS 사용시 http문제로 핸드쉐이크에서 jwt를 검증할수가없다.
+//공식문서에서도 channelInterceptor 사용권장.
+//Connect를 통해서 웹소켓 연결시만 작용하며 연결 이후에는 jwt검증을 안한다.
+//jwt, purpose, roomId의 존재, 상태를 검증한다.
+//검증이 완료되면 스프링 시큐리티를 통해 유저정보를 조회해 pricipal 토큰객체로 저장한다.
+//또한 세션속성에 baseSessionInfo(purpose,roomId)를 저장하여 웹소켓 종료시 삭제를 빠르게한다.
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class JwtChannelInterceptor implements ChannelInterceptor {
+public class StompChannelInterceptor implements ChannelInterceptor {
 
     private final JwtProvider jwtProvider;
     private final CustomUserDetailsService customUserDetailsService;
     private final SessionTrackerRegistry trackerRegistry;
 
-
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
-        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);//불변객체를 수정할수 있게함.
+        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);//불변객체를 수정,접근 할 수 있게함.
 
         if(StompCommand.CONNECT.equals(accessor.getCommand())) {//연결 메세지인지 확인!
             String jwtToken = accessor.getFirstNativeHeader("Authorization");
             Long userId = validateJwtToken(jwtToken); //토큰 검증
-
             String purpose = accessor.getFirstNativeHeader("purpose");//match,chat,signal구분
             validatePurpose(purpose);
 
             WebSocketSessionTracker tracker = trackerRegistry.getTracker(purpose);
-            //단계 2 roomID가져오기(클라가 chatroomId : 135ab나 matchroomId : raa3 이런식으로 보내는데)
-            //tracker에서 일치하는 roomkey(chatroomId)를 가져와서 클라헤더에서 id(135ab)를 꺼냄
+
             String roomId = accessor.getFirstNativeHeader(tracker.getRoomKeyHeader());
             validateRoomId(roomId);
-            //유저 정보를 스프링시큐리티랑 결합해서 웹소켓에 넣음
+
             //현재는 db까지 조회해와서 전부넣는구조. 유저id만 넣을것인가. 전부넣을것인가 판단해야함
             CustomUserDetails customUserDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(userId.toString());
             UsernamePasswordAuthenticationToken authenticationToken =
