@@ -1,8 +1,12 @@
 package com.jobdam.jobdam_be.auth.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jobdam.jobdam_be.auth.dao.RefreshDAO;
+import com.jobdam.jobdam_be.auth.exception.AuthErrorCode;
 import com.jobdam.jobdam_be.auth.provider.JwtProvider;
+import com.jobdam.jobdam_be.global.exception.ErrorResponse;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.*;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,10 +47,18 @@ public class CustomLogoutFilter extends GenericFilter {
         return LOGOUT_URI.equals(request.getRequestURI()) && "POST".equalsIgnoreCase(request.getMethod());
     }
 
-    private void handleLogout(HttpServletRequest request, HttpServletResponse response) {
+    private void handleLogout(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String refreshToken = extractRefreshTokenFromCookies(request);
-        if (refreshToken == null || !isValidRefreshToken(refreshToken)) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        try {
+            if (refreshToken == null || !isValidRefreshToken(refreshToken)) {
+                sendErrorResponse(response, AuthErrorCode.TOKEN_NOT_FOUND);
+                return;
+            }
+        } catch (MalformedJwtException e) {
+            sendErrorResponse(response, AuthErrorCode.INVALID_TOKEN);
+            return;
+        } catch (ExpiredJwtException e) {
+            sendErrorResponse(response, AuthErrorCode.EXPIRED_TOKEN);
             return;
         }
 
@@ -73,11 +85,7 @@ public class CustomLogoutFilter extends GenericFilter {
      * 주어진 refresh 토큰이 정상적인지 확인
      */
     private boolean isValidRefreshToken(String refresh) {
-        try {
-            jwtProvider.isExpired(refresh);
-        } catch (ExpiredJwtException e) {
-            return false;
-        }
+        jwtProvider.isExpired(refresh);
 
         return REFRESH_COOKIE_NAME.equals(jwtProvider.getCategory(refresh)) &&
                 refreshDAO.existsByRefreshToken(refresh);
@@ -88,5 +96,20 @@ public class CustomLogoutFilter extends GenericFilter {
         expiredCookie.setMaxAge(0);
         expiredCookie.setPath("/");
         response.addCookie(expiredCookie);
+    }
+
+    // 응답을 처리하는 메서드
+    private void sendErrorResponse(HttpServletResponse response, AuthErrorCode errorCode) throws IOException {
+        response.setStatus(errorCode.getCode());
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .code(errorCode.getCode())
+                .message(errorCode.getMessage()).build();
+
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
 }
