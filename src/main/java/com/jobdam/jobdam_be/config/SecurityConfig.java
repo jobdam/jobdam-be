@@ -77,7 +77,7 @@ public class SecurityConfig {
                                 "/swagger-ui/**", "/login", "/sign-up", "/check-email", "/email-verification", "/check-verification","/reissue", "/termsAgreement"
                                 , "/send", "/check-sns"
                         ).permitAll()
-                        .requestMatchers(
+                        .requestMatchers("/ws/**",
                                 "/css/**", "/js/**", "/img/**", "/static/**", "/favicon.ico",  "/WEB-INF/views/**"
                         ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
