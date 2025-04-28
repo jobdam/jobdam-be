@@ -1,10 +1,8 @@
 package com.jobdam.jobdam_be.auth.filter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jobdam.jobdam_be.auth.dao.RefreshDAO;
-import com.jobdam.jobdam_be.auth.exception.AuthErrorCode;
+import com.jobdam.jobdam_be.auth.exception.JwtAuthException;
 import com.jobdam.jobdam_be.auth.provider.JwtProvider;
-import com.jobdam.jobdam_be.global.exception.ErrorResponse;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.*;
@@ -16,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.Arrays;
+
+import static com.jobdam.jobdam_be.auth.exception.AuthErrorCode.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -51,15 +51,15 @@ public class CustomLogoutFilter extends GenericFilter {
         String refreshToken = extractRefreshTokenFromCookies(request);
         try {
             if (refreshToken == null || !isValidRefreshToken(refreshToken)) {
-                sendErrorResponse(response, AuthErrorCode.TOKEN_NOT_FOUND);
-                return;
+                request.setAttribute("exception", TOKEN_NOT_FOUND);
+                throw new JwtAuthException(TOKEN_NOT_FOUND);
             }
         } catch (MalformedJwtException e) {
-            sendErrorResponse(response, AuthErrorCode.INVALID_TOKEN);
-            return;
+            request.setAttribute("exception", INVALID_TOKEN);
+            throw new JwtAuthException(INVALID_TOKEN);
         } catch (ExpiredJwtException e) {
-            sendErrorResponse(response, AuthErrorCode.EXPIRED_TOKEN);
-            return;
+            request.setAttribute("exception", EXPIRED_TOKEN);
+            throw new JwtAuthException(EXPIRED_TOKEN);
         }
 
         // 로그아웃 처리
@@ -96,20 +96,5 @@ public class CustomLogoutFilter extends GenericFilter {
         expiredCookie.setMaxAge(0);
         expiredCookie.setPath("/");
         response.addCookie(expiredCookie);
-    }
-
-    // 응답을 처리하는 메서드
-    private void sendErrorResponse(HttpServletResponse response, AuthErrorCode errorCode) throws IOException {
-        response.setStatus(errorCode.getCode());
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .code(errorCode.getCode())
-                .message(errorCode.getMessage()).build();
-
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
 }
