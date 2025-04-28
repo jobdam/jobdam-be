@@ -77,13 +77,12 @@ public class SecurityConfig {
                                 "/swagger-ui/**", "/login", "/sign-up", "/check-email", "/email-verification", "/check-verification","/reissue", "/termsAgreement"
                                 , "/send", "/check-sns"
                         ).permitAll()
-                        .requestMatchers(
+                        .requestMatchers("/ws/**",
                                 "/css/**", "/js/**", "/img/**", "/static/**", "/favicon.ico",  "/WEB-INF/views/**"
                         ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
-
                 .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, userDAO), UsernamePasswordAuthenticationFilter.class)
                 .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtProvider, jwtService, refreshDAO, userDAO), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new CustomLogoutFilter(jwtProvider, refreshDAO), LogoutFilter.class)
