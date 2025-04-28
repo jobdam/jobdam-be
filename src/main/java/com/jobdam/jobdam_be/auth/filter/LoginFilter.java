@@ -25,6 +25,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import java.io.IOException;
 import java.util.Map;
 
+import static com.jobdam.jobdam_be.auth.exception.AuthErrorCode.*;
+
 @Slf4j
 @RequiredArgsConstructor
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
@@ -49,15 +51,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             String email = loginData.get("email");
             String password = loginData.get("password");
             if (email == null || password == null) {
-                sendErrorResponse(response, AuthErrorCode.EMPTY_EMAIL_OR_PASSWORD);
-                return null;
+               throw new JwtAuthException(EMPTY_EMAIL_OR_PASSWORD);
             }
             User findUser = userDAO.findByEmail(email);
             if (findUser == null) {
-                sendErrorResponse(response, AuthErrorCode.NOT_FOUND_EMAIL);
-                return null;
+                throw new JwtAuthException(INVALID_EMAIL_OR_PASSWORD);
             }
-
             //스프링 시큐리티에서 userId와 password를 검증하기 위해서는 token에 담아야 함
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(findUser.getId(), password, null);
 
@@ -65,8 +64,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             return authenticationManager.authenticate(authToken);
 
         } catch (IOException e) {
-            response.setStatus(AuthErrorCode.UNSUPPORTED_TYPE.getCode());
-            return null;
+            throw new JwtAuthException(UNSUPPORTED_TYPE);
         }
     }
 
@@ -94,7 +92,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.addCookie(refreshCookie);
 
         boolean isSaved = jwtService.saveRefreshToken(user.getId(), refresh, 86400000L);
-        if (!isSaved) request.setAttribute("exception", AuthErrorCode.DB_ERROR);
+        if (!isSaved) request.setAttribute("exception", DB_ERROR);
 
 
         response.setStatus(HttpServletResponse.SC_OK);
@@ -104,13 +102,11 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
 
-        AuthErrorCode errorCode;
+        AuthErrorCode errorCode = INVALID_REQUEST;
         if (failed instanceof JwtAuthException e) {
             errorCode = e.getErrorCode();
         } else if (failed instanceof BadCredentialsException) {
-            errorCode = AuthErrorCode.INVALID_EMAIL_OR_PASSWORD;
-        } else {
-            errorCode = AuthErrorCode.UNKNOWN_ERROR;
+            errorCode = INVALID_EMAIL_OR_PASSWORD;
         }
         sendErrorResponse(response, errorCode);
     }

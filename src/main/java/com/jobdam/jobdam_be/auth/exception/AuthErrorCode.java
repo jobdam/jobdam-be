@@ -10,10 +10,10 @@ import lombok.ToString;
 @ToString
 public enum AuthErrorCode implements ErrorCode {
     DUPLICATE_EMAIL(400, "이미 가입된 이메일입니다."),
-    NOT_FOUND_EMAIL(400, "이메일을 찾을 수 없습니다."),
     EMPTY_EMAIL_OR_PASSWORD(400, "이메일 또는 비밀번호가 누락되었습니다."),
     INVALID_EMAIL_OR_PASSWORD(400, "이메일 또는 비밀번호가 틀렸습니다."),
 
+    INVALID_REQUEST(401, "로그인에 실패했습니다."),
     UNAUTHORIZED_REQUEST(401, "인증되지 않은 요청입니다."),
     EXPIRED_TOKEN(401, "토큰이 만료되었습니다."),
     INVALID_TOKEN(401, "잘못된 토큰입니다."),
