@@ -12,11 +12,6 @@ public class WebRTCSignalSessionTracker implements WebSocketSessionTracker {
     private final Map<String, Set<String>> sessionMap = new ConcurrentHashMap<>();
 
     @Override
-    public String getRoomKeyHeader(){
-        return "videoChatRoomId"; // STOMP 헤더에서 가져올 키
-    }
-
-    @Override
     public void addSession(String videoChatRoomId, String sessionId) {
         sessionMap.computeIfAbsent(videoChatRoomId,
                 k-> ConcurrentHashMap.newKeySet()).add(sessionId);

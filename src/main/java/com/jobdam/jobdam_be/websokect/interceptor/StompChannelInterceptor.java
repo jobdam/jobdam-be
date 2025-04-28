@@ -6,7 +6,7 @@ import com.jobdam.jobdam_be.auth.service.CustomUserDetailsService;
 import com.jobdam.jobdam_be.websokect.exception.WebSocketException;
 import com.jobdam.jobdam_be.websokect.exception.type.WebSocketErrorCode;
 import com.jobdam.jobdam_be.websokect.sessionTracker.WebSocketSessionTracker;
-import com.jobdam.jobdam_be.websokect.sessionTracker.domain.model.BaseSessionInfo;
+import com.jobdam.jobdam_be.websokect.model.WebSocketBaseSessionInfo;
 import com.jobdam.jobdam_be.websokect.sessionTracker.registry.SessionTrackerRegistry;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,9 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -35,32 +37,23 @@ public class StompChannelInterceptor implements ChannelInterceptor {
 
     private final JwtProvider jwtProvider;
     private final CustomUserDetailsService customUserDetailsService;
-    private final SessionTrackerRegistry trackerRegistry;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
-        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);//불변객체를 수정,접근 할 수 있게함.
+        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);//불변객체를 수정,접근 할 수 있게함. 복사사용
 
         if(StompCommand.CONNECT.equals(accessor.getCommand())) {//연결 메세지인지 확인!
             String jwtToken = accessor.getFirstNativeHeader("Authorization");
             Long userId = validateJwtToken(jwtToken); //토큰 검증
-            String purpose = accessor.getFirstNativeHeader("purpose");//match,chat,signal구분
-            validatePurpose(purpose);
-
-            WebSocketSessionTracker tracker = trackerRegistry.getTracker(purpose);
-
-            String roomId = accessor.getFirstNativeHeader(tracker.getRoomKeyHeader());
-            validateRoomId(roomId);
 
             //현재는 db까지 조회해와서 전부넣는구조. 유저id만 넣을것인가. 전부넣을것인가 판단해야함
             CustomUserDetails customUserDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(userId.toString());
             UsernamePasswordAuthenticationToken authenticationToken =
                     new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
-            accessor.setUser(authenticationToken); //유저 정보
-            Objects.requireNonNull(accessor.getSessionAttributes()).put("baseSessionInfo", BaseSessionInfo.builder()//세션구분정보
-                    .purpose(purpose)
-                    .roomId(roomId)
-                    .build());
+
+            //원본 수정(princpal사용시 쓰레드등 문제때문에)
+            Objects.requireNonNull(MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class))
+                    .setUser(authenticationToken); //유저 정보
         }
         return message;
     }
@@ -87,18 +80,4 @@ public class StompChannelInterceptor implements ChannelInterceptor {
         }
     }
 
-    private void validatePurpose(String purpose){
-        if(Objects.isNull(purpose)){
-            throw new WebSocketException(WebSocketErrorCode.MISSING_PURPOSE);
-        }
-        if(!trackerRegistry.checkKey(purpose)){
-            throw new WebSocketException(WebSocketErrorCode.INVALID_PURPOSE);
-        }
-    }
-
-    private void validateRoomId(String roomId){
-        if(Objects.isNull(roomId)){
-            throw new WebSocketException(WebSocketErrorCode.MISSING_ROOM_ID);
-        }
-    }
 }

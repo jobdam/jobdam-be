@@ -3,21 +3,20 @@ package com.jobdam.jobdam_be.websokect.event;
 import com.jobdam.jobdam_be.auth.service.CustomUserDetails;
 import com.jobdam.jobdam_be.websokect.exception.WebSocketException;
 import com.jobdam.jobdam_be.websokect.exception.type.WebSocketErrorCode;
-import com.jobdam.jobdam_be.websokect.sessionTracker.domain.model.BaseSessionInfo;
+import com.jobdam.jobdam_be.websokect.model.WebSocketBaseSessionInfo;
 import com.jobdam.jobdam_be.websokect.sessionTracker.registry.SessionTrackerRegistry;
 import com.jobdam.jobdam_be.websokect.sessionTracker.WebSocketSessionTracker;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
-import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
+import org.springframework.web.socket.messaging.SessionSubscribeEvent;
+import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 
-import java.security.Principal;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -35,41 +34,107 @@ public class WebSocketEventListener {
     public void handleSessionConnect(SessionConnectEvent event){
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
 
-        BaseSessionInfo baseSessionInfo = (BaseSessionInfo) Objects
-                .requireNonNull(accessor.getSessionAttributes()).get("baseSessionInfo");
-
-        String purpose = baseSessionInfo.getPurpose();
-        String roomId = baseSessionInfo.getRoomId();
-        WebSocketSessionTracker tracker = trackerRegistry.getTracker(purpose);
-
-        tracker.addSession(roomId, accessor.getSessionId());
-
-        log.info("[접속] purpose={} roomId={} sessionId={}" ,purpose,roomId,accessor.getSessionId());
+        log.info("[웹소켓 연결!] sessionId={}", accessor.getSessionId());
     }
 
+    @EventListener
+    public void handleSessionSubscribe(SessionSubscribeEvent event){
+        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
 
+        WebSocketBaseSessionInfo webSocketBaseSessionInfo =
+                buildSessionInfoFromDestination(accessor.getDestination());
+
+        if(Objects.isNull(webSocketBaseSessionInfo)){//user를 구독한 경우!(1:1) 트레커저장 필요X
+            log.info("[웹소켓 user 구독] sessionId={}", accessor.getSessionId());
+            return;
+        }
+        Objects.requireNonNull(accessor.getSessionAttributes())
+                .put("webSocketBaseSessionInfo", webSocketBaseSessionInfo);
+
+        String purpose = webSocketBaseSessionInfo.getPurpose();
+        String roomId = webSocketBaseSessionInfo.getRoomId();
+
+        trackerRegistry.getTracker(purpose)
+               .addSession(roomId, accessor.getSessionId());
+
+        log.info("[웹소켓 topic 구독 완료!] purpose={} roomId={} sessionId={}" ,purpose,roomId,accessor.getSessionId());
+    }
+
+    @EventListener
+    public void handleSessionUnsubscribe(SessionUnsubscribeEvent event) {//구독 취소!
+        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
+        String sessionId = accessor.getSessionId();
+        removeSession(accessor,sessionId,"[웹소켓 구독취소]");
+    }
+
+    //강제 종료시!! 현재 하나만지움
+    //추가 구독 발생시 구조변경해줘야함
+    //ex)알림,에러 구독시 변경필요
+    //어떻게 될지몰라 일단그대로쓴다..
     @EventListener
     public void handleSessionDisconnect(SessionDisconnectEvent event){
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-        String sessionId = event.getSessionId();
+        String sessionId = event.getSessionId(); //accessor을 못받아 올 수 있으므로 event에서 세션아이디 가져옴
+        removeSession(accessor,sessionId,"[웹소켓 DISCONNECT]");
+    }
+    //이벤트리스너 끝 ---------------
 
-        BaseSessionInfo baseSessionInfo = Optional.ofNullable(accessor.getSessionAttributes())
-                .map(attrs -> (BaseSessionInfo) attrs.get("baseSessionInfo"))
-                .orElse(null);
+   //아래메소드 들은 유틸메소드
+    private WebSocketBaseSessionInfo buildSessionInfoFromDestination(String destination){
+        if(Objects.isNull(destination))
+            throw new WebSocketException(WebSocketErrorCode.MISSING_SUBSCRIBE);
 
-        if (baseSessionInfo != null) {
-            String purpose = baseSessionInfo.getPurpose();
-            WebSocketSessionTracker tracker = trackerRegistry.getTracker(purpose);
-            tracker.removeSession(baseSessionInfo.getRoomId(), sessionId);
+        String[] parts = destination.split("/",5);//악의적인 요청시 제한5
+        String brokerPrefix = parts[1];//topic or user (브로드캐스트 or 1:1)
 
-            log.info("[웹소켓 정상 종료] purpose : {}, roomId : {}, sessionId : {}",
-                    purpose, baseSessionInfo.getRoomId(), sessionId);
-        } else{
-            trackerRegistry.getAllTrackers().forEach(tracker -> {
-                tracker.removeSession(sessionId);
-            });
-            log.warn("[웹소켓 비정상 종료] sessionId : {}", sessionId);
+        if(!"topic".equals(brokerPrefix)) {
+            if("user".equals(brokerPrefix)) {//유저면 구독보관 필요X
+                return null;
+            }
+            throw new WebSocketException(WebSocketErrorCode.INVALID_BROKER_PREFIX);//잘못 온 경우
+        }
+
+        String purpose = parts[2]; //matching, chat, signal
+        String roomId = parts[3];
+
+        validatePurposeAndRoomId(purpose,roomId);
+
+        return WebSocketBaseSessionInfo.builder()//세션구분정보
+                .purpose(purpose)
+                .roomId(roomId)
+                .build();
+    }
+
+    private void validatePurposeAndRoomId(String purpose, String roomId){
+        if(Objects.isNull(purpose) || purpose.isBlank()){
+            throw new WebSocketException(WebSocketErrorCode.MISSING_PURPOSE);
+        }
+        if(!trackerRegistry.checkKey(purpose)){
+            throw new WebSocketException(WebSocketErrorCode.INVALID_PURPOSE);
+        }
+        if(Objects.isNull(roomId) || roomId.isBlank()){
+            throw new WebSocketException(WebSocketErrorCode.MISSING_ROOM_ID);
         }
     }
 
+    // 제거메서드
+    private void removeSession(StompHeaderAccessor accessor, String sessionId, String Type) {
+
+        WebSocketBaseSessionInfo webSocketBaseSessionInfo = Optional.ofNullable(accessor.getSessionAttributes())
+                .map(attrs -> (WebSocketBaseSessionInfo) attrs.get("webSocketBaseSessionInfo"))
+                .orElse(null);
+
+        if (Objects.isNull(webSocketBaseSessionInfo)) {
+            trackerRegistry.getAllTrackers().forEach(tracker -> {
+                tracker.removeSession(sessionId);
+            });
+            log.warn("{}(비정상루트)] sessionId = {}",Type, sessionId);
+        } else{
+            trackerRegistry.getTracker(webSocketBaseSessionInfo.getPurpose())
+                    .removeSession(webSocketBaseSessionInfo.getRoomId(), sessionId);
+
+            log.info("{} purpose = {}, roomId = {}, sessionId = {}", Type,
+                    webSocketBaseSessionInfo.getPurpose(), webSocketBaseSessionInfo.getRoomId(), sessionId);
+        }
+    }
 }

@@ -1,4 +1,4 @@
-package com.jobdam.jobdam_be.websokect.sessionTracker.domain.model;
+package com.jobdam.jobdam_be.websokect.model.domain;
 
 import lombok.*;
 

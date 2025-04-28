@@ -11,9 +11,13 @@ public enum WebSocketErrorCode implements ErrorCode {
     JWT_INVALID(4002, "[웹소켓 연결 에러]JWT 검증 실패"),
     JWT_UNKNOWN_ERROR(4003, "[웹소켓 연결 에러]JWT 검증 단계에서 알 수 없는 에러 발생"),
     JWT_EXPIRED(4004, "[웹소켓 연결 에러]JWT 만료됨"),
+
+    MISSING_SUBSCRIBE(400, "[웹소켓 연결 에러]구독 경로가 없습니다."),
+    INVALID_BROKER_PREFIX(400,"[웹소켓 연결 에러]유효하지 않은 brokerPrefix입니다."),
     MISSING_PURPOSE(400, "[웹소켓 연결 에러]목적(purpose) 헤더가 없습니다."),
     INVALID_PURPOSE(400, "[웹소켓 연결 에러]유효하지 않은 purpose입니다."),
-    MISSING_ROOM_ID(400, "[웹소켓 연결 에러]roomId 헤더가 없습니다.");
+    MISSING_ROOM_ID(400, "[웹소켓 연결 에러]roomId 정보가 없습니다.");
+
 
 
 
