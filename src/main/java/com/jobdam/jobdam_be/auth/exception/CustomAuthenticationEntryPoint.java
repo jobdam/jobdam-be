@@ -22,10 +22,13 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
                          HttpServletResponse response,
                          AuthenticationException authException) throws IOException {
         AuthErrorCode errorCode = UNAUTHORIZED_REQUEST;
-
-        // 기본적으로 UNAUTHORIZED 에러코드 사용
-        if(request.getAttribute("exception") != null && request.getAttribute("exception") instanceof AuthErrorCode e)
+        if (authException instanceof JwtAuthException ex) {
+            errorCode = ex.getErrorCode();  // errorCode 꺼내기
+        }
+        else if (request.getAttribute("exception") != null && request.getAttribute("exception") instanceof AuthErrorCode e) {
+            log.info(e.getMessage(), e);
             errorCode = e;
+        }
 
         sendErrorResponse(response, errorCode);
     }
