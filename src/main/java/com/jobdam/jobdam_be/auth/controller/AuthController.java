@@ -22,7 +22,7 @@ public class AuthController {
 
 
     @GetMapping("/check-email")
-    public ResponseEntity<Map<String, Boolean>> checkEmail(@RequestBody String email) {
+    public ResponseEntity<Map<String, Boolean>> checkEmail(@RequestParam String email) {
         return authService.checkEmail(email);
     }
 

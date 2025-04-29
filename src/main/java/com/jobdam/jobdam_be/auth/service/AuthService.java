@@ -21,10 +21,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static com.jobdam.jobdam_be.auth.exception.AuthErrorCode.*;
 
@@ -47,32 +49,38 @@ public class AuthService {
         boolean isDuplicate = userDAO.existsByEmail(email);
 
         response.put("isDuplicate", isDuplicate);
-
         return ResponseEntity.ok().body(response);
     }
 
+    @Transactional
     public ResponseEntity<String> emailVerification(EmailVerificationDto dto) {
         try {
+            // 기존에 존재하는 이메일인지
             String email = dto.getEmail();
             boolean isExistId = userDAO.existsByEmail(email);
-            if (isExistId) throw new AuthException(DUPLICATE_EMAIL);
+            if (isExistId) {
+                throw new AuthException(DUPLICATE_EMAIL);
+            }
 
             String verificationCode = VerificationCode.getVerificationCode();
-            boolean isSuccess = emailProvider.sendVerificationMail(email, verificationCode);
-            if (!isSuccess) throw new AuthException(MAIL_SEND_ERROR);
+            boolean sent = emailProvider.sendVerificationMail(email, verificationCode).get(5, TimeUnit.SECONDS);
 
-            EmailVerification verification = new EmailVerification(email,
+            if (!sent) {
+                throw new AuthException(MAIL_SEND_ERROR);
+            }
+
+            EmailVerification verification = new EmailVerification(
+                    email,
                     verificationCode,
                     new Timestamp(System.currentTimeMillis()));
 
             verificationDAO.saveOrUpdateVerification(verification);
-
+            return ResponseEntity.ok().body("메일이 성공적으로 전송되었습니다.");
+        } catch (AuthException e) {
+            throw e;
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
             throw new AuthException(DB_ERROR);
-
         }
-        return ResponseEntity.ok().body("메일 전송 성공");
     }
 
     public ResponseEntity<String> checkVerification(CheckVerificationDto dto) {
@@ -80,21 +88,15 @@ public class AuthService {
             String email = dto.getEmail();
             String code = dto.getCode();
 
-            EmailVerification emailVerification = verificationDAO.findByEmail(email);
-            if (emailVerification == null) throw new AuthException(INVALID_EMAIL_OR_PASSWORD);
-
-            boolean isMatched = emailVerification.getEmail().equals(email) && emailVerification.getCode().equals(code);
-            if (!isMatched) throw new AuthException(INVALID_EMAIL_OR_PASSWORD);
+            validateEmailAndCode(email, code);
 
         } catch (AuthException e) {
-            log.error(e.getMessage(), e);
-            throw new AuthException(e.getErrorCode());
+            throw e;
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
             throw new AuthException(DB_ERROR);
         }
 
-        return ResponseEntity.ok().body("메일 전송 성공");
+        return ResponseEntity.ok().body("인증이 확인되었습니다.");
     }
 
     public ResponseEntity<String> signUp(SignUpDto dto) {
@@ -103,13 +105,11 @@ public class AuthService {
         String code = dto.getCode();
 
         boolean isExistId = userDAO.existsByEmail(email);
-        if (isExistId) throw new AuthException(DUPLICATE_EMAIL);
+        if (isExistId) {
+            throw new AuthException(DUPLICATE_EMAIL);
+        }
 
-        EmailVerification emailVerification = verificationDAO.findByEmail(email);
-
-        if (emailVerification == null) throw new AuthException(EMAIL_VERIFICATION_REQUIRED);
-        boolean isMatched = emailVerification.getEmail().equals(email) && emailVerification.getCode().equals(code);
-        if (!isMatched) throw new AuthException(INVALID_EMAIL_OR_PASSWORD);
+        validateEmailAndCode(email, code);
 
         String password = dto.getPassword();
         String encodedPassword = passwordEncoder.encode(password);
@@ -118,11 +118,32 @@ public class AuthService {
         User user = new User(dto);
 
         boolean isSaved = userDAO.save(user);
-        if(!isSaved) throw new AuthException(DB_ERROR);
+        if (!isSaved) {
+            throw new AuthException(DB_ERROR);
+        }
 
         verificationDAO.deleteByEmail(email);
 
         return ResponseEntity.ok().body("메일 전송 성공");
+    }
+
+    private void validateEmailAndCode(String email, String code) {
+        // 시간 제한 (예: 5분)
+//        long timeElapsed = System.currentTimeMillis() - stored.getCreatedAt().getTime();
+//        if (timeElapsed > TimeUnit.MINUTES.toMillis(5)) {
+//            emailVerificationMapper.deleteByEmail(email);
+//            throw new AuthException("인증 코드가 만료되었습니다.");
+//        }
+
+        EmailVerification emailVerification = verificationDAO.findByEmail(email);
+        if (emailVerification == null) {
+            throw new AuthException(EMAIL_VERIFICATION_REQUIRED);
+        }
+
+        boolean isMatched = emailVerification.getEmail().equals(email) && emailVerification.getCode().equals(code);
+        if (!isMatched) {
+            throw new AuthException(INVALID_EMAIL_OR_PASSWORD);
+        }
     }
 
     public ResponseEntity<String> reissueRefreshToken(HttpServletRequest request, HttpServletResponse response) throws AuthException {
@@ -155,7 +176,7 @@ public class AuthService {
         }
 
         // DB에 저장되어 있는지 확인
-        Boolean isExist = refreshDAO.existsByRefreshToken(refresh);
+        boolean isExist = refreshDAO.existsByRefreshToken(refresh);
         if (!isExist) {
             throw new AuthException(INVALID_TOKEN);
         }
@@ -173,8 +194,8 @@ public class AuthService {
         }
 
         //response
-        response.setHeader("access", newAccess);
-        response.addCookie( jwtService.createRefreshCookie(newRefresh));
+        response.setHeader("ACCESS_TOKEN", newAccess);
+        response.addCookie(jwtService.createRefreshCookie(newRefresh));
 
         return ResponseEntity.ok().body("메일 전송 성공");
     }
