@@ -44,8 +44,8 @@ public class WebSocketEventListener {
         WebSocketBaseSessionInfo webSocketBaseSessionInfo =
                 buildSessionInfoFromDestination(accessor.getDestination());
 
-        if(Objects.isNull(webSocketBaseSessionInfo)){//user를 구독한 경우!(1:1) 트레커저장 필요X
-            log.info("[웹소켓 user 구독] sessionId={}", accessor.getSessionId());
+        if(Objects.isNull(webSocketBaseSessionInfo)){
+            log.info("[웹소켓 error 구독] sessionId={}", accessor.getSessionId());
             return;
         }
         Objects.requireNonNull(accessor.getSessionAttributes())
@@ -57,7 +57,7 @@ public class WebSocketEventListener {
         trackerRegistry.getTracker(purpose)
                .addSession(roomId, accessor.getSessionId());
 
-        log.info("[웹소켓 topic 구독 완료!] purpose={} roomId={} sessionId={}" ,purpose,roomId,accessor.getSessionId());
+        log.info("[웹소켓 구독 완료!] purpose={} roomId={} sessionId={}" ,purpose,roomId,accessor.getSessionId());
     }
 
     @EventListener
@@ -81,23 +81,30 @@ public class WebSocketEventListener {
 
    //아래메소드 들은 유틸메소드
     private WebSocketBaseSessionInfo buildSessionInfoFromDestination(String destination){
-        if(Objects.isNull(destination))
+        if(Objects.isNull(destination) || destination.isBlank()) {
             throw new WebSocketException(WebSocketErrorCode.MISSING_SUBSCRIBE);
-
-        String[] parts = destination.split("/",5);//악의적인 요청시 제한5
+        }
+        System.out.println(destination);
+        String[] parts = destination.split("/",6);//악의적인 요청시 제한5
         String brokerPrefix = parts[1];//topic or user (브로드캐스트 or 1:1)
 
-        if(!"topic".equals(brokerPrefix)) {
-            if("user".equals(brokerPrefix)) {//유저면 구독보관 필요X
-                return null;
-            }
+        String purpose;
+        String roomId;
+        if(! ("topic".equals(brokerPrefix) || "user".equals(brokerPrefix) )) {
             throw new WebSocketException(WebSocketErrorCode.INVALID_BROKER_PREFIX);//잘못 온 경우
         }
 
-        String purpose = parts[2]; //matching, chat, signal
-        String roomId = parts[3];
-
+        if("topic".equals(brokerPrefix)) {
+            purpose = parts[2]; //matching, chat, signal
+            roomId = parts[3];
+        }else {
+            purpose = parts[3];
+            roomId = parts[4];
+            if("error".equals(purpose))
+                return null;
+        }
         validatePurposeAndRoomId(purpose,roomId);
+
 
         return WebSocketBaseSessionInfo.builder()//세션구분정보
                 .purpose(purpose)
