@@ -21,10 +21,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static com.jobdam.jobdam_be.auth.exception.AuthErrorCode.*;
 
@@ -51,28 +53,35 @@ public class AuthService {
         return ResponseEntity.ok().body(response);
     }
 
+    @Transactional
     public ResponseEntity<String> emailVerification(EmailVerificationDto dto) {
         try {
+            // 기존에 존재하는 이메일인지
             String email = dto.getEmail();
             boolean isExistId = userDAO.existsByEmail(email);
-            if (isExistId) throw new AuthException(DUPLICATE_EMAIL);
+            if (isExistId) {
+                throw new AuthException(DUPLICATE_EMAIL);
+            }
 
             String verificationCode = VerificationCode.getVerificationCode();
-            boolean isSuccess = emailProvider.sendVerificationMail(email, verificationCode);
-            if (!isSuccess) throw new AuthException(MAIL_SEND_ERROR);
+            boolean sent = emailProvider.sendVerificationMail(email, verificationCode).get(5, TimeUnit.SECONDS);
 
-            EmailVerification verification = new EmailVerification(email,
+            if (!sent) {
+                throw new AuthException(MAIL_SEND_ERROR);
+            }
+
+            EmailVerification verification = new EmailVerification(
+                    email,
                     verificationCode,
                     new Timestamp(System.currentTimeMillis()));
 
             verificationDAO.saveOrUpdateVerification(verification);
-
+            return ResponseEntity.ok().body("메일이 성공적으로 전송되었습니다.");
+        } catch (AuthException e) {
+            throw e;
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
             throw new AuthException(DB_ERROR);
-
         }
-        return ResponseEntity.ok().body("메일 전송 성공");
     }
 
     public ResponseEntity<String> checkVerification(CheckVerificationDto dto) {
