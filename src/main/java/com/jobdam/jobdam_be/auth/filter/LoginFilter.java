@@ -2,11 +2,9 @@ package com.jobdam.jobdam_be.auth.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jobdam.jobdam_be.auth.dao.RefreshDAO;
-import com.jobdam.jobdam_be.auth.exception.AuthErrorCode;
 import com.jobdam.jobdam_be.auth.exception.JwtAuthException;
 import com.jobdam.jobdam_be.auth.provider.JwtProvider;
 import com.jobdam.jobdam_be.auth.service.JwtService;
-import com.jobdam.jobdam_be.global.exception.ErrorResponse;
 import com.jobdam.jobdam_be.user.dao.UserDAO;
 import com.jobdam.jobdam_be.user.model.User;
 import jakarta.servlet.FilterChain;
@@ -24,6 +22,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import java.io.IOException;
 import java.util.Map;
+
+import static com.jobdam.jobdam_be.auth.exception.AuthErrorCode.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -49,15 +49,14 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             String email = loginData.get("email");
             String password = loginData.get("password");
             if (email == null || password == null) {
-                sendErrorResponse(response, AuthErrorCode.EMPTY_EMAIL_OR_PASSWORD);
-                return null;
+                request.setAttribute("exception", EMPTY_EMAIL_OR_PASSWORD);
+                throw new JwtAuthException(EMPTY_EMAIL_OR_PASSWORD);
             }
             User findUser = userDAO.findByEmail(email);
             if (findUser == null) {
-                sendErrorResponse(response, AuthErrorCode.NOT_FOUND_EMAIL);
-                return null;
+                request.setAttribute("exception", INVALID_EMAIL_OR_PASSWORD);
+                throw new JwtAuthException(INVALID_EMAIL_OR_PASSWORD);
             }
-
             //스프링 시큐리티에서 userId와 password를 검증하기 위해서는 token에 담아야 함
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(findUser.getId(), password, null);
 
@@ -65,8 +64,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             return authenticationManager.authenticate(authToken);
 
         } catch (IOException e) {
-            response.setStatus(AuthErrorCode.UNSUPPORTED_TYPE.getCode());
-            return null;
+            request.setAttribute("exception", UNSUPPORTED_TYPE);
+            throw new JwtAuthException(UNSUPPORTED_TYPE);
         }
     }
 
@@ -94,7 +93,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.addCookie(refreshCookie);
 
         boolean isSaved = jwtService.saveRefreshToken(user.getId(), refresh, 86400000L);
-        if (!isSaved) request.setAttribute("exception", AuthErrorCode.DB_ERROR);
+        if (!isSaved) request.setAttribute("exception", DB_ERROR);
 
 
         response.setStatus(HttpServletResponse.SC_OK);
@@ -103,30 +102,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     //로그인 실패시 실행하는 메소드
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
-
-        AuthErrorCode errorCode;
         if (failed instanceof JwtAuthException e) {
-            errorCode = e.getErrorCode();
+            throw e;
         } else if (failed instanceof BadCredentialsException) {
-            errorCode = AuthErrorCode.INVALID_EMAIL_OR_PASSWORD;
-        } else {
-            errorCode = AuthErrorCode.UNKNOWN_ERROR;
+            request.setAttribute("exception", INVALID_EMAIL_OR_PASSWORD);
+            throw new JwtAuthException(INVALID_EMAIL_OR_PASSWORD);
+        }else {
+            throw new JwtAuthException(UNKNOWN_ERROR);
         }
-        sendErrorResponse(response, errorCode);
     }
-
-        // 응답을 처리하는 메서드
-        private void sendErrorResponse(HttpServletResponse response, AuthErrorCode errorCode) throws IOException {
-            response.setStatus(errorCode.getCode());
-            response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
-
-            ErrorResponse errorResponse = ErrorResponse.builder()
-                    .code(errorCode.getCode())
-                    .message(errorCode.getMessage()).build();
-
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
-        }
 }
