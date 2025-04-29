@@ -5,9 +5,6 @@ import com.jobdam.jobdam_be.auth.service.CustomUserDetails;
 import com.jobdam.jobdam_be.auth.service.CustomUserDetailsService;
 import com.jobdam.jobdam_be.websokect.exception.WebSocketException;
 import com.jobdam.jobdam_be.websokect.exception.type.WebSocketErrorCode;
-import com.jobdam.jobdam_be.websokect.sessionTracker.WebSocketSessionTracker;
-import com.jobdam.jobdam_be.websokect.model.WebSocketBaseSessionInfo;
-import com.jobdam.jobdam_be.websokect.sessionTracker.registry.SessionTrackerRegistry;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +15,6 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;

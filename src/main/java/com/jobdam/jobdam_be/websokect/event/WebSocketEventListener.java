@@ -1,16 +1,13 @@
 package com.jobdam.jobdam_be.websokect.event;
 
-import com.jobdam.jobdam_be.auth.service.CustomUserDetails;
 import com.jobdam.jobdam_be.websokect.exception.WebSocketException;
 import com.jobdam.jobdam_be.websokect.exception.type.WebSocketErrorCode;
 import com.jobdam.jobdam_be.websokect.model.WebSocketBaseSessionInfo;
-import com.jobdam.jobdam_be.websokect.sessionTracker.registry.SessionTrackerRegistry;
-import com.jobdam.jobdam_be.websokect.sessionTracker.WebSocketSessionTracker;
+import com.jobdam.jobdam_be.websokect.sessionTracker.SessionTrackerRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
