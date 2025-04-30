@@ -81,7 +81,6 @@ public class WebSocketEventListener {
         if(Objects.isNull(destination) || destination.isBlank()) {
             throw new WebSocketException(WebSocketErrorCode.MISSING_SUBSCRIBE);
         }
-        System.out.println(destination);
         String[] parts = destination.split("/",6);//악의적인 요청시 제한5
         String brokerPrefix = parts[1];//topic or user (브로드캐스트 or 1:1)
 
@@ -101,7 +100,6 @@ public class WebSocketEventListener {
                 return null;
         }
         validatePurposeAndRoomId(purpose,roomId);
-
 
         return WebSocketBaseSessionInfo.builder()//세션구분정보
                 .purpose(purpose)
