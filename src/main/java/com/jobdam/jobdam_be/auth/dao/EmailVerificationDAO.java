@@ -5,6 +5,8 @@ import com.jobdam.jobdam_be.auth.model.EmailVerification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 @RequiredArgsConstructor
 public class EmailVerificationDAO {
@@ -14,8 +16,11 @@ public class EmailVerificationDAO {
         verificationMapper.saveOrUpdateVerification(certification);
     }
 
-    public EmailVerification findByEmail(String email) {
+    public Optional<EmailVerification> findByEmail(String email) {
         return verificationMapper.findByEmail(email);
+    }
+    public Optional<EmailVerification> findByToken(String token) {
+        return verificationMapper.findByToken(token);
     }
 
     public void deleteByEmail(String email) {

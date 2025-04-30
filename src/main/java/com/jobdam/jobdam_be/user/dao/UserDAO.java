@@ -5,12 +5,14 @@ import com.jobdam.jobdam_be.user.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 @RequiredArgsConstructor
 public class UserDAO {
     private final UserMapper userMapper;
 
-    public User findById(Long id) {
+    public Optional<User> findById(Long id) {
         return userMapper.findById(id);
     }
 
@@ -22,7 +24,11 @@ public class UserDAO {
         return userMapper.save(user) > 0;
     }
 
-    public User findByEmail(String email) {
+    public Optional<User> findByEmail(String email) {
         return userMapper.findByEmail(email);
+    }
+
+    public void updateCreatedAtByEmail(String email) {
+        userMapper.updateCreatedAtByEmail(email);
     }
 }

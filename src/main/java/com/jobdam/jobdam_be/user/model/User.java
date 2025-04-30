@@ -18,8 +18,9 @@ public class User {
     private Timestamp birthday;
     private String targetCompanySize;
     private String isDeleted;
-    private String backlist;
+    private String blacklist;
     private String profileImgUrl;
+    private Timestamp createdAt;
     private String jobDetailCode;
     private String jobCode;
 

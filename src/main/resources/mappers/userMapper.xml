@@ -12,7 +12,7 @@
             birthday,
             target_company_size,
             is_deleted,
-            backlist,
+            blacklist,
             profile_img_url,
             job_detail_code,
             job_code
@@ -24,18 +24,25 @@
                    #{birthday},
                    #{targetCompanySize},
                    #{isDeleted},
-                   #{backlist},
+                   #{blacklist},
                    #{profileImgUrl},
                    #{jobDetailCode},
                    #{jobCode}
                )
     </insert>
+
+    <update id="updateCreatedAtByEmail">
+        UPDATE user SET created_at = now() WHERE email = #{email}
+    </update>
+
     <select id="findById" resultType="com.jobdam.jobdam_be.user.model.User">
     select * from user where id = #{id}
     </select>
+
     <select id="existsByEmail" resultType="java.lang.Boolean">
         SELECT  COUNT(*) > 0 FROM user WHERE email = #{email}
     </select>
+
     <select id="findByEmail" resultType="com.jobdam.jobdam_be.user.model.User">
         select * from user where email = #{email}
     </select>

@@ -22,6 +22,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.jobdam.jobdam_be.auth.exception.AuthErrorCode.*;
 
@@ -52,13 +53,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
                 request.setAttribute("exception", EMPTY_EMAIL_OR_PASSWORD);
                 throw new JwtAuthException(EMPTY_EMAIL_OR_PASSWORD);
             }
-            User findUser = userDAO.findByEmail(email);
-            if (findUser == null) {
+            Optional<User> findUser = userDAO.findByEmail(email);
+            if (findUser.isEmpty()) {
                 request.setAttribute("exception", INVALID_EMAIL_OR_PASSWORD);
                 throw new JwtAuthException(INVALID_EMAIL_OR_PASSWORD);
             }
             //스프링 시큐리티에서 userId와 password를 검증하기 위해서는 token에 담아야 함
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(findUser.getId(), password, null);
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(findUser.get().getId(), password, null);
 
             //token에 담은 검증을 위한 AuthenticationManager로 전달
             return authenticationManager.authenticate(authToken);
@@ -74,7 +75,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) {
         //유저 정보
         Long userId = Long.valueOf(authentication.getName());
-        User user = userDAO.findById(userId);
+
         // HACK: role 값 사용시 사용
         // Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         // Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
@@ -82,7 +83,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         // String role = auth.getAuthority();
 
         // 기존 refresh 토큰 삭제
-        refreshDAO.deleteByUserId(user.getId());
+        refreshDAO.deleteByUserId(userId);
 
         //토큰 생성
         String access = jwtProvider.createJwt("ACCESS_TOKEN", userId, 600000L);        // 10분
@@ -92,7 +93,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         Cookie refreshCookie = jwtService.createRefreshCookie(refresh);
         response.addCookie(refreshCookie);
 
-        boolean isSaved = jwtService.saveRefreshToken(user.getId(), refresh, 86400000L);
+        boolean isSaved = jwtService.saveRefreshToken(userId, refresh, 86400000L);
         if (!isSaved) {
             request.setAttribute("exception", DB_ERROR);
         }
