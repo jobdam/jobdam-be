@@ -3,7 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.jobdam.jobdam_be.auth.mapper.VerificationMapper">
+<mapper namespace="com.jobdam.jobdam_be.auth.mapper.EmailVerificationMapper">
 
     <insert id="saveOrUpdateVerification" parameterType="com.jobdam.jobdam_be.auth.model.EmailVerification">
         INSERT INTO email_verification (email, code, created_at)

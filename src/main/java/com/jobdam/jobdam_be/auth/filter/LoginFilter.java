@@ -93,7 +93,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.addCookie(refreshCookie);
 
         boolean isSaved = jwtService.saveRefreshToken(user.getId(), refresh, 86400000L);
-        if (!isSaved) request.setAttribute("exception", DB_ERROR);
+        if (!isSaved) {
+            request.setAttribute("exception", DB_ERROR);
+        }
 
 
         response.setStatus(HttpServletResponse.SC_OK);
@@ -101,13 +103,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     //로그인 실패시 실행하는 메소드
     @Override
-    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
         if (failed instanceof JwtAuthException e) {
             throw e;
         } else if (failed instanceof BadCredentialsException) {
             request.setAttribute("exception", INVALID_EMAIL_OR_PASSWORD);
             throw new JwtAuthException(INVALID_EMAIL_OR_PASSWORD);
-        }else {
+        } else {
             throw new JwtAuthException(UNKNOWN_ERROR);
         }
     }

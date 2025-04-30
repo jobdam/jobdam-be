@@ -1,6 +1,7 @@
 package com.jobdam.jobdam_be.auth.exception;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jobdam.jobdam_be.global.exception.type.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +22,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     public void commence(HttpServletRequest request,
                          HttpServletResponse response,
                          AuthenticationException authException) throws IOException {
-        AuthErrorCode errorCode = UNAUTHORIZED_REQUEST;
+        ErrorCode errorCode = UNAUTHORIZED_REQUEST;
         if (authException instanceof JwtAuthException ex) {
             errorCode = ex.getErrorCode();  // errorCode 꺼내기
         }
@@ -33,7 +34,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         sendErrorResponse(response, errorCode);
     }
 
-    private void sendErrorResponse(HttpServletResponse response, AuthErrorCode errorCode) throws IOException {
+    private void sendErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
         response.setStatus(errorCode.getCode());
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
