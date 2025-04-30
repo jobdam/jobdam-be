@@ -1,5 +1,8 @@
 package com.jobdam.jobdam_be.websokect.sessionTracker.domain;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Maps;
 import com.jobdam.jobdam_be.websokect.sessionTracker.WebSocketSessionTracker;
 import org.springframework.stereotype.Component;
 
@@ -8,13 +11,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component("signal")
 public class WebRTCSignalSessionTracker implements WebSocketSessionTracker {
-    // peerId 기준으로 세션 목록 관리
+    // 방번호/세션set
     private final Map<String, Set<String>> sessionMap = new ConcurrentHashMap<>();
-
-    @Override
-    public String getRoomKeyHeader(){
-        return "videoChatRoomId"; // STOMP 헤더에서 가져올 키
-    }
+    //세션아이디/userId 맵핑
+    private final BiMap<String, Long> sessionIdToUserIdMap = Maps.synchronizedBiMap(HashBiMap.create());
 
     @Override
     public void addSession(String videoChatRoomId, String sessionId) {
@@ -22,6 +22,27 @@ public class WebRTCSignalSessionTracker implements WebSocketSessionTracker {
                 k-> ConcurrentHashMap.newKeySet()).add(sessionId);
         sessionMap.get("1").forEach(System.out::println);
     }
+    public void addSessionUserMapping(String sessionId, Long userId){
+        sessionIdToUserIdMap.put(sessionId,userId);
+    }
+
+    public Long getUserId(String sessionId){
+        return sessionIdToUserIdMap.get(sessionId);
+    }
+
+    public String getSessionId(Long userId){
+        return sessionIdToUserIdMap.inverse().get(userId);
+    }
+
+    //자신제외 방에있는 유저정보를 List로!
+    public List<Long> getOtherUserIds(String roomId, String sessionId) {
+        return sessionMap.getOrDefault(roomId, Collections.emptySet())//null이면 빈컬렉션으로
+                .stream()
+                .filter(sid -> !sid.equals(sessionId))
+                .map(this::getUserId)
+                .toList();
+    }
+
 
     @Override
     public void removeSession(String roomId, String sessionId) {
@@ -33,8 +54,8 @@ public class WebRTCSignalSessionTracker implements WebSocketSessionTracker {
                 sessionMap.remove(roomId);
             }
         }
+        sessionIdToUserIdMap.remove(sessionId);
     }
-
     @Override
     public void removeSession(String sessionId) {
         for (Map.Entry<String, Set<String>> entry : sessionMap.entrySet()) {
@@ -47,5 +68,6 @@ public class WebRTCSignalSessionTracker implements WebSocketSessionTracker {
                 break;
             }
         }
+        sessionIdToUserIdMap.remove(sessionId);
     }
 }

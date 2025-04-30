@@ -1,13 +1,11 @@
-package com.jobdam.jobdam_be.websokect.sessionTracker.registry;
+package com.jobdam.jobdam_be.websokect.sessionTracker;
 
-import com.jobdam.jobdam_be.websokect.sessionTracker.WebSocketSessionTracker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 //tracker관리를 위해 만든 설정클래스
 //채팅,시그널링 등의 여러 웹소켓연결을 구분하기 위해

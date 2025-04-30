@@ -86,7 +86,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         refreshDAO.deleteByUserId(userId);
 
         //토큰 생성
-        String access = jwtProvider.createJwt("ACCESS_TOKEN", userId, 600000L);        // 10분
+        String access = jwtProvider.createJwt("ACCESS_TOKEN", userId, 86400000L);        // 10분
         String refresh = jwtProvider.createJwt("REFRESH_TOKEN", userId, 86400000L);    // 1일
 
         response.setHeader("Authorization", "Bearer " + access);
