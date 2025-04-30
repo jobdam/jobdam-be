@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -36,12 +37,12 @@ public class EmailProvider {
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper messageHelper = new MimeMessageHelper(message, true, "UTF-8");
 
-            String htmlContent = getVerificationMessage(code);
+            String htmlContent = getVerificationMessage(email, code);
 
             messageHelper.setTo(email);     // 대상의 이메일 주소
             messageHelper.setSubject(SUBJECT);      // 제목
             messageHelper.setText(htmlContent, true);   // 내용
-            messageHelper.setFrom(fromAddress, fromName);
+            messageHelper.setFrom(fromAddress, fromName);   // 별명 추가
 
             javaMailSender.send(message);
         } catch (Exception e) {
@@ -51,10 +52,33 @@ public class EmailProvider {
         return CompletableFuture.completedFuture(true);
     }
 
-    private String getVerificationMessage(String code) {
-        String verificationMessage = "";
-        verificationMessage += "<h1 style='text-align:center;'> [잡담 - 모의면접 매칭 서비스] 인증 메일 </h1>";
-        verificationMessage += "<h3 style='text-align:center;'> 인증코드 : <string style='font-size: 32px; letter-spacing: 8px;'>" + code + "</string></h3>";
-        return verificationMessage;
+    private String getVerificationMessage(String email, String token) {
+        String verificationUrl = "http://localhost:8080/verify?token=" + token;
+
+        return """
+                    <html>
+                    <body style="font-family: Arial, sans-serif;">
+                        <div style="max-width: 500px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+                            <h2 style="color: #2c3e50;">[잡담 - 모의면접 매칭 서비스] 이메일 인증 요청</h2>
+                            <p>안녕하세요, %s님</p>
+                            <p>아래 버튼을 클릭해 이메일 인증을 완료해주세요:</p>
+                            <div style="text-align: center; margin: 20px 0;">
+                                <a href="%s" style="
+                                    display: inline-block;
+                                    padding: 10px 20px;
+                                    background-color: #3498db;
+                                    color: white;
+                                    text-decoration: none;
+                                    border-radius: 5px;
+                                    font-weight: bold;">
+                                    이메일 인증하기
+                                </a>
+                            </div>
+                            <p>감사합니다.</p>
+                            <p style="font-size: 0.8em; color: gray;">이 메일은 인증 요청을 위해 발송되었습니다.</p>
+                        </div>
+                    </body>
+                    </html>
+                """.formatted(email, verificationUrl);
     }
 }

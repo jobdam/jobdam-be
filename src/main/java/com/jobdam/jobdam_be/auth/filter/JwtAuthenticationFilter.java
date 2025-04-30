@@ -20,6 +20,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -52,12 +53,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // HACK: role 값을 추가한다면 해당 코드에도 변경해야 함
             Long userId = jwtProvider.getUserId(accessToken);
             // String role = jwtProvider.getRole(accessToken);
-            User user = userDAO.findById(userId);
-            if (user == null) {
+            Optional<User> findUser = userDAO.findById(userId);
+            if (findUser.isEmpty()) {
                 throw new JwtAuthException(AuthErrorCode.INVALID_USER);
             }
 
-            CustomUserDetails customUserDetails = new CustomUserDetails(user);
+            CustomUserDetails customUserDetails = new CustomUserDetails(findUser.orElse(null));
 
             Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authToken);

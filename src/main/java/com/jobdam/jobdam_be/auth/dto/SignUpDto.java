@@ -17,6 +17,6 @@ public class SignUpDto {
     @NotBlank
     private String password;
 
-    @NotBlank
-    private String code;
+//    @NotBlank
+//    private String code;
 }
