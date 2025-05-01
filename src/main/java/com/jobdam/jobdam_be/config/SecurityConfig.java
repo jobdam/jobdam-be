@@ -74,11 +74,11 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers(
-                                "/swagger-ui/**", "/login", "/sign-up", "/check-email", "/resend-verification", "/verify","/reissue", "/termsAgreement"
-                                , "/send", "/check-sns"
+                                "/swagger-ui/**", "/check-email", "/login", "/sign-up", "/resend-verification", "/verify", "verify-email-check", "/reissue",
+                                "/termsAgreement", "/send", "/check-sns"
                         ).permitAll()
                         .requestMatchers("/ws/**",
-                                "/css/**", "/js/**", "/img/**", "/static/**", "/favicon.ico",  "/WEB-INF/views/**"
+                                "/css/**", "/js/**", "/img/**", "/static/**", "/favicon.ico", "/WEB-INF/views/**"
                         ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()

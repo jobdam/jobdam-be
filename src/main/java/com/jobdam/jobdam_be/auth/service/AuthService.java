@@ -71,8 +71,7 @@ public class AuthService {
             throw new AuthException(DB_ERROR);
         }
 
-        EmailVerification verification = new EmailVerification(email, code,
-                null);
+        EmailVerification verification = new EmailVerification(email, code, null);
         verificationDAO.saveOrUpdateVerification(verification);
 
         CompletableFuture<Boolean> sent = emailProvider.sendVerificationMail(email, code);
@@ -86,7 +85,7 @@ public class AuthService {
     }
 
     @Transactional
-    public boolean verifyEmail(String token) {
+    public void verifyEmail(String token) {
         EmailVerification verification = verificationDAO.findByToken(token).orElseThrow(() -> new AuthException(INVALID_TOKEN));
         long timeElapsed = System.currentTimeMillis() - verification.getCreatedAt().getTime();
         if (timeElapsed > TimeUnit.MINUTES.toMillis(5)) {
@@ -95,15 +94,13 @@ public class AuthService {
 
         Optional<User> findUser = userDAO.findByEmail(verification.getEmail());
         if (findUser.isEmpty()) {
-            return false;
+            throw new AuthException(INVALID_USER);
         }
         User user = findUser.get();
-        if (user.getCreatedAt() != null) return true;
+        if (user.getCreatedAt() != null) return;
 
         verificationDAO.deleteByEmail(user.getEmail());
         userDAO.updateCreatedAtByEmail(user.getEmail());
-
-        return true;
     }
 
     @Transactional
