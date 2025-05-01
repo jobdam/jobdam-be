@@ -23,9 +23,7 @@ import java.util.Objects;
 //sockJS 사용시 http문제로 핸드쉐이크에서 jwt를 검증할수가없다.
 //공식문서에서도 channelInterceptor 사용권장.
 //Connect를 통해서 웹소켓 연결시만 작용하며 연결 이후에는 jwt검증을 안한다.
-//jwt, purpose, roomId의 존재, 상태를 검증한다.
 //검증이 완료되면 스프링 시큐리티를 통해 유저정보를 조회해 pricipal 토큰객체로 저장한다.
-//또한 세션속성에 baseSessionInfo(purpose,roomId)를 저장하여 웹소켓 종료시 삭제를 빠르게한다.
 @Component
 @RequiredArgsConstructor
 @Slf4j
