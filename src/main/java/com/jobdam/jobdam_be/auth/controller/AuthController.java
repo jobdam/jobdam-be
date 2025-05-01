@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Map;
 
 @Slf4j
@@ -36,8 +37,10 @@ public class AuthController {
     }
 
     @GetMapping("/verify")
-    public ResponseEntity<String> verify(@RequestParam String token) {
+    public ResponseEntity<String> verify(@RequestParam String token, HttpServletResponse response) throws IOException {
         authService.verifyEmail(token);
+
+        response.sendRedirect("verify-email-check");
         return ResponseEntity.ok("인증이 완료되었습니다!");
     }
 
