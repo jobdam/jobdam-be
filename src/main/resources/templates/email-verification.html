@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>이메일 인증</title>
+</head>
+<!-- Pretendard Variable 폰트 로딩 -->
+<link rel="stylesheet" as="style" crossorigin
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css"/>
+<body style="margin: 5px; padding: 0; font-family: 'Pretendard Variable', sans-serif; background-color: #f9f9f9;">
+<div>
+    <div style="margin-top: 10px; margin-left: 10px">
+        <img th:src="'cid:logo'" alt="Logo" width="23px" height="29px"/>
+        <img th:src="'cid:jobdam'" alt="jobdam" width="124px" height="26px" />
+    </div>
+    <hr style="border: solid 1px #488fff">
+</div>
+<div style="text-align: center; max-width: 600px; margin: 30px auto; background-color: #ffffff; padding: 32px; border-radius: 8px; box-shadow: 0 0 8px rgba(0, 0, 0, 0.04);">
+    <p style="font-size: 24px; line-height: 150%; font-weight: 700; color: #488fff; margin-bottom: 40px;"
+       th:text="'회원가입 이메일 인증 요청'"></p>
+    <div style="text-align: center; horiz-align: center; margin-bottom: 32px; font-size: 18px; font-weight: 500; color: black; line-height: 160%;">
+        <p th:text="'안녕하세요, ' + ${email} + ' 님'"></p>
+        <p th:text="'모의면접 서비스 ‘잡담’ 가입을 환영합니다!'"></p>
+        <p th:text="'아래 버튼을 클릭해 이메일 인증을 완료해 주세요.'"></p>
+    </div>
+
+    <!-- 인증 버튼 -->
+    <div style="text-align: center; margin: 20px 0;">
+        <a style="display: inline-block; padding: 12px 24px; border-radius: 10px; background-color: #488fff; color: white;
+        text-decoration: none; font-weight: 600; font-size: 18px; line-height: 150%;"
+           th:href="@{|http://localhost:8080/verify?token=${token}|}">
+            이메일 인증하기
+        </a>
+    </div>
+    <p style="margin-top: 20px; text-align: center; font-size: 14px; color: gray;">본 메일은 잡담 회원가입을 위한 인증 요청으로 발송되었습니다.
+    <br/> Copyrightⓒjobdam. All rights reserved. </p>
+</div>
+</body>
+</html>
