@@ -40,7 +40,7 @@ public class AuthController {
     public ResponseEntity<String> verify(@RequestParam String token, HttpServletResponse response) throws IOException {
         authService.verifyEmail(token);
 
-        response.sendRedirect("verify-email-check");
+        response.sendRedirect("http://localhost:5173/verify-email-check");
         return ResponseEntity.ok("인증이 완료되었습니다!");
     }
 
