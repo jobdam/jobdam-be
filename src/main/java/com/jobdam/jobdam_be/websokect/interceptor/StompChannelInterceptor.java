@@ -35,11 +35,9 @@ public class StompChannelInterceptor implements ChannelInterceptor {
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);//불변객체를 수정,접근 할 수 있게함. 복사사용
-
         if(StompCommand.CONNECT.equals(accessor.getCommand())) {//연결 메세지인지 확인!
             String jwtToken = accessor.getFirstNativeHeader("Authorization");
             Long userId = validateJwtToken(jwtToken); //토큰 검증
-
             //현재는 db까지 조회해와서 전부넣는구조. 유저id만 넣을것인가. 전부넣을것인가 판단해야함
             CustomUserDetails customUserDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(userId.toString());
             UsernamePasswordAuthenticationToken authenticationToken =
@@ -53,23 +51,26 @@ public class StompChannelInterceptor implements ChannelInterceptor {
     }
 
     private Long validateJwtToken(String jwtToken){
-        if(Objects.isNull(jwtToken))
-            throw new WebSocketException(WebSocketErrorCode.TOKEN_MISSING);
-
-        if(!jwtToken.startsWith("Bearer ")){
-            throw new WebSocketException(WebSocketErrorCode.JWT_INVALID);
+        try {
+            if(Objects.isNull(jwtToken))
+                throw new WebSocketException(WebSocketErrorCode.TOKEN_MISSING);
+            if(!jwtToken.startsWith("Bearer ")){
+                throw new WebSocketException(WebSocketErrorCode.JWT_INVALID);
         }
         jwtToken = jwtToken.substring(7);
-
-        try{
            Long userId = jwtProvider.getUserId(jwtToken);//검증+유저 아이디 추출!
-            if(jwtProvider.isExpired(jwtToken)){//jwt 만료체크!
+            if(jwtProvider.isExpired(jwtToken)) {//jwt 만료체크!
                 throw new WebSocketException(WebSocketErrorCode.JWT_EXPIRED);
             }
             return userId;
+        }catch (WebSocketException e){
+            log.error("[WebSocket 예외]", e);
+            throw e;
         }catch (JwtException e){
+            log.error("[WebSocket jwt 검증 실패]", e);
             throw new WebSocketException(WebSocketErrorCode.JWT_INVALID);
         }catch (Exception e){
+            log.error("[WebSocket 알 수 없는 예외]", e);
             throw new WebSocketException(WebSocketErrorCode.JWT_UNKNOWN_ERROR);
         }
     }

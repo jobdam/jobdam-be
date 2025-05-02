@@ -38,12 +38,12 @@ public class WebSocketEventListener {
     @EventListener
     public void handleSessionSubscribe(SessionSubscribeEvent event){
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-
+        System.out.println(accessor.getDestination());
         WebSocketBaseSessionInfo webSocketBaseSessionInfo =
                 buildSessionInfoFromDestination(accessor.getDestination());
 
         if(Objects.isNull(webSocketBaseSessionInfo)){
-            log.info("[웹소켓 error 구독] sessionId={}", accessor.getSessionId());
+            log.info("[웹소켓 구독 error] sessionId={}", accessor.getSessionId());
             return;
         }
         Objects.requireNonNull(accessor.getSessionAttributes())
