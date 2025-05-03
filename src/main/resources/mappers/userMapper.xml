@@ -31,11 +31,13 @@
                           name,
                           birthday,
                           created_at,
+                          profile_img_url,
                           provider_id)
         VALUES (#{email},
                 #{name},
                 #{birthday},
                 now(),
+                #{profileImgUrl},
                 #{providerId})
     </insert>
 
@@ -51,6 +53,7 @@
         <if test="birthday != null">
             , birthday = #{birthday}
         </if>
+        , profile_img_url = #{profileImgUrl}
         WHERE email = #{email}
     </update>
 

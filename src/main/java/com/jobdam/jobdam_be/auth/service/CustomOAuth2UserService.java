@@ -35,6 +35,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String providerId = "";
         String email = "";
         String name = "";
+        String profileImgUrl = "";
         User user = new User();
 
         if (registrationId.equals("naver")) {
@@ -42,7 +43,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             providerId = "naver_" + responseMap.get("id").substring(0, 14);
             email = responseMap.get("email");
             name = responseMap.get("name");
-
+            profileImgUrl = responseMap.get("profile_image");
             String fullDateStr = responseMap.get("birthyear") + "-" + responseMap.get("birthday");
             LocalDate localDate = LocalDate.parse(fullDateStr, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             user.setBirthday(Timestamp.valueOf(localDate.atStartOfDay()));
@@ -52,6 +53,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             providerId = "google_" + responseMap.get("sub").toString().substring(0, 14);
             email = responseMap.get("email").toString();
             name = responseMap.get("name").toString();
+            profileImgUrl = responseMap.get("picture").toString();
+
 
         } else {
             throw new JwtAuthException(AuthErrorCode.UNSUPPORTED_TYPE);
@@ -62,6 +65,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             user.setEmail(email);
             user.setName(name);
             user.setProviderId(providerId);
+            user.setProfileImgUrl(profileImgUrl);
 
             // 일반 회원가입을 진행한 이메일이 존재하는지
             boolean existsByEmail = userDAO.existsByEmail(email);
