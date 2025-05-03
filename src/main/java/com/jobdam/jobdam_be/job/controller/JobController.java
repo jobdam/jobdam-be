@@ -1,6 +1,6 @@
 package com.jobdam.jobdam_be.job.controller;
 
-import com.jobdam.jobdam_be.job.dto.JobGroupDto;
+import com.jobdam.jobdam_be.job.dto.JobGroupDTO;
 import com.jobdam.jobdam_be.job.service.JobService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,7 @@ public class JobController {
     private final JobService jobService;
 
     @GetMapping("/jobs")
-    public List<JobGroupDto> getJobGroups() {
+    public List<JobGroupDTO> getJobGroups() {
         return jobService.getAllJobGroupsWithDetails();
     }
 }

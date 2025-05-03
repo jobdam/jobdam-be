@@ -1,6 +1,6 @@
 package com.jobdam.jobdam_be.auth.service;
 
-import com.jobdam.jobdam_be.auth.dto.OAuthUserDto;
+import com.jobdam.jobdam_be.auth.dto.OAuthUserDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -11,7 +11,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CustomOAuth2User implements OAuth2User {
 
-    private final OAuthUserDto user;
+    private final OAuthUserDTO user;
 
     @Override
     public Map<String, Object> getAttributes() {

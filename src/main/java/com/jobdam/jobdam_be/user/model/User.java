@@ -1,6 +1,6 @@
 package com.jobdam.jobdam_be.user.model;
 
-import com.jobdam.jobdam_be.auth.dto.SignUpDto;
+import com.jobdam.jobdam_be.auth.dto.SignUpDTO;
 import lombok.*;
 
 import java.sql.Timestamp;
@@ -25,7 +25,7 @@ public class User {
     private String jobCode;
     private String providerId;
 
-    public User(SignUpDto dto) {
+    public User(SignUpDTO dto) {
         this.email = dto.getEmail();
         this.password = dto.getPassword();
     }

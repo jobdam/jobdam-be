@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class OAuthUserDto {
+public class OAuthUserDTO {
 
     private String providerId;
     private Long id;
