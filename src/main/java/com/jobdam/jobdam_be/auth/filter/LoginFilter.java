@@ -5,6 +5,7 @@ import com.jobdam.jobdam_be.auth.dao.RefreshDAO;
 import com.jobdam.jobdam_be.auth.exception.JwtAuthException;
 import com.jobdam.jobdam_be.auth.provider.JwtProvider;
 import com.jobdam.jobdam_be.auth.service.JwtService;
+import com.jobdam.jobdam_be.config.TokenProperties;
 import com.jobdam.jobdam_be.user.dao.UserDAO;
 import com.jobdam.jobdam_be.user.model.User;
 import jakarta.servlet.FilterChain;
@@ -29,6 +30,7 @@ import static com.jobdam.jobdam_be.auth.exception.AuthErrorCode.*;
 @Slf4j
 @RequiredArgsConstructor
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
+    private final TokenProperties tokenProperties;
     private final AuthenticationManager authenticationManager;
     private final JwtProvider jwtProvider;
     private final JwtService jwtService;
@@ -86,8 +88,11 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         refreshDAO.deleteByUserId(userId);
 
         //토큰 생성
-        String access = jwtProvider.createJwt("ACCESS_TOKEN", userId, 86400000L);        // 10분
-        String refresh = jwtProvider.createJwt("REFRESH_TOKEN", userId, 86400000L);    // 1일
+        TokenProperties.TokenConfig accessConfig = tokenProperties.getAccessToken();
+        TokenProperties.TokenConfig refreshConfig = tokenProperties.getRefreshToken();
+
+        String access = jwtProvider.createJwt(accessConfig.getName(), userId, accessConfig.getExpiry());
+        String refresh = jwtProvider.createJwt(refreshConfig.getName(),userId, refreshConfig.getExpiry());
 
         response.setHeader("Authorization", "Bearer " + access);
         Cookie refreshCookie = jwtService.createRefreshCookie(refresh);
@@ -97,7 +102,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         if (!isSaved) {
             request.setAttribute("exception", DB_ERROR);
         }
-
 
         response.setStatus(HttpServletResponse.SC_OK);
     }

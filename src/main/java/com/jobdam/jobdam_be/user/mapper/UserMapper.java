@@ -16,4 +16,12 @@ public interface UserMapper {
     int save(User user);
 
     void updateCreatedAtByEmail(String email);
+
+    Optional<User> findByProviderId(String providerId);
+
+    Long findIdByEmail(String email);
+
+    void updateSocialByEmail(User user);
+
+    void saveSocial(User user);
 }

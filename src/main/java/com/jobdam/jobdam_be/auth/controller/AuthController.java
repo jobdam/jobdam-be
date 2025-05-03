@@ -40,7 +40,7 @@ public class AuthController {
     public ResponseEntity<String> verify(@RequestParam String token, HttpServletResponse response) throws IOException {
         authService.verifyEmail(token);
 
-        response.sendRedirect("verify-email-check");
+        response.sendRedirect("http://localhost:5173/verify-email-check");
         return ResponseEntity.ok("인증이 완료되었습니다!");
     }
 
@@ -48,13 +48,5 @@ public class AuthController {
     public ResponseEntity<String> reissue(HttpServletRequest request, HttpServletResponse response) {
         return authService.reissueRefreshToken(request, response);
     }
-//    @PostMapping("/email-verification")
-//    public ResponseEntity<String> emailVerification(@RequestBody @Valid EmailVerificationDto requestBody) {
-//        return authService.emailVerification(requestBody);
-//    }
 
-//    @PostMapping("/check-verification")
-//    public ResponseEntity<String> checkVerification(@RequestBody @Valid CheckVerificationDto requestBody) {
-//        return authService.checkVerification(requestBody);
-//    }
 }

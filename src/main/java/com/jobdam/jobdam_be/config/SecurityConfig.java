@@ -6,6 +6,7 @@ import com.jobdam.jobdam_be.auth.exception.CustomAuthenticationEntryPoint;
 import com.jobdam.jobdam_be.auth.filter.CustomLogoutFilter;
 import com.jobdam.jobdam_be.auth.filter.JwtAuthenticationFilter;
 import com.jobdam.jobdam_be.auth.filter.LoginFilter;
+import com.jobdam.jobdam_be.auth.oauth2.OAuth2SuccessHandler;
 import com.jobdam.jobdam_be.auth.provider.JwtProvider;
 import com.jobdam.jobdam_be.auth.service.JwtService;
 import com.jobdam.jobdam_be.user.dao.UserDAO;
@@ -19,6 +20,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
@@ -32,9 +34,12 @@ import java.util.Arrays;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+    private final TokenProperties tokenProperties;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final DefaultOAuth2UserService customOAuth2UserService;
+    private final OAuth2SuccessHandler customOAuth2SuccessHandler;
 
     private final JwtProvider jwtProvider;
     private final JwtService jwtService;
@@ -66,6 +71,13 @@ public class SecurityConfig {
                         sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                //oauth2
+                .oauth2Login((oauth2) -> oauth2
+                        .userInfoEndpoint((userInfo ) -> userInfo
+                                .userService(customOAuth2UserService)
+                        )
+                        .successHandler(customOAuth2SuccessHandler)
+                )
 
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(customAuthenticationEntryPoint)       // 인증 실패 시
@@ -74,7 +86,7 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers(
-                                "/swagger-ui/**", "/check-email", "/login", "/sign-up", "/resend-verification", "/verify", "verify-email-check", "/reissue",
+                                "/**","/swagger-ui/**", "/check-email", "/login", "/sign-up", "/resend-verification", "/verify", "verify-email-check", "/reissue",
                                 "/termsAgreement", "/send", "/check-sns"
                         ).permitAll()
                         .requestMatchers("/ws/**",
@@ -83,9 +95,9 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, userDAO), UsernamePasswordAuthenticationFilter.class)
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtProvider, jwtService, refreshDAO, userDAO), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(new CustomLogoutFilter(jwtProvider, refreshDAO), LogoutFilter.class)
+                .addFilterBefore(new JwtAuthenticationFilter(tokenProperties, jwtProvider, userDAO), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAt(new LoginFilter(tokenProperties, authenticationManager(authenticationConfiguration), jwtProvider, jwtService, refreshDAO, userDAO), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new CustomLogoutFilter(tokenProperties, jwtProvider, refreshDAO), LogoutFilter.class)
         ;
         return http.build();
     }
