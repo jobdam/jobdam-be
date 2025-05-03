@@ -98,7 +98,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             request.setAttribute("exception", DB_ERROR);
         }
 
-
         response.setStatus(HttpServletResponse.SC_OK);
     }
 
