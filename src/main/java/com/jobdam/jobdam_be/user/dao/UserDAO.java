@@ -28,7 +28,23 @@ public class UserDAO {
         return userMapper.findByEmail(email);
     }
 
+    public Long findIdByEmail(String email) {
+        return userMapper.findIdByEmail(email);
+    }
+
     public void updateCreatedAtByEmail(String email) {
         userMapper.updateCreatedAtByEmail(email);
+    }
+
+    public Optional<User> findByProviderId(String providerId) {
+        return userMapper.findByProviderId(providerId);
+    }
+
+    public void updateSocialByEmail(User user) {
+        userMapper.updateSocialByEmail(user);
+    }
+
+    public void saveSocial(User user) {
+        userMapper.saveSocial(user);
     }
 }
