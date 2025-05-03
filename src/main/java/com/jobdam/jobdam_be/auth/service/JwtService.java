@@ -2,6 +2,7 @@ package com.jobdam.jobdam_be.auth.service;
 
 import com.jobdam.jobdam_be.auth.dao.RefreshDAO;
 import com.jobdam.jobdam_be.auth.model.RefreshToken;
+import com.jobdam.jobdam_be.config.TokenProperties;
 import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -11,6 +12,7 @@ import java.sql.Timestamp;
 @Component
 @RequiredArgsConstructor
 public class JwtService {
+    private final TokenProperties tokenProperties;
     private final RefreshDAO refreshDAO;
 
     public boolean saveRefreshToken(Long userId, String refreshToken, long expiredMs) {
@@ -20,7 +22,7 @@ public class JwtService {
     }
 
     public Cookie createRefreshCookie(String token) {
-        Cookie cookie = new Cookie("REFRESH_TOKEN", token);
+        Cookie cookie = new Cookie(tokenProperties.getRefreshToken().getName(), token);
         cookie.setHttpOnly(true);
         cookie.setMaxAge(24 * 60 * 60);
         return cookie;
