@@ -1,6 +1,5 @@
 package com.jobdam.jobdam_be.job.dao;
 
-import com.jobdam.jobdam_be.job.dto.JobGroupDto;
 import com.jobdam.jobdam_be.job.mapper.JobMapper;
 import com.jobdam.jobdam_be.job.model.JobDetail;
 import com.jobdam.jobdam_be.job.model.JobGroup;

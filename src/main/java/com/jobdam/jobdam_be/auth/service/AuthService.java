@@ -2,8 +2,8 @@ package com.jobdam.jobdam_be.auth.service;
 
 import com.jobdam.jobdam_be.auth.dao.EmailVerificationDAO;
 import com.jobdam.jobdam_be.auth.dao.RefreshDAO;
-import com.jobdam.jobdam_be.auth.dto.ResendDto;
-import com.jobdam.jobdam_be.auth.dto.SignUpDto;
+import com.jobdam.jobdam_be.auth.dto.ResendDTO;
+import com.jobdam.jobdam_be.auth.dto.SignUpDTO;
 import com.jobdam.jobdam_be.auth.exception.AuthException;
 import com.jobdam.jobdam_be.auth.model.EmailVerification;
 import com.jobdam.jobdam_be.auth.provider.EmailProvider;
@@ -56,7 +56,7 @@ public class AuthService {
     }
 
     @Transactional
-    public ResponseEntity<String> signUp(SignUpDto dto) {
+    public ResponseEntity<String> signUp(SignUpDTO dto) {
         String email = dto.getEmail();
         String code = UUID.randomUUID().toString();
 
@@ -107,7 +107,7 @@ public class AuthService {
     }
 
     @Transactional
-    public void resendVerificationEmail(ResendDto dto) {
+    public void resendVerificationEmail(ResendDTO dto) {
         String email = dto.getEmail();
         User user = userDAO.findByEmail(email).orElseThrow(() -> new AuthException(INVALID_USER));
 

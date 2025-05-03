@@ -1,6 +1,6 @@
 package com.jobdam.jobdam_be.auth.service;
 
-import com.jobdam.jobdam_be.auth.dto.OAuthUserDto;
+import com.jobdam.jobdam_be.auth.dto.OAuthUserDTO;
 import com.jobdam.jobdam_be.auth.exception.AuthErrorCode;
 import com.jobdam.jobdam_be.auth.exception.JwtAuthException;
 import com.jobdam.jobdam_be.user.dao.UserDAO;
@@ -78,7 +78,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
             Long id = userDAO.findIdByEmail(user.getEmail());
 
-            OAuthUserDto userDto = new OAuthUserDto();
+            OAuthUserDTO userDto = new OAuthUserDTO();
             userDto.setId(id);
             userDto.setProviderId(providerId);
 
@@ -95,7 +95,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 //            userDAO.save(user);
             Long id = existData.get().getId();
 
-            OAuthUserDto userDto = new OAuthUserDto();
+            OAuthUserDTO userDto = new OAuthUserDTO();
             userDto.setId(id);
             userDto.setProviderId(providerId);
 

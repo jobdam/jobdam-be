@@ -1,8 +1,8 @@
 package com.jobdam.jobdam_be.job.service;
 
 import com.jobdam.jobdam_be.job.dao.JobDao;
-import com.jobdam.jobdam_be.job.dto.JobDetailDto;
-import com.jobdam.jobdam_be.job.dto.JobGroupDto;
+import com.jobdam.jobdam_be.job.dto.JobDetailDTO;
+import com.jobdam.jobdam_be.job.dto.JobGroupDTO;
 import com.jobdam.jobdam_be.job.model.JobGroup;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,20 +17,20 @@ import java.util.stream.Collectors;
 public class JobService {
     private final JobDao jobDao;
 
-    public List<JobGroupDto> getAllJobGroupsWithDetails() {
+    public List<JobGroupDTO> getAllJobGroupsWithDetails() {
         List<JobGroup> groups = jobDao.getAllJobGroups();
         return groups.stream().map(group -> {
-            List<JobDetailDto> details = jobDao.getJobDetailsByGroupCode(group.getJobCode())
+            List<JobDetailDTO> details = jobDao.getJobDetailsByGroupCode(group.getJobCode())
                     .stream()
                     .map(detail -> {
-                        JobDetailDto dto = new JobDetailDto();
+                        JobDetailDTO dto = new JobDetailDTO();
                         dto.setJobDetailCode(detail.getJobDetailCode());
                         dto.setJobDetail(detail.getJobDetail());
                         return dto;
                     })
                     .collect(Collectors.toList());
 
-            JobGroupDto dto = new JobGroupDto();
+            JobGroupDTO dto = new JobGroupDTO();
             dto.setJobCode(group.getJobCode());
             dto.setJobGroup(group.getJobGroup());
             dto.setDetails(details);
