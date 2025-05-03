@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jobdam.jobdam_be.job.mapper.JobMapper">
+
+    <resultMap id="JobGroupResultMap" type="com.jobdam.jobdam_be.job.model.JobGroup">
+        <result property="jobCode" column="job_code"/>
+        <result property="jobGroup" column="job_group"/>
+    </resultMap>
+
+    <resultMap id="JobDetailResultMap" type="com.jobdam.jobdam_be.job.model.JobDetail">
+        <result property="jobDetailCode" column="job_detail_code"/>
+        <result property="jobDetail" column="job_detail"/>
+        <result property="jobCode" column="job_code"/>
+    </resultMap>
+
+    <select id="getAllJobGroups" resultMap="JobGroupResultMap">
+        SELECT * FROM job_group ORDER BY job_code
+    </select>
+
+    <select id="getJobDetailsByGroupCode" resultMap="JobDetailResultMap">
+        SELECT job_detail_code, job_detail, job_code
+        FROM job_detail
+        WHERE job_code = #{jobCode}
+    </select>
+</mapper>
