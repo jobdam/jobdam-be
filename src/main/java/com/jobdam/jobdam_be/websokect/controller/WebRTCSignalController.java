@@ -1,6 +1,8 @@
 package com.jobdam.jobdam_be.websokect.controller;
 
 import com.jobdam.jobdam_be.websokect.dto.webRTCSignal.CandidateSignalDTO;
+import com.jobdam.jobdam_be.websokect.dto.webRTCSignal.JoinListSignalDTO;
+import com.jobdam.jobdam_be.websokect.dto.webRTCSignal.JoinOneSignalDTO;
 import com.jobdam.jobdam_be.websokect.dto.webRTCSignal.SdpSignalDTO;
 import com.jobdam.jobdam_be.websokect.sessionTracker.domain.WebRTCSignalSessionTracker;
 import lombok.RequiredArgsConstructor;
@@ -37,17 +39,17 @@ public class WebRTCSignalController {
 
         //나에게 참여중인 유저목록 보내주기
         simpMessagingTemplate.convertAndSendToUser(
-                sessionId,
+                String.valueOf(enterUserId),
                 "/queue/signal/"+roomId,
-                Map.of("type", "JOIN_LIST", "userIdList", existingUserIdList)
+                new JoinListSignalDTO(existingUserIdList)
         );
 
         //나를 제외한 유저들에게 내정보 보내주기
         existingUserIdList.forEach(
                 userId -> simpMessagingTemplate.convertAndSendToUser(
-                        tracker.getSessionId(userId),
+                        String.valueOf(userId),
                         "/queue/signal/"+roomId,
-                        Map.of("type","JOIN_ONE", "userId",enterUserId)
+                        new JoinOneSignalDTO(enterUserId)
                 )
         );
 
@@ -57,50 +59,38 @@ public class WebRTCSignalController {
     //내가 상대방에게 p2p연결 하고싶다는 신호(상대방이 나의정보를 얻음)
     @MessageMapping("/signal/offer/{roomId}")
     public void offer(@DestinationVariable String roomId,
-                      @Payload SdpSignalDTO dto) {
-        String targetSession = tracker.getSessionId(dto.getReceiverId());
+                      @Payload SdpSignalDTO sdpSignalDTO) {
         simpMessagingTemplate.convertAndSendToUser(
-                targetSession,
+                String.valueOf(sdpSignalDTO.getReceiverId()),
                 "/queue/signal/" + roomId,
-                Map.of(
-                        "type", "OFFER",
-                        "senderId", dto.getSenderId(),
-                        "sdp", dto.getSdp()
-                )
+                sdpSignalDTO
         );
+        log.info("[SIGNAL서버 OFFER요청] sendId:{} reciverId{}",
+                sdpSignalDTO.getSenderId(),sdpSignalDTO.getReceiverId());
     }
 
     // 상대방이 p2p offer 대한 응답을줌 (내가 상대방의 정보를 얻음)
     @MessageMapping("/signal/answer/{roomId}")
     public void answer(@DestinationVariable String roomId,
-                       @Payload SdpSignalDTO dto) {
-        String targetSession = tracker.getSessionId(dto.getReceiverId());
+                       @Payload SdpSignalDTO sdpSignalDTO) {
         simpMessagingTemplate.convertAndSendToUser(
-                targetSession,
+                String.valueOf(sdpSignalDTO.getReceiverId()),
                 "/queue/signal/" + roomId,
-                Map.of(
-                        "type", "ANSWER",
-                        "senderId", dto.getSenderId(),
-                        "sdp", dto.getSdp()
-                )
+                sdpSignalDTO
         );
+
+        log.info("[SIGNAL서버 ANSWER요청] sendId:{} reciverId{}",
+                sdpSignalDTO.getSenderId(),sdpSignalDTO.getReceiverId());
     }
 
     // 네트워크 우회를 통한 후보경로들을 교환함 연결이 안될 경우를 대비
     @MessageMapping("/signal/candidate/{roomId}")
     public void candidate(@DestinationVariable String roomId,
-                          @Payload CandidateSignalDTO dto) {
-        String targetSession = tracker.getSessionId(dto.getReceiverId());
+                          @Payload CandidateSignalDTO candidateSignalDTO) {
         simpMessagingTemplate.convertAndSendToUser(
-                targetSession,
+                String.valueOf(candidateSignalDTO.getReceiverId()),
                 "/queue/signal/" + roomId,
-                Map.of(
-                        "type", "CANDIDATE",
-                        "senderId", dto.getSenderId(),
-                        "candidate", dto.getCandidate(),
-                        "sdpMid", dto.getSdpMid(),
-                        "sdpMLineIndex", dto.getSdpMLineIndex()
-                )
+                candidateSignalDTO
         );
     }
 }
