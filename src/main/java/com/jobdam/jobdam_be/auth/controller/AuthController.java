@@ -48,13 +48,5 @@ public class AuthController {
     public ResponseEntity<String> reissue(HttpServletRequest request, HttpServletResponse response) {
         return authService.reissueRefreshToken(request, response);
     }
-//    @PostMapping("/email-verification")
-//    public ResponseEntity<String> emailVerification(@RequestBody @Valid EmailVerificationDto requestBody) {
-//        return authService.emailVerification(requestBody);
-//    }
 
-//    @PostMapping("/check-verification")
-//    public ResponseEntity<String> checkVerification(@RequestBody @Valid CheckVerificationDto requestBody) {
-//        return authService.checkVerification(requestBody);
-//    }
 }

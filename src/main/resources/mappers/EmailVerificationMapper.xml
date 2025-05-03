@@ -26,12 +26,6 @@
         WHERE token = #{token}
     </select>
 
-    <select id="findByEmail" resultMap="EmailVerificationResultMap">
-        SELECT email, token, created_at
-        FROM email_verification
-        WHERE email = #{email}
-    </select>
-
     <delete id="deleteByEmail">
         DELETE
         FROM email_verification

@@ -16,9 +16,6 @@ public class EmailVerificationDAO {
         verificationMapper.saveOrUpdateVerification(certification);
     }
 
-    public Optional<EmailVerification> findByEmail(String email) {
-        return verificationMapper.findByEmail(email);
-    }
     public Optional<EmailVerification> findByToken(String token) {
         return verificationMapper.findByToken(token);
     }
