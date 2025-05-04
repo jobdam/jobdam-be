@@ -72,7 +72,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (JwtAuthException e) {
             request.setAttribute("exception", e.getErrorCode());
         } catch (Exception e) {
-            request.setAttribute("exception", new JwtAuthException(AuthErrorCode.INVALID_TOKEN));
+            request.setAttribute("exception", AuthErrorCode.INVALID_TOKEN);
         }
         filterChain.doFilter(request, response);
     }
