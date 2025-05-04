@@ -17,9 +17,10 @@ import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 import java.util.Objects;
 import java.util.Optional;
 
-//StompChannelInterCeptor에서 모든검증을 완료하고
+//StompChannelInterCeptor에서 유저검증을 완료하고
 //그다음에 리스너가 작동을한다.
-//리스너에서는 오로지 트랙커 세션의 저장 및 삭제를 담당한다.
+//리스너에서는 purpose,roomId를 검증하고
+//트랙커 세션의 저장 및 삭제를 담당한다.
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -37,12 +38,12 @@ public class WebSocketEventListener {
     @EventListener
     public void handleSessionSubscribe(SessionSubscribeEvent event){
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-
+        System.out.println(accessor.getDestination());
         WebSocketBaseSessionInfo webSocketBaseSessionInfo =
                 buildSessionInfoFromDestination(accessor.getDestination());
 
         if(Objects.isNull(webSocketBaseSessionInfo)){
-            log.info("[웹소켓 error 구독] sessionId={}", accessor.getSessionId());
+            log.info("[웹소켓 구독 error] sessionId={}", accessor.getSessionId());
             return;
         }
         Objects.requireNonNull(accessor.getSessionAttributes())
