@@ -1,4 +1,4 @@
-package com.jobdam.jobdam_be.config;
+package com.jobdam.jobdam_be.auth.config;
 
 import lombok.Getter;
 import lombok.Setter;

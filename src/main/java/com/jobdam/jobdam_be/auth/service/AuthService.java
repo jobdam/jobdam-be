@@ -8,7 +8,7 @@ import com.jobdam.jobdam_be.auth.exception.AuthException;
 import com.jobdam.jobdam_be.auth.model.EmailVerification;
 import com.jobdam.jobdam_be.auth.provider.EmailProvider;
 import com.jobdam.jobdam_be.auth.provider.JwtProvider;
-import com.jobdam.jobdam_be.config.TokenProperties;
+import com.jobdam.jobdam_be.auth.config.TokenProperties;
 import com.jobdam.jobdam_be.user.dao.UserDAO;
 import com.jobdam.jobdam_be.user.model.User;
 import io.jsonwebtoken.ExpiredJwtException;

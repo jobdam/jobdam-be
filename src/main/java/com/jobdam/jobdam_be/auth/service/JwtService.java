@@ -2,7 +2,7 @@ package com.jobdam.jobdam_be.auth.service;
 
 import com.jobdam.jobdam_be.auth.dao.RefreshDAO;
 import com.jobdam.jobdam_be.auth.model.RefreshToken;
-import com.jobdam.jobdam_be.config.TokenProperties;
+import com.jobdam.jobdam_be.auth.config.TokenProperties;
 import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

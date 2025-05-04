@@ -3,7 +3,7 @@ package com.jobdam.jobdam_be.auth.filter;
 import com.jobdam.jobdam_be.auth.dao.RefreshDAO;
 import com.jobdam.jobdam_be.auth.exception.JwtAuthException;
 import com.jobdam.jobdam_be.auth.provider.JwtProvider;
-import com.jobdam.jobdam_be.config.TokenProperties;
+import com.jobdam.jobdam_be.auth.config.TokenProperties;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.*;
