@@ -9,8 +9,6 @@ import java.util.Optional;
 public interface EmailVerificationMapper {
     void saveOrUpdateVerification(EmailVerification certification);
 
-    Optional<EmailVerification> findByEmail(String email);
-
     Optional<EmailVerification> findByToken(String token);
 
     void deleteByEmail(String email);

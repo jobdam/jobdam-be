@@ -4,6 +4,7 @@ import com.jobdam.jobdam_be.auth.exception.AuthErrorCode;
 import com.jobdam.jobdam_be.auth.exception.JwtAuthException;
 import com.jobdam.jobdam_be.auth.service.CustomUserDetails;
 import com.jobdam.jobdam_be.auth.provider.JwtProvider;
+import com.jobdam.jobdam_be.config.TokenProperties;
 import com.jobdam.jobdam_be.user.dao.UserDAO;
 import com.jobdam.jobdam_be.user.model.User;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -25,6 +26,9 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private final TokenProperties tokenProperties;
+
     private final JwtProvider jwtProvider;
     private final UserDAO userDAO;
 
@@ -46,7 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
             // 토큰이 access인지 확인 (발급시 페이로드에 명시)
             String category = jwtProvider.getCategory(accessToken);
-            if (!category.equals("ACCESS_TOKEN")) {
+            if (!category.equals(tokenProperties.getAccessToken().getName())) {
                 throw new JwtAuthException(AuthErrorCode.INVALID_TOKEN);
             }
 

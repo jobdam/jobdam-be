@@ -16,15 +16,13 @@ import java.util.Optional;
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserDAO userDAO;
+
     @Override
     public UserDetails loadUserByUsername(String id) throws UsernameNotFoundException {
         Long userId = Long.valueOf(id);
         Optional<User> findUser = userDAO.findById(userId);
 
-        if(findUser.isPresent()) {
-            return new CustomUserDetails(findUser.orElse(null));
-        }
+        return findUser.map(user -> new CustomUserDetails(user)).orElse(null);
 
-        return null;
     }
 }

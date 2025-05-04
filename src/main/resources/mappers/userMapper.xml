@@ -5,45 +5,86 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.jobdam.jobdam_be.user.mapper.UserMapper">
     <insert id="save">
-        INSERT INTO user (
-            email,
-            password,
-            name,
-            birthday,
-            target_company_size,
-            is_deleted,
-            blacklist,
-            profile_img_url,
-            job_detail_code,
-            job_code
-        )
-        VALUES (
-                   #{email},
-                   #{password},
-                   #{name},
-                   #{birthday},
-                   #{targetCompanySize},
-                   #{isDeleted},
-                   #{blacklist},
-                   #{profileImgUrl},
-                   #{jobDetailCode},
-                   #{jobCode}
-               )
+        INSERT INTO user (email,
+                          password,
+                          name,
+                          birthday,
+                          target_company_size,
+                          is_deleted,
+                          blacklist,
+                          profile_img_url,
+                          job_detail_code,
+                          job_code)
+        VALUES (#{email},
+                #{password},
+                #{name},
+                #{birthday},
+                #{targetCompanySize},
+                #{isDeleted},
+                #{blacklist},
+                #{profileImgUrl},
+                #{jobDetailCode},
+                #{jobCode})
+    </insert>
+    <insert id="saveSocial">
+        INSERT INTO user (email,
+                          name,
+                          birthday,
+                          created_at,
+                          profile_img_url,
+                          provider_id)
+        VALUES (#{email},
+                #{name},
+                #{birthday},
+                now(),
+                #{profileImgUrl},
+                #{providerId})
     </insert>
 
     <update id="updateCreatedAtByEmail">
-        UPDATE user SET created_at = now() WHERE email = #{email}
+        UPDATE user
+        SET created_at = now()
+        WHERE email = #{email}
+    </update>
+    <update id="updateSocialByEmail">
+        UPDATE user
+        SET provider_id = #{providerId},
+        Name = #{name}
+        <if test="birthday != null">
+            , birthday = #{birthday}
+        </if>
+        , profile_img_url = #{profileImgUrl}
+        WHERE email = #{email}
     </update>
 
     <select id="findById" resultType="com.jobdam.jobdam_be.user.model.User">
-    select * from user where id = #{id}
+        select *
+        from user
+        where id = #{id}
     </select>
 
     <select id="existsByEmail" resultType="java.lang.Boolean">
-        SELECT  COUNT(*) > 0 FROM user WHERE email = #{email}
+        SELECT COUNT(*) > 0
+        FROM user
+        WHERE email = #{email}
     </select>
 
     <select id="findByEmail" resultType="com.jobdam.jobdam_be.user.model.User">
-        select * from user where email = #{email}
+        SELECT *
+        FROM user
+        WHERE email = #{email}
     </select>
+
+    <select id="findIdByEmail" resultType="java.lang.Long">
+        SELECT id
+        FROM user
+        WHERE email = #{email}
+    </select>
+
+    <select id="findByProviderId" resultType="com.jobdam.jobdam_be.user.model.User">
+        SELECT *
+        FROM user
+        WHERE provider_id = #{providerId}
+    </select>
+
 </mapper>

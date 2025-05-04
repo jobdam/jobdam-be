@@ -2,12 +2,13 @@ package com.jobdam.jobdam_be.auth.service;
 
 import com.jobdam.jobdam_be.auth.dao.EmailVerificationDAO;
 import com.jobdam.jobdam_be.auth.dao.RefreshDAO;
-import com.jobdam.jobdam_be.auth.dto.ResendDto;
-import com.jobdam.jobdam_be.auth.dto.SignUpDto;
+import com.jobdam.jobdam_be.auth.dto.ResendDTO;
+import com.jobdam.jobdam_be.auth.dto.SignUpDTO;
 import com.jobdam.jobdam_be.auth.exception.AuthException;
 import com.jobdam.jobdam_be.auth.model.EmailVerification;
 import com.jobdam.jobdam_be.auth.provider.EmailProvider;
 import com.jobdam.jobdam_be.auth.provider.JwtProvider;
+import com.jobdam.jobdam_be.config.TokenProperties;
 import com.jobdam.jobdam_be.user.dao.UserDAO;
 import com.jobdam.jobdam_be.user.model.User;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -34,6 +35,8 @@ import static com.jobdam.jobdam_be.auth.exception.AuthErrorCode.*;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
+    private final TokenProperties tokenProperties;
+
     private final JwtProvider jwtProvider;
     private final EmailProvider emailProvider;
     private final PasswordEncoder passwordEncoder;
@@ -53,7 +56,7 @@ public class AuthService {
     }
 
     @Transactional
-    public ResponseEntity<String> signUp(SignUpDto dto) {
+    public ResponseEntity<String> signUp(SignUpDTO dto) {
         String email = dto.getEmail();
         String code = UUID.randomUUID().toString();
 
@@ -104,7 +107,7 @@ public class AuthService {
     }
 
     @Transactional
-    public void resendVerificationEmail(ResendDto dto) {
+    public void resendVerificationEmail(ResendDTO dto) {
         String email = dto.getEmail();
         User user = userDAO.findByEmail(email).orElseThrow(() -> new AuthException(INVALID_USER));
 
@@ -125,90 +128,15 @@ public class AuthService {
         });
     }
 
-//    @Transactional
-//    public ResponseEntity<String> emailVerification(EmailVerificationDto dto) {
-//        try {
-//            // 기존에 존재하는 이메일인지
-//            String email = dto.getEmail();
-//            boolean isExistId = userDAO.existsByEmail(email);
-//            if (isExistId) {
-//                throw new AuthException(DUPLICATE_EMAIL);
-//            }
-//
-//            String verificationCode = VerificationCode.getVerificationCode();
-//            boolean sent = emailProvider.sendVerificationMail(email, verificationCode).get(5, TimeUnit.SECONDS);
-//
-//            if (!sent) {
-//                throw new AuthException(MAIL_SEND_ERROR);
-//            }
-//
-//            EmailVerification verification = new EmailVerification(
-//                    email,
-//                    verificationCode,
-//                    new Timestamp(System.currentTimeMillis()));
-//
-//            verificationDAO.saveOrUpdateVerification(verification);
-//            return ResponseEntity.ok().body("메일이 성공적으로 전송되었습니다.");
-//        } catch (AuthException e) {
-//            throw e;
-//        } catch (Exception e) {
-//            throw new AuthException(DB_ERROR);
-//        }
-//    }
-
-//    public ResponseEntity<String> checkVerification(CheckVerificationDto dto) {
-//        try {
-//            String email = dto.getEmail();
-//            String code = dto.getCode();
-//
-//            validateEmailAndCode(email, code);
-//
-//        } catch (AuthException e) {
-//            throw e;
-//        } catch (Exception e) {
-//            throw new AuthException(DB_ERROR);
-//        }
-//
-//        return ResponseEntity.ok().body("인증이 확인되었습니다.");
-//    }
-
-    //    public ResponseEntity<String> signUp(SignUpDto dto) {
-//        String email = dto.getEmail();        String code = dto.getCode();
-//        boolean isExistId = userDAO.existsByEmail(email);
-//        if (isExistId) { throw new AuthException(DUPLICATE_EMAIL); }
-//        validateEmailAndCode(email, code);
-//        dto.setPassword(passwordEncoder.encode(dto.getPassword()));
-//        if (!userDAO.save( new User(dto))) { throw new AuthException(DB_ERROR); }
-//        verificationDAO.deleteByEmail(email);
-//        return ResponseEntity.ok().body("메일 전송 성공");
-//    }
-
-
-//    private void validateEmailAndCode(String email, String code) {
-//        // 시간 제한 (예: 5분)
-////        long timeElapsed = System.currentTimeMillis() - stored.getCreatedAt().getTime();
-////        if (timeElapsed > TimeUnit.MINUTES.toMillis(5)) {
-////            emailVerificationMapper.deleteByEmail(email);
-////            throw new AuthException("인증 코드가 만료되었습니다.");
-////        }
-//
-//        Optional<EmailVerification> findEmailVerify = verificationDAO.findByEmail(email);
-//        if (findEmailVerify.isEmpty()) {
-//            throw new AuthException(EMAIL_VERIFICATION_REQUIRED);
-//        }
-//        EmailVerification verification = findEmailVerify.get();
-//        boolean isMatched = verification.getEmail().equals(email) && verification.getToken().equals(code);
-//        if (!isMatched) {
-//            throw new AuthException(INVALID_EMAIL_OR_PASSWORD);
-//        }
-//    }
-
     public ResponseEntity<String> reissueRefreshToken(HttpServletRequest request, HttpServletResponse response) throws AuthException {
+        TokenProperties.TokenConfig accessConfig = tokenProperties.getAccessToken();
+        TokenProperties.TokenConfig refreshConfig = tokenProperties.getRefreshToken();
+
         String refresh = null;
         // 리프레시 토큰이 존재하는지
         Cookie[] cookies = request.getCookies();
         for (Cookie cookie : cookies) {
-            if (cookie.getName().equals("REFRESH_TOKEN")) {
+            if (cookie.getName().equals(refreshConfig.getName())) {
                 refresh = cookie.getValue();
             }
         }
@@ -228,7 +156,7 @@ public class AuthService {
 
         // 토큰이 refresh인지 확인 (발급시 페이로드에 명시)
         String category = jwtProvider.getCategory(refresh);
-        if (!category.equals("REFRESH_TOKEN")) {
+        if (!category.equals(refreshConfig.getName())) {
             throw new AuthException(INVALID_TOKEN);
         }
 
@@ -240,18 +168,19 @@ public class AuthService {
 
         // JWT 생성
         Long userId = jwtProvider.getUserId(refresh);
-        String newAccess = jwtProvider.createJwt("ACCESS_TOKEN", userId, 600000L);
-        String newRefresh = jwtProvider.createJwt("REFRESH_TOKEN", userId, 86400000L);
+
+        String newAccess = jwtProvider.createJwt(accessConfig.getName(), userId, accessConfig.getExpiry());
+        String newRefresh = jwtProvider.createJwt(refreshConfig.getName(),userId, refreshConfig.getExpiry());
 
         // Refresh 토큰 저장 DB에 기존의 Refresh 토큰 삭제 후 새 Refresh 토큰 저장
         refreshDAO.deleteByRefreshToken(refresh);
-        boolean isSaved = jwtService.saveRefreshToken(userId, refresh, 86400000L);
+        boolean isSaved = jwtService.saveRefreshToken(userId, refresh, refreshConfig.getExpiry());
         if (!isSaved) {
             throw new AuthException(DB_ERROR);
         }
 
         //response
-        response.setHeader("ACCESS_TOKEN", newAccess);
+        response.setHeader(accessConfig.getName(), newAccess);
         response.addCookie(jwtService.createRefreshCookie(newRefresh));
 
         return ResponseEntity.ok().body("메일 전송 성공");

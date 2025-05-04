@@ -3,6 +3,7 @@ package com.jobdam.jobdam_be.auth.filter;
 import com.jobdam.jobdam_be.auth.dao.RefreshDAO;
 import com.jobdam.jobdam_be.auth.exception.JwtAuthException;
 import com.jobdam.jobdam_be.auth.provider.JwtProvider;
+import com.jobdam.jobdam_be.config.TokenProperties;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.*;
@@ -21,10 +22,11 @@ import static com.jobdam.jobdam_be.auth.exception.AuthErrorCode.*;
 @RequiredArgsConstructor
 public class CustomLogoutFilter extends GenericFilter {
 
+    private final TokenProperties tokenProperties;
+
     private final JwtProvider jwtProvider;
     private final RefreshDAO refreshDAO;
     private static final String LOGOUT_URI = "/logout";
-    private static final String REFRESH_COOKIE_NAME = "REFRESH_TOKEN";
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
@@ -75,7 +77,7 @@ public class CustomLogoutFilter extends GenericFilter {
         if (request.getCookies() == null) return null;
 
         return Arrays.stream(request.getCookies())
-                .filter(cookie -> REFRESH_COOKIE_NAME.equals(cookie.getName()))
+                .filter(cookie -> tokenProperties.getRefreshToken().getName().equals(cookie.getName()))
                 .map(Cookie::getValue)
                 .findFirst()
                 .orElse(null);
@@ -87,12 +89,12 @@ public class CustomLogoutFilter extends GenericFilter {
     private boolean isValidRefreshToken(String refresh) {
         jwtProvider.isExpired(refresh);
 
-        return REFRESH_COOKIE_NAME.equals(jwtProvider.getCategory(refresh)) &&
+        return tokenProperties.getRefreshToken().getName().equals(jwtProvider.getCategory(refresh)) &&
                 refreshDAO.existsByRefreshToken(refresh);
     }
 
     private void removeRefreshCookie(HttpServletResponse response) {
-        Cookie expiredCookie = new Cookie(REFRESH_COOKIE_NAME, null);
+        Cookie expiredCookie = new Cookie(tokenProperties.getRefreshToken().getName(), null);
         expiredCookie.setMaxAge(0);
         expiredCookie.setPath("/");
         response.addCookie(expiredCookie);
