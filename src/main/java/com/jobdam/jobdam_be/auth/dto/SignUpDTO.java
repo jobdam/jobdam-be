@@ -9,7 +9,7 @@ import org.hibernate.validator.constraints.Length;
 @Getter
 @Setter
 @NoArgsConstructor
-public class SignUpDto {
+public class SignUpDTO {
     @Email
     @NotBlank
     private String email;
