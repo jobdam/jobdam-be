@@ -23,14 +23,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     //프론트는 /app/sendMessage로 메세지 보내면  @MessageMapping("/sendMessage")로 구분함
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/topic/signal");//서버-> 클라 전체응답용
+        registry.enableSimpleBroker("/topic","/queue");//서버-> 클라 경로선언
         registry.setApplicationDestinationPrefixes("/app"); //클라->서버응답용
-        registry.setUserDestinationPrefix("/user/queue");//서버->개인 1:1응답용
+        registry.setUserDestinationPrefix("/user");//서버->개인 1:1응답용
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws").setAllowedOrigins(frontendUrl).withSockJS();
+        registry.addEndpoint("/ws").setAllowedOriginPatterns(frontendUrl).withSockJS();
     }
 
     @Override
