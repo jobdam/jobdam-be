@@ -1,8 +1,6 @@
 package com.jobdam.jobdam_be.user.model;
 
 import com.jobdam.jobdam_be.auth.dto.SignUpDTO;
-import com.jobdam.jobdam_be.user.type.EducationLevel;
-import com.jobdam.jobdam_be.user.type.EducationStatus;
 import lombok.*;
 
 import java.sql.Timestamp;
@@ -31,8 +29,8 @@ public class User {
     // 경력
     private String experienceType;
     // 학력
-    private EducationLevel educationLevel;
-    private EducationStatus educationStatus;
+    private String educationLevel;
+    private String educationStatus;
 
     private String providerId;
 

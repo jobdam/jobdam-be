@@ -1,7 +1,5 @@
 package com.jobdam.jobdam_be.user.dto;
 
-import com.jobdam.jobdam_be.user.type.EducationLevel;
-import com.jobdam.jobdam_be.user.type.EducationStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,6 +18,6 @@ public class UserProfileDTO {
     private String jobCode;
     private String jobDetailCode;
     private String experienceType;
-    private EducationLevel educationLevel;
-    private EducationStatus educationStatus;
+    private String educationLevel;
+    private String educationStatus;
 }
