@@ -24,15 +24,18 @@ public class S3Service {
     /**
      * s3 서버에 이미지 업로드 (기존 값은 제거)
      *
-     * @param image - 업로드할 이미지
+     * @param image      - 업로드할 이미지
      * @param profileImg - 기존의 프로필 이미지 주소
-     * @param userId - 업로드할 대상의 아이디
+     * @param userId     - 업로드할 대상의 아이디
      * @return 저장된 이미지의 퍼블릭 주소
      */
-    public String uploadImage(MultipartFile image, String profileImg, Long userId) throws IOException {
+    public String uploadImage(MultipartFile image, String profileImg, Long userId) {
 
         // 파일 확장자 추출
         String extension = getImageExtension(image);
+        if(extension == null) {
+            throw new S3Exception(S3ErrorCode.INVALID_IMAGE);
+        }
         String fileName = UUID.randomUUID() + "_" + userId + "_profile" + extension;
 
         // 메타데이터 설정
@@ -40,10 +43,9 @@ public class S3Service {
         metadata.setContentType(image.getContentType());
         metadata.setContentLength(image.getSize());
 
-        // S3에 파일 업로드 요청 생성
-        PutObjectRequest putObjectRequest = null;
         try {
-            putObjectRequest = new PutObjectRequest(bucket, fileName, image.getInputStream(), metadata);
+            // S3에 파일 업로드 요청 생성
+            PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, fileName, image.getInputStream(), metadata);
 
             // S3에 파일 업로드
             amazonS3.putObject(putObjectRequest);
