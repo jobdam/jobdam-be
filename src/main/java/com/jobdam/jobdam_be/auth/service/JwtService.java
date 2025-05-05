@@ -16,7 +16,7 @@ public class JwtService {
     private final RefreshDAO refreshDAO;
 
     public Cookie createAccessCookie(String token) {
-        Cookie cookie = new Cookie(tokenProperties.getAccessToken().getName(), token);
+        Cookie cookie = new Cookie("Authorization", token);
         cookie.setHttpOnly(true);
         cookie.setMaxAge(10 * 60);
         return cookie;
