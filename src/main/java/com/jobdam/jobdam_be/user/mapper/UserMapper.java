@@ -24,4 +24,6 @@ public interface UserMapper {
     void updateSocialByEmail(User user);
 
     void saveSocial(User user);
+
+    int initProfile(User user);
 }

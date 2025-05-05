@@ -51,4 +51,8 @@ public class UserDAO {
     public boolean existsByEmail(String email) {
         return userMapper.existsByEmail(email);
     }
+
+    public boolean initProfile(User updateUser) {
+        return userMapper.initProfile(updateUser) > 0;
+    }
 }

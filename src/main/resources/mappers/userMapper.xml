@@ -40,6 +40,19 @@
         , profile_img_url = #{profileImgUrl}
         WHERE email = #{email}
     </update>
+    <update id="initProfile">
+        UPDATE user
+        SET name                = #{name},
+            birthday            = #{birthday},
+            target_company_size = #{targetCompanySize},
+            profile_img_url     = #{profileImgUrl},
+            job_code            = #{jobCode},
+            job_detail_code     = #{jobDetailCode},
+            experience_type     = #{experienceType},
+            education_level     = #{educationLevel},
+            education_status    = #{educationStatus}
+        WHERE id = #{id}
+    </update>
 
     <select id="findById" resultType="com.jobdam.jobdam_be.user.model.User">
         select *
