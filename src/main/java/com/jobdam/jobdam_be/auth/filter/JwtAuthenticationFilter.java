@@ -10,6 +10,7 @@ import com.jobdam.jobdam_be.user.model.User;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 헤더에서 access키에 담긴 토큰을 꺼냄
         String accessToken = parseBearerToken(request);
+        // 쿠키 검사
+        if (accessToken == null) {
+            Cookie[] cookies = request.getCookies();
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("Authorization")) {
+                    accessToken = cookie.getValue();
+                }
+            }
+        }
         // 토큰이 없는 경우(ex 로그인 전 요청)는 인증 없이 다음 필터로 넘김
         if (accessToken == null) {
             filterChain.doFilter(request, response);
