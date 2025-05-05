@@ -69,7 +69,7 @@ public class AuthService {
         dto.setPassword(encodedPassword);
 
         User user = new User(dto);
-        boolean isSaved = userDAO.save(user);
+        boolean isSaved = userDAO.saveEmail(user);
         if (!isSaved) {
             throw new AuthException(DB_ERROR);
         }
