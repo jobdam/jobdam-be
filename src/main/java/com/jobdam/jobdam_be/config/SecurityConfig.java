@@ -1,5 +1,6 @@
 package com.jobdam.jobdam_be.config;
 
+import com.jobdam.jobdam_be.auth.config.TokenProperties;
 import com.jobdam.jobdam_be.auth.dao.RefreshDAO;
 import com.jobdam.jobdam_be.auth.exception.CustomAccessDeniedHandler;
 import com.jobdam.jobdam_be.auth.exception.CustomAuthenticationEntryPoint;

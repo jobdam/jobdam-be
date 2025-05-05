@@ -12,39 +12,47 @@ import java.util.Optional;
 public class UserDAO {
     private final UserMapper userMapper;
 
+    // save
+    public boolean saveEmail(User user) {
+        return userMapper.saveEmail(user) > 0;
+    }
+
+    public void saveSocial(User user) {
+        userMapper.saveSocial(user);
+    }
+
+    // find
     public Optional<User> findById(Long id) {
         return userMapper.findById(id);
-    }
-
-    public boolean existsByEmail(String email) {
-        return userMapper.existsByEmail(email);
-    }
-
-    public boolean save(User user) {
-        return userMapper.save(user) > 0;
     }
 
     public Optional<User> findByEmail(String email) {
         return userMapper.findByEmail(email);
     }
 
+    public Optional<User> findByProviderId(String providerId) {
+        return userMapper.findByProviderId(providerId);
+    }
+
     public Long findIdByEmail(String email) {
         return userMapper.findIdByEmail(email);
     }
 
+    // update
     public void updateCreatedAtByEmail(String email) {
         userMapper.updateCreatedAtByEmail(email);
-    }
-
-    public Optional<User> findByProviderId(String providerId) {
-        return userMapper.findByProviderId(providerId);
     }
 
     public void updateSocialByEmail(User user) {
         userMapper.updateSocialByEmail(user);
     }
 
-    public void saveSocial(User user) {
-        userMapper.saveSocial(user);
+    // exists
+    public boolean existsByEmail(String email) {
+        return userMapper.existsByEmail(email);
+    }
+
+    public boolean initProfile(User updateUser) {
+        return userMapper.initProfile(updateUser) > 0;
     }
 }

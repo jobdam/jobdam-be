@@ -3,7 +3,7 @@ package com.jobdam.jobdam_be.auth.oauth2;
 import com.jobdam.jobdam_be.auth.provider.JwtProvider;
 import com.jobdam.jobdam_be.auth.service.CustomOAuth2User;
 import com.jobdam.jobdam_be.auth.service.JwtService;
-import com.jobdam.jobdam_be.config.TokenProperties;
+import com.jobdam.jobdam_be.auth.config.TokenProperties;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

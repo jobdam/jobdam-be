@@ -30,7 +30,7 @@ public class IdInsertTest {
                     .email(email)
                     .password(encodedPassword)
                     .build();
-            userDAO.save(user);
+            userDAO.saveEmail(user);
         }
     }
 

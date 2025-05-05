@@ -13,7 +13,7 @@ public interface UserMapper {
 
     boolean existsByEmail(String email);
 
-    int save(User user);
+    int saveEmail(User user);
 
     void updateCreatedAtByEmail(String email);
 
@@ -24,4 +24,6 @@ public interface UserMapper {
     void updateSocialByEmail(User user);
 
     void saveSocial(User user);
+
+    int initProfile(User user);
 }

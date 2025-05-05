@@ -5,7 +5,7 @@ import com.jobdam.jobdam_be.auth.dao.RefreshDAO;
 import com.jobdam.jobdam_be.auth.exception.JwtAuthException;
 import com.jobdam.jobdam_be.auth.provider.JwtProvider;
 import com.jobdam.jobdam_be.auth.service.JwtService;
-import com.jobdam.jobdam_be.config.TokenProperties;
+import com.jobdam.jobdam_be.auth.config.TokenProperties;
 import com.jobdam.jobdam_be.user.dao.UserDAO;
 import com.jobdam.jobdam_be.user.model.User;
 import jakarta.servlet.FilterChain;
