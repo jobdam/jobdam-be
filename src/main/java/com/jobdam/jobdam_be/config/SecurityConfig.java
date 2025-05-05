@@ -74,7 +74,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 //oauth2
                 .oauth2Login((oauth2) -> oauth2
-                        .userInfoEndpoint((userInfo ) -> userInfo
+                        .userInfoEndpoint((userInfo) -> userInfo
                                 .userService(customOAuth2UserService)
                         )
                         .successHandler(customOAuth2SuccessHandler)
@@ -87,8 +87,8 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers(
-                                "/swagger-ui/**", "/check-email", "/login", "/sign-up", "/resend-verification", "/verify", "verify-email-check", "/reissue",
-                                "/termsAgreement", "/send", "/check-sns","/debug/websocket/users"
+                                "/swagger-ui/**", "/check-email", "/login/**","oauth2/**", "/sign-up", "/resend-verification", "/verify", "verify-email-check", "/reissue",
+                                "/termsAgreement", "/send", "/check-sns", "/debug/websocket/users"
                         ).permitAll()
                         .requestMatchers("/ws/**",
                                 "/css/**", "/js/**", "/img/**", "/static/**", "/favicon.ico", "/WEB-INF/views/**"
@@ -112,7 +112,7 @@ public class SecurityConfig {
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept"));
-        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        configuration.setExposedHeaders(Arrays.asList("Set-Cookie", "Authorization"));
         configuration.setAllowCredentials(true);
 
         // 개발 중	0 또는 생략 (변경 반영 빠르게)
