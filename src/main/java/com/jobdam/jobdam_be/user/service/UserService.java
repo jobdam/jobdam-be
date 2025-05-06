@@ -63,6 +63,7 @@ public class UserService {
 
         User user = optionalUser.get();
         UserProfileDTO dto = UserProfileDTO.builder()
+                .email(user.getEmail())
                 .name(user.getName())
                 .birthday(user.getBirthday())
                 .targetCompanySize(user.getTargetCompanySize())

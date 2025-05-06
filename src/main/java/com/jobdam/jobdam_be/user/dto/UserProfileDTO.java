@@ -10,6 +10,7 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserProfileDTO {
+    private String email;
     private String name;
     private Timestamp birthday;
     private String targetCompanySize;
