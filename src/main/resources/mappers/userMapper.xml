@@ -4,6 +4,26 @@
 
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.jobdam.jobdam_be.user.mapper.UserMapper">
+
+    <resultMap id="UserResultMap" type="com.jobdam.jobdam_be.user.model.User">
+        <result property="id" column="id"/>
+        <result property="email" column="email"/>
+        <result property="password" column="password"/>
+        <result property="name" column="name"/>
+        <result property="birthday" column="birthday"/>
+        <result property="targetCompanySize" column="target_company_size"/>
+        <result property="isDeleted" column="is_deleted"/>
+        <result property="blacklist" column="blacklist"/>
+        <result property="profileImgUrl" column="profile_img_url"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="jobCode" column="job_code"/>
+        <result property="jobDetailCode" column="job_detail_code"/>
+        <result property="experienceType" column="experience_type"/>
+        <result property="educationLevel" column="education_level"/>
+        <result property="educationStatus" column="education_status"/>
+        <result property="providerId" column="provider_id"/>
+    </resultMap>
+
     <insert id="saveEmail">
         INSERT INTO user (email,
                           password)
@@ -54,7 +74,7 @@
         WHERE id = #{id}
     </update>
 
-    <select id="findById" resultType="com.jobdam.jobdam_be.user.model.User">
+    <select id="findById" resultMap="UserResultMap">
         select *
         from user
         where id = #{id}
@@ -66,7 +86,7 @@
         WHERE email = #{email}
     </select>
 
-    <select id="findByEmail" resultType="com.jobdam.jobdam_be.user.model.User">
+    <select id="findByEmail" resultMap="UserResultMap">
         SELECT *
         FROM user
         WHERE email = #{email}
@@ -78,7 +98,7 @@
         WHERE email = #{email}
     </select>
 
-    <select id="findByProviderId" resultType="com.jobdam.jobdam_be.user.model.User">
+    <select id="findByProviderId" resultMap="UserResultMap">
         SELECT *
         FROM user
         WHERE provider_id = #{providerId}
