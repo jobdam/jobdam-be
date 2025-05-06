@@ -1,19 +1,20 @@
 package com.jobdam.jobdam_be.user.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.sql.Timestamp;
 
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserProfileDTO {
+public class UserInitProfileDTO {
     private String name;
     private Timestamp birthday;
     private String targetCompanySize;
-    private String profileImgUrl;
     private String jobCode;
     private String jobDetailCode;
     private String experienceType;
