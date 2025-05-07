@@ -55,4 +55,8 @@ public class UserDAO {
     public boolean initProfile(User updateUser) {
         return userMapper.initProfile(updateUser) > 0;
     }
+
+    public boolean existsJobById(Long userId) {
+        return userMapper.existsJobById(userId);
+    }
 }

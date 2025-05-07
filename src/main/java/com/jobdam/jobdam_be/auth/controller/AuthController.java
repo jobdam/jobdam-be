@@ -44,6 +44,24 @@ public class AuthController {
         return ResponseEntity.ok("인증이 완료되었습니다!");
     }
 
+    // Social 쿠키 검증 후 헤더에 토큰 제공
+    @GetMapping("/oauth-redirect")
+    public ResponseEntity<Map<String, Boolean>> oauthRedirect(HttpServletRequest request, HttpServletResponse response) {
+         String token = null;
+
+        for (Cookie cookie : request.getCookies()) {
+            if (cookie.getName().equals("Authorization")) {
+                token = cookie.getValue();
+            }
+        }
+
+        log.info("Authorization: {}", token);
+
+        authService.setLoginToken(token, response);
+
+        return authService.isProfileSetup(token);
+    }
+
     @PostMapping("/reissue")
     public ResponseEntity<String> reissue(HttpServletRequest request, HttpServletResponse response) {
         return authService.reissueRefreshToken(request, response);

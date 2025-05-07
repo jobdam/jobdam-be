@@ -133,44 +133,19 @@ public class AuthService {
         TokenProperties.TokenConfig refreshConfig = tokenProperties.getRefreshToken();
 
         String refresh = null;
-        // 리프레시 토큰이 존재하는지
-        Cookie[] cookies = request.getCookies();
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals(refreshConfig.getName())) {
+        for(Cookie cookie:request.getCookies()) {
+            if(cookie.getName().equals(refreshConfig.getName())) {
                 refresh = cookie.getValue();
             }
         }
 
-        if (refresh == null) {
-            throw new AuthException(TOKEN_NOT_FOUND);
-        }
-
-        // 리프레시 토큰이 만료되었는지
-        try {
-            jwtProvider.isExpired(refresh);
-        } catch (ExpiredJwtException e) {
-            throw new AuthException(EXPIRED_TOKEN);
-        } catch (io.jsonwebtoken.JwtException e) {
-            throw new AuthException(INVALID_SIGNATURE);
-        }
-
-        // 토큰이 refresh인지 확인 (발급시 페이로드에 명시)
-        String category = jwtProvider.getCategory(refresh);
-        if (!category.equals(refreshConfig.getName())) {
-            throw new AuthException(INVALID_TOKEN);
-        }
-
-        // DB에 저장되어 있는지 확인
-        boolean isExist = refreshDAO.existsByRefreshToken(refresh);
-        if (!isExist) {
-            throw new AuthException(INVALID_TOKEN);
-        }
+        validateRefresh(refresh);
 
         // JWT 생성
         Long userId = jwtProvider.getUserId(refresh);
 
         String newAccess = jwtProvider.createJwt(accessConfig.getName(), userId, accessConfig.getExpiry());
-        String newRefresh = jwtProvider.createJwt(refreshConfig.getName(),userId, refreshConfig.getExpiry());
+        String newRefresh = jwtProvider.createJwt(refreshConfig.getName(), userId, refreshConfig.getExpiry());
 
         // Refresh 토큰 저장 DB에 기존의 Refresh 토큰 삭제 후 새 Refresh 토큰 저장
         refreshDAO.deleteByRefreshToken(refresh);
@@ -184,5 +159,71 @@ public class AuthService {
         response.addCookie(jwtService.createRefreshCookie(newRefresh));
 
         return ResponseEntity.ok().body("토큰 재발급 성공");
+    }
+
+    public Long setLoginToken(String token, HttpServletResponse response) {
+        validateAccess(token);
+        TokenProperties.TokenConfig accessConfig = tokenProperties.getAccessToken();
+
+        Long userId = jwtProvider.getUserId(token);
+
+        String access = jwtProvider.createJwt(accessConfig.getName(), userId, accessConfig.getExpiry());
+
+        response.setHeader("Authorization", "Bearer " + access);
+
+        return userId;
+    }
+
+    public ResponseEntity<Map<String, Boolean>> isProfileSetup (String token){
+        Long userId = jwtProvider.getUserId(token);
+
+        boolean isSetup = userDAO.existsJobById(userId);
+
+        return ResponseEntity.ok().body(Map.of("isSetup", isSetup));
+    }
+
+    private void validateRefresh(String token) {
+        TokenProperties.TokenConfig refreshConfig = tokenProperties.getRefreshToken();
+
+        validateToken(token);
+
+        // 토큰이 access 인지 확인 (발급시 페이로드에 명시)
+        String category = jwtProvider.getCategory(token);
+        if (!category.equals(refreshConfig.getName())) {
+            throw new AuthException(INVALID_TOKEN);
+        }
+
+        // DB에 저장되어 있는지 확인
+        boolean isExist = refreshDAO.existsByRefreshToken(token);
+        if (!isExist) {
+            throw new AuthException(INVALID_TOKEN);
+        }
+    }
+
+    private void validateAccess(String token) {
+        TokenProperties.TokenConfig accessConfig = tokenProperties.getAccessToken();
+
+        validateToken(token);
+
+        // 토큰이 access 인지 확인 (발급시 페이로드에 명시)
+        String category = jwtProvider.getCategory(token);
+        if (!category.equals(accessConfig.getName())) {
+            throw new AuthException(INVALID_TOKEN);
+        }
+    }
+
+    private void validateToken(String token) throws AuthException {
+        if (token == null) {
+            throw new AuthException(TOKEN_NOT_FOUND);
+        }
+
+        // 토큰이 만료되었는지
+        try {
+            jwtProvider.isExpired(token);
+        } catch (ExpiredJwtException e) {
+            throw new AuthException(EXPIRED_TOKEN);
+        } catch (io.jsonwebtoken.JwtException e) {
+            throw new AuthException(INVALID_SIGNATURE);
+        }
     }
 }
