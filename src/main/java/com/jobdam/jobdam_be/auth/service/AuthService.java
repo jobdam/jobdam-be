@@ -180,9 +180,9 @@ public class AuthService {
         }
 
         //response
-        response.setHeader(accessConfig.getName(), newAccess);
+        response.setHeader("Authorization", "Bearer " + newAccess);
         response.addCookie(jwtService.createRefreshCookie(newRefresh));
 
-        return ResponseEntity.ok().body("메일 전송 성공");
+        return ResponseEntity.ok().body("토큰 재발급 성공");
     }
 }

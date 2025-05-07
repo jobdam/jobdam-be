@@ -18,6 +18,5 @@ public class TokenProperties {
     public static class TokenConfig {
         private String name;
         private long expiry;
-
     }
 }

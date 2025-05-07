@@ -91,7 +91,7 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers(
-                                "/swagger-ui/**", "/check-email", "/login/**","oauth2/**", "/sign-up", "/resend-verification", "/verify", "verify-email-check", "/reissue",
+                                "/swagger-ui/**", "/check-email", "/login/**","/oauth2/**", "/sign-up", "/resend-verification", "/verify", "verify-email-check", "/reissue",
                                 "/termsAgreement", "/send", "/check-sns", "/debug/websocket/users"
                         ).permitAll()
                         .requestMatchers("/ws/**",
