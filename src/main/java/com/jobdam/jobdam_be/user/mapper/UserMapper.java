@@ -26,4 +26,6 @@ public interface UserMapper {
     void saveSocial(User user);
 
     int initProfile(User user);
+
+    boolean existsJobById(Long id);
 }
