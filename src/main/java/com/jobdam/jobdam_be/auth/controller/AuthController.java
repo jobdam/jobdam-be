@@ -46,7 +46,7 @@ public class AuthController {
 
     // Social 쿠키 검증 후 헤더에 토큰 제공
     @GetMapping("/oauth-redirect")
-    public ResponseEntity<?> oauthRedirect(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<Map<String, Boolean>> oauthRedirect(HttpServletRequest request, HttpServletResponse response) {
          String token = null;
 
         for (Cookie cookie : request.getCookies()) {
