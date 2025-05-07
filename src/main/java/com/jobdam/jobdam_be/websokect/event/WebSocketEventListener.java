@@ -32,6 +32,7 @@ public class WebSocketEventListener {
     public void handleSessionConnect(SessionConnectEvent event){
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
 
+
         log.info("[웹소켓 연결!] sessionId={}", accessor.getSessionId());
     }
 
