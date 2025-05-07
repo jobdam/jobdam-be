@@ -3,6 +3,7 @@ package com.jobdam.jobdam_be.auth.controller;
 import com.jobdam.jobdam_be.auth.dto.ResendDTO;
 import com.jobdam.jobdam_be.auth.dto.SignUpDTO;
 import com.jobdam.jobdam_be.auth.service.AuthService;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -11,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.Map;
 
 @Slf4j
@@ -37,11 +37,10 @@ public class AuthController {
     }
 
     @GetMapping("/verify")
-    public ResponseEntity<String> verify(@RequestParam String token, HttpServletResponse response) throws IOException {
+    public ResponseEntity<Map<String, Boolean>> verify(@RequestParam String token) {
         authService.verifyEmail(token);
 
-        response.sendRedirect("http://localhost:5173/verify-email-check");
-        return ResponseEntity.ok("인증이 완료되었습니다!");
+        return authService.isProfileSetup(token);
     }
 
     // Social 쿠키 검증 후 헤더에 토큰 제공
