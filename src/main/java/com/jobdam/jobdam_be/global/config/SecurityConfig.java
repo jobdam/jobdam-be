@@ -1,4 +1,4 @@
-package com.jobdam.jobdam_be.config;
+package com.jobdam.jobdam_be.global.config;
 
 import com.jobdam.jobdam_be.auth.config.TokenProperties;
 import com.jobdam.jobdam_be.auth.dao.RefreshDAO;
