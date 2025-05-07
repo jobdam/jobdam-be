@@ -1,4 +1,4 @@
-package com.jobdam.jobdam_be.config;
+package com.jobdam.jobdam_be.global.config;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.session.SqlSessionFactory;
