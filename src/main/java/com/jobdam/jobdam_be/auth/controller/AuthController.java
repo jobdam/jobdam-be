@@ -38,14 +38,15 @@ public class AuthController {
 
     @GetMapping("/verify")
     public ResponseEntity<Map<String, Boolean>> verify(@RequestParam String token) {
-        authService.verifyEmail(token);
+        Long userId = authService.verifyEmail(token);
 
-        return authService.isProfileSetup(token);
+        return authService.isProfileSetup(userId);
     }
 
     // Social 쿠키 검증 후 헤더에 토큰 제공
     @GetMapping("/oauth-redirect")
     public ResponseEntity<Map<String, Boolean>> oauthRedirect(HttpServletRequest request, HttpServletResponse response) {
+
          String token = null;
 
         for (Cookie cookie : request.getCookies()) {
@@ -54,11 +55,9 @@ public class AuthController {
             }
         }
 
-        log.info("Authorization: {}", token);
+        Long userId = authService.setLoginToken(token, response);
 
-        authService.setLoginToken(token, response);
-
-        return authService.isProfileSetup(token);
+        return authService.isProfileSetup(userId);
     }
 
     @PostMapping("/reissue")

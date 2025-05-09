@@ -1,9 +1,9 @@
 package com.jobdam.jobdam_be.auth.oauth2;
 
-import com.jobdam.jobdam_be.auth.provider.JwtProvider;
+import com.jobdam.jobdam_be.auth.dao.TempTokenDAO;
+import com.jobdam.jobdam_be.auth.model.OauthTempToken;
 import com.jobdam.jobdam_be.auth.service.CustomOAuth2User;
 import com.jobdam.jobdam_be.auth.service.JwtService;
-import com.jobdam.jobdam_be.auth.config.TokenProperties;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,14 +16,14 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.UUID;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
-    private final TokenProperties tokenProperties;
     private final JwtService jwtService;
-    private final JwtProvider jwtProvider;
+    private final TempTokenDAO tempTokenDAO;
 
     @Value("${frontEnd.url}")
     private String frontUrl;
@@ -34,18 +34,15 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         Long id = oauthUser.getId();
 
-        TokenProperties.TokenConfig accessConfig = tokenProperties.getAccessToken();
-        TokenProperties.TokenConfig refreshConfig = tokenProperties.getRefreshToken();
+        String uuid = UUID.randomUUID().toString();
+        OauthTempToken token = new OauthTempToken(uuid, id);
+        tempTokenDAO.save(token);
 
-        String accessToken = jwtProvider.createJwt(accessConfig.getName(), id, accessConfig.getExpiry());
-        String refreshToken = jwtProvider.createJwt(refreshConfig.getName(), id, refreshConfig.getExpiry());
+        Cookie tempCookie = jwtService.createTempCookie(uuid);
 
-        Cookie accessCookie = jwtService.createAccessCookie(accessToken);
-        Cookie refreshCookie = jwtService.createRefreshCookie(refreshToken);
+        response.addCookie(tempCookie);
 
-        response.addCookie(accessCookie);
-        response.addCookie(refreshCookie);
-
-        response.sendRedirect(frontUrl + "/oauth-redirect");
+        response.setContentType("application/json");
+        response.getWriter().write("{\"redirectUrl\": \"" + frontUrl + "/oauth-redirect\"}");
     }
 }

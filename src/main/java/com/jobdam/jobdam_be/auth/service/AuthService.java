@@ -2,6 +2,7 @@ package com.jobdam.jobdam_be.auth.service;
 
 import com.jobdam.jobdam_be.auth.dao.EmailVerificationDAO;
 import com.jobdam.jobdam_be.auth.dao.RefreshDAO;
+import com.jobdam.jobdam_be.auth.dao.TempTokenDAO;
 import com.jobdam.jobdam_be.auth.dto.ResendDTO;
 import com.jobdam.jobdam_be.auth.dto.SignUpDTO;
 import com.jobdam.jobdam_be.auth.exception.AuthException;
@@ -46,6 +47,7 @@ public class AuthService {
     private final EmailVerificationDAO verificationDAO;
     private final UserDAO userDAO;
     private final RefreshDAO refreshDAO;
+    private final TempTokenDAO tempTokenDAO;
 
     public ResponseEntity<Map<String, Boolean>> checkEmail(String email) {
         Map<String, Boolean> response = new HashMap<>();
@@ -88,7 +90,7 @@ public class AuthService {
     }
 
     @Transactional
-    public void verifyEmail(String token) {
+    public Long verifyEmail(String token) {
         EmailVerification verification = verificationDAO.findByToken(token).orElseThrow(() -> new AuthException(INVALID_TOKEN));
         long timeElapsed = System.currentTimeMillis() - verification.getCreatedAt().getTime();
         if (timeElapsed > TimeUnit.MINUTES.toMillis(5)) {
@@ -100,10 +102,12 @@ public class AuthService {
             throw new AuthException(INVALID_USER);
         }
         User user = findUser.get();
-        if (user.getCreatedAt() != null) return;
+        if (user.getCreatedAt() != null) return null;
 
         verificationDAO.deleteByEmail(user.getEmail());
         userDAO.updateCreatedAtByEmail(user.getEmail());
+
+        return user.getId();
     }
 
     @Transactional
@@ -128,13 +132,14 @@ public class AuthService {
         });
     }
 
+    @Transactional
     public ResponseEntity<String> reissueRefreshToken(HttpServletRequest request, HttpServletResponse response) throws AuthException {
         TokenProperties.TokenConfig accessConfig = tokenProperties.getAccessToken();
         TokenProperties.TokenConfig refreshConfig = tokenProperties.getRefreshToken();
 
         String refresh = null;
-        for(Cookie cookie:request.getCookies()) {
-            if(cookie.getName().equals(refreshConfig.getName())) {
+        for (Cookie cookie : request.getCookies()) {
+            if (cookie.getName().equals(refreshConfig.getName())) {
                 refresh = cookie.getValue();
             }
         }
@@ -162,20 +167,28 @@ public class AuthService {
     }
 
     public Long setLoginToken(String token, HttpServletResponse response) {
-        validateAccess(token);
-        TokenProperties.TokenConfig accessConfig = tokenProperties.getAccessToken();
+        Long userId = tempTokenDAO.findUserIdByToken(token);
+        if (userId == null) {
+            throw new AuthException(INVALID_TOKEN);
+        }
 
-        Long userId = jwtProvider.getUserId(token);
+        TokenProperties.TokenConfig accessConfig = tokenProperties.getAccessToken();
+        TokenProperties.TokenConfig refreshConfig = tokenProperties.getRefreshToken();
 
         String access = jwtProvider.createJwt(accessConfig.getName(), userId, accessConfig.getExpiry());
 
+        String refreshToken = jwtProvider.createJwt(refreshConfig.getName(), userId, refreshConfig.getExpiry());
+        Cookie refreshCookie = jwtService.createRefreshCookie(refreshToken);
+        response.addCookie(refreshCookie);
+
         response.setHeader("Authorization", "Bearer " + access);
+
+        tempTokenDAO.deleteByToken(token);
 
         return userId;
     }
 
-    public ResponseEntity<Map<String, Boolean>> isProfileSetup (String token){
-        Long userId = jwtProvider.getUserId(token);
+    public ResponseEntity<Map<String, Boolean>> isProfileSetup(Long userId) {
 
         boolean isSetup = userDAO.existsJobById(userId);
 
@@ -196,18 +209,6 @@ public class AuthService {
         // DB에 저장되어 있는지 확인
         boolean isExist = refreshDAO.existsByRefreshToken(token);
         if (!isExist) {
-            throw new AuthException(INVALID_TOKEN);
-        }
-    }
-
-    private void validateAccess(String token) {
-        TokenProperties.TokenConfig accessConfig = tokenProperties.getAccessToken();
-
-        validateToken(token);
-
-        // 토큰이 access 인지 확인 (발급시 페이로드에 명시)
-        String category = jwtProvider.getCategory(token);
-        if (!category.equals(accessConfig.getName())) {
             throw new AuthException(INVALID_TOKEN);
         }
     }
