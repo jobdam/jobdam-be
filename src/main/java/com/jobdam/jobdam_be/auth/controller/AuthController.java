@@ -3,7 +3,6 @@ package com.jobdam.jobdam_be.auth.controller;
 import com.jobdam.jobdam_be.auth.dto.ResendDTO;
 import com.jobdam.jobdam_be.auth.dto.SignUpDTO;
 import com.jobdam.jobdam_be.auth.service.AuthService;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -45,18 +44,8 @@ public class AuthController {
 
     // Social 쿠키 검증 후 헤더에 토큰 제공
     @GetMapping("/oauth-redirect")
-    public ResponseEntity<Map<String, Boolean>> oauthRedirect(HttpServletRequest request, HttpServletResponse response) {
-
-         String token = null;
-
-        for (Cookie cookie : request.getCookies()) {
-            if (cookie.getName().equals("Authorization")) {
-                token = cookie.getValue();
-            }
-        }
-
+    public ResponseEntity<Map<String, Boolean>> oauthRedirect(@RequestParam String token, HttpServletResponse response) {
         Long userId = authService.setLoginToken(token, response);
-
         return authService.isProfileSetup(userId);
     }
 

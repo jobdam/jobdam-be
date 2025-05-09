@@ -15,14 +15,6 @@ public class JwtService {
     private final TokenProperties tokenProperties;
     private final RefreshDAO refreshDAO;
 
-    public Cookie createTempCookie(String token) {
-        Cookie cookie = new Cookie("Authorization", token);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(10 * 60);
-        return cookie;
-    }
-
     public boolean saveRefreshToken(Long userId, String refreshToken, long expiredMs) {
         Timestamp expiration = new Timestamp(System.currentTimeMillis() + expiredMs);
         RefreshToken entity = new RefreshToken(userId, refreshToken, expiration.toString());
