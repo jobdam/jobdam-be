@@ -20,7 +20,6 @@ public class WebRTCSignalSessionTracker implements WebSocketSessionTracker {
     public void addSession(String videoChatRoomId, String sessionId) {
         sessionMap.computeIfAbsent(videoChatRoomId,
                 k-> ConcurrentHashMap.newKeySet()).add(sessionId);
-        sessionMap.get("1").forEach(System.out::println);
     }
     public void addSessionUserMapping(String sessionId, Long userId){
         sessionIdToUserIdMap.put(sessionId,userId);
