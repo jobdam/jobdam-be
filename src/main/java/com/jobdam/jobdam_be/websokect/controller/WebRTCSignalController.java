@@ -41,11 +41,13 @@ public class WebRTCSignalController {
         List<Long> existingUserIdList = tracker.getOtherUserIds(roomId,sessionId);
 
         //나에게 참여중인 유저목록 보내주기
-        simpMessagingTemplate.convertAndSendToUser(
-                principal.getName(),
-                destination(roomId),
-                new JoinListSignalDTO(existingUserIdList)
-        );
+        if(!existingUserIdList.isEmpty()) {
+            simpMessagingTemplate.convertAndSendToUser(
+                    principal.getName(),
+                    destination(roomId),
+                    new JoinListSignalDTO(existingUserIdList)
+            );
+        }
 
         log.info("[SIGNAL서버 JOIN요청] roomId:{} userId:{} sessionId:{}",roomId,enterUserId,sessionId);
     }
