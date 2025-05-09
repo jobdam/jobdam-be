@@ -44,9 +44,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             email = responseMap.get("email");
             name = responseMap.get("name");
             profileImgUrl = responseMap.get("profile_image");
-            String fullDateStr = responseMap.get("birthyear") + "-" + responseMap.get("birthday");
-            LocalDate localDate = LocalDate.parse(fullDateStr, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-            user.setBirthday(Timestamp.valueOf(localDate.atStartOfDay()));
+
+            String birthyear = responseMap.get("birthyear");
+            String birthday = responseMap.get("birthday");
+            if (birthyear != null && birthday != null) {
+                String fullDateStr = birthyear + "-" + birthday;
+                LocalDate localDate = LocalDate.parse(fullDateStr, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                user.setBirthday(Timestamp.valueOf(localDate.atStartOfDay()));
+            }
 
         } else if (registrationId.equals("google")) {
             Map<String, Object> responseMap = oAuth2User.getAttributes();
