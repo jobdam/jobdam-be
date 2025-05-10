@@ -20,24 +20,9 @@ import java.util.Optional;
 public class UserService {
     private final UserDAO userDAO;
 
-    public void test() {
-        throw new UserException(CommonErrorCode.USER_NOT_FOUND);
-    }
-
-
     public void initProfile(Long userId, UserInitProfileDTO dto, String imgUrl) {
-        User updateUser = User.builder()
-                .id(userId)
-                .name(dto.getName())
-                .birthday(dto.getBirthday())
-                .targetCompanySize(dto.getTargetCompanySize())
-                .profileImgUrl(imgUrl)
-                .jobCode(dto.getJobCode())
-                .jobDetailCode(dto.getJobDetailCode())
-                .experienceType(dto.getExperienceType())
-                .educationLevel(dto.getEducationLevel())
-                .educationStatus(dto.getEducationStatus())
-                .build();
+        User updateUser = buildUser(userId, imgUrl, dto);
+
         try {
             if (!userDAO.initProfile(updateUser))
                 throw new UserException(UserErrorCode.PROFILE_UPDATE_FAILED);
@@ -76,5 +61,38 @@ public class UserService {
                 .build();
 
         return ResponseEntity.ok(dto);
+    }
+
+    public String getUserProfileImage(Long userId) {
+        return userDAO.findProfileImgUrlById(userId);
+    }
+
+    public void updateProfile(Long userId, String imgUrl, UserInitProfileDTO dto) {
+        User updateUser = buildUser(userId, imgUrl, dto);
+
+        try {
+            if (!userDAO.updateProfile(updateUser))
+                throw new UserException(UserErrorCode.PROFILE_UPDATE_FAILED);
+        } catch (UserException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new UserException(CommonErrorCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private User buildUser(Long userId, String imgUrl, UserInitProfileDTO dto) {
+        return User.builder()
+                .id(userId)
+                .name(dto.getName())
+                .birthday(dto.getBirthday())
+                .targetCompanySize(dto.getTargetCompanySize())
+                .profileImgUrl(imgUrl)
+                .jobCode(dto.getJobCode())
+                .jobDetailCode(dto.getJobDetailCode())
+                .experienceType(dto.getExperienceType())
+                .educationLevel(dto.getEducationLevel())
+                .educationStatus(dto.getEducationStatus())
+                .build();
     }
 }

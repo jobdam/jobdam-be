@@ -29,7 +29,7 @@ public class UserController {
 
     @PostMapping("/profile")
     public ResponseEntity<String> saveProfile(@Valid @RequestPart("data") UserInitProfileDTO dto,
-                                         @RequestPart("image") MultipartFile image) {
+                                              @RequestPart("image") MultipartFile image) {
         // 유저 아이디 jwt에서 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Long userId = Long.valueOf(authentication.getName());
@@ -38,7 +38,7 @@ public class UserController {
 
         userService.initProfile(userId, dto, imgUrl);
 
-        return ResponseEntity.ok("");
+        return ResponseEntity.ok("저장 성공");
     }
 
     @GetMapping("/profile")
@@ -47,8 +47,24 @@ public class UserController {
         Long userId = Long.valueOf(authentication.getName());
 
         return userService.getUserProfile(userId);
-
     }
 
+    @PatchMapping("/profile")
+    public ResponseEntity<?> updateUserProfile(@RequestPart("data") UserInitProfileDTO dto,
+                                               @RequestPart(value = "image", required = false) MultipartFile image) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = Long.valueOf(authentication.getName());
+
+        String imgUrl = null;
+        if (image != null && !image.isEmpty()) {
+            String findImgUrl = userService.getUserProfileImage(userId);
+            imgUrl = s3Service.uploadImage(image, findImgUrl, userId);
+        }
+
+        userService.updateProfile(userId, imgUrl, dto);
+
+        return ResponseEntity.ok("업데이트 성공");
+    }
 
 }
