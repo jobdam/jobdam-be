@@ -73,6 +73,21 @@
             education_status    = #{educationStatus}
         WHERE id = #{id}
     </update>
+    <update id="updateProfile">
+        UPDATE user
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="birthday != null">birthday = #{birthday},</if>
+            <if test="targetCompanySize != null">target_company_size = #{targetCompanySize},</if>
+            <if test="profileImgUrl != null">profile_img_url = #{profileImgUrl},</if>
+            <if test="jobCode != null">job_code = #{jobCode},</if>
+            <if test="jobDetailCode != null">job_detail_code = #{jobDetailCode},</if>
+            <if test="experienceType != null">experience_type = #{experienceType},</if>
+            <if test="educationLevel != null">education_level = #{educationLevel},</if>
+            <if test="educationStatus != null">education_status = #{educationStatus},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
 
     <select id="findById" resultMap="UserResultMap">
         select *
@@ -113,6 +128,9 @@
           AND experience_type IS NOT NULL
           AND education_status IS NOT NULL
           AND education_level IS NOT NULL
+    </select>
+    <select id="findProfileImgUrlById" resultType="java.lang.String">
+        SELECT profile_img_url FROM user WHERE id = #{id}
     </select>
 
 </mapper>
