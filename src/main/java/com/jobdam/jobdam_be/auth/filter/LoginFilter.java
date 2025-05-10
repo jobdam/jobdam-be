@@ -98,7 +98,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         Cookie refreshCookie = jwtService.createRefreshCookie(refresh);
         response.addCookie(refreshCookie);
 
-        boolean isSaved = jwtService.saveRefreshToken(userId, refresh, 86400000L);
+        boolean isSaved = jwtService.saveRefreshToken(userId, refresh, refreshConfig.getExpiry());
         if (!isSaved) {
             request.setAttribute("exception", DB_ERROR);
         }
