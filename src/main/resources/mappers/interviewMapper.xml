@@ -19,4 +19,14 @@
         WHERE user_id = #{userId}
     </select>
 
+    <select id="findFeedbackByInterviewIdAndUserId" resultType="java.util.Map">
+        SELECT iq.id      AS questionId,
+               iq.context AS question,
+               fc.content AS feedback
+        FROM interview_question iq
+                 JOIN feedback_content fc ON fc.interview_question_id = iq.id
+        WHERE iq.interview_id = #{interviewId}
+          AND fc.target_user_id = #{userId}
+        ORDER BY iq.id
+    </select>
 </mapper>

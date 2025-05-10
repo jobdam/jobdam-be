@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 @Repository
 @RequiredArgsConstructor
@@ -16,4 +17,7 @@ public class InterviewDAO {
         return interviewMapper.findInterviewById(userId);
     }
 
+    public List<Map<String, Object>> findFeedbackByInterviewIdAndUserId(Long interviewId, Long userId) {
+        return interviewMapper.findFeedbackByInterviewIdAndUserId(interviewId, userId);
+    }
 }
