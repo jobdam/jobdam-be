@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jobdam.jobdam_be.interview.mapper.InterviewMapper">
+
+    <resultMap id="InterviewResultMap" type="com.jobdam.jobdam_be.interview.model.Interview">
+        <result property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="interviewType" column="interview_type"/>
+        <result property="interviewDay" column="interview_day"/>
+        <result property="jobCode" column="job_code"/>
+    </resultMap>
+
+    <select id="findInterviewById" resultMap="InterviewResultMap">
+        SELECT *
+        FROM interview
+        WHERE user_id = #{userId}
+    </select>
+
+</mapper>

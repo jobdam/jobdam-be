@@ -12,7 +12,7 @@ import javax.sql.DataSource;
 import java.util.Objects;
 
 @Configuration
-@MapperScan(basePackages = {"com.jobdam.jobdam_be.user.mapper", "com.jobdam.jobdam_be.auth.mapper","com.jobdam.jobdam_be.job.mapper"}) // Mapper 인터페이스 경로 지정
+@MapperScan(basePackages = {"com.jobdam.jobdam_be.user.mapper", "com.jobdam.jobdam_be.auth.mapper","com.jobdam.jobdam_be.job.mapper", "com.jobdam.jobdam_be.interview.mapper"}) // Mapper 인터페이스 경로 지정
 @RequiredArgsConstructor
 public class MyBatisConfig {
 
