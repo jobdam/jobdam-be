@@ -8,4 +8,8 @@ public class S3Exception extends AbstractException {
     public S3Exception(ErrorCode errorCode) {
         super(errorCode);
     }
+
+    public S3Exception(ErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
+    }
 }

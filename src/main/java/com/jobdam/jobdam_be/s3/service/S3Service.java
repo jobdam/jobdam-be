@@ -33,7 +33,7 @@ public class S3Service {
 
         // 파일 확장자 추출
         String extension = getImageExtension(image);
-        if(extension == null) {
+        if (extension == null) {
             throw new S3Exception(S3ErrorCode.INVALID_IMAGE);
         }
         String fileName = UUID.randomUUID() + "_" + userId + "_profile" + extension;
@@ -50,7 +50,7 @@ public class S3Service {
             // S3에 파일 업로드
             amazonS3.putObject(putObjectRequest);
         } catch (IOException e) {
-            throw new S3Exception(S3ErrorCode.IMAGE_UPLOAD_FAILED);
+            throw new S3Exception(S3ErrorCode.IMAGE_UPLOAD_FAILED, e);
         }
 
         // 기존의 프로필 이미지가 있었다면 삭제

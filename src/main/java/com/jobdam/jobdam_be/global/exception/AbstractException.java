@@ -7,10 +7,16 @@ import lombok.Getter;
 public abstract class AbstractException extends RuntimeException {
     private final ErrorCode errorCode;
 
-    public  AbstractException(ErrorCode errorCode) {
+    public AbstractException(ErrorCode errorCode) {
         super(errorCode.getMessage());
         this.errorCode = errorCode;
     }
+
+    public AbstractException(ErrorCode errorCode, Throwable cause) {
+        super(errorCode.getMessage(), cause); // cause 전달!
+        this.errorCode = errorCode;
+    }
+
     public ErrorCode getExceptionResponse() {
         return errorCode;
     }

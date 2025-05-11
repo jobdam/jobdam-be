@@ -37,7 +37,7 @@ public class UserService {
             throw e;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            throw new UserException(CommonErrorCode.INTERNAL_SERVER_ERROR);
+            throw new UserException(CommonErrorCode.INTERNAL_SERVER_ERROR, e);
         }
     }
 
@@ -47,7 +47,7 @@ public class UserService {
             optionalUser = userDAO.findById(userId);
 
         } catch (Exception e) {
-            throw new UserException(CommonErrorCode.INTERNAL_SERVER_ERROR);
+            throw new UserException(CommonErrorCode.INTERNAL_SERVER_ERROR, e);
         }
 
         if (optionalUser.isEmpty())
@@ -83,8 +83,7 @@ public class UserService {
         } catch (UserException e) {
             throw e;
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new UserException(CommonErrorCode.INTERNAL_SERVER_ERROR);
+            throw new UserException(CommonErrorCode.INTERNAL_SERVER_ERROR, e);
         }
     }
 
