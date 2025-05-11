@@ -93,6 +93,7 @@ public class AuthService {
     @Transactional
     public Long verifyEmail(String token) {
         EmailVerification verification = verificationDAO.findByToken(token).orElseThrow(() -> new AuthException(INVALID_TOKEN));
+
         long timeElapsed = System.currentTimeMillis() - verification.getCreatedAt().getTime();
         if (timeElapsed > TimeUnit.MINUTES.toMillis(5)) {
             throw new AuthException(EXPIRED_TOKEN);

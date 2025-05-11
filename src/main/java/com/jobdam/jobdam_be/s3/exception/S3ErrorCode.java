@@ -7,8 +7,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum S3ErrorCode implements ErrorCode {
-    INVALID_IMAGE(401, "유효하지 않은 이미지입니다."),
-    IMAGE_UPLOAD_FAILED(500, "이미지 업로드에 실패하였습니다.");
+    INVALID_FILE(401, "유효하지 않은 파일입니다."),
+    FILE_UPLOAD_FAILED(500, "파일 업로드에 실패하였습니다.");
 
     private final int code;
     private final String message;

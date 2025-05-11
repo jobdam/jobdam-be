@@ -8,6 +8,7 @@ import com.jobdam.jobdam_be.user.dto.UserProfileDTO;
 import com.jobdam.jobdam_be.user.exception.UserErrorCode;
 import com.jobdam.jobdam_be.user.exception.UserException;
 import com.jobdam.jobdam_be.interview.model.Interview;
+import com.jobdam.jobdam_be.user.model.Resume;
 import com.jobdam.jobdam_be.user.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -74,6 +75,10 @@ public class UserService {
         return userDAO.findProfileImgUrlById(userId);
     }
 
+    public String getUserResumeUrl(Long userId) {
+        return userDAO.findResumeUrlById(userId);
+    }
+
     public void updateProfile(Long userId, String imgUrl, UserInitProfileDTO dto) {
         User updateUser = buildUser(userId, imgUrl, dto);
 
@@ -85,6 +90,26 @@ public class UserService {
         } catch (Exception e) {
             throw new UserException(CommonErrorCode.INTERNAL_SERVER_ERROR, e);
         }
+    }
+    /**
+     * 이력서 저장
+     *
+     * @param fileUrl - 새롭게 생성된 파일 url
+     */
+    public void savePDF(Long userId, String fileUrl) {
+        Resume resume = new Resume(null, userId, fileUrl);
+
+        userDAO.saveOrUpdateResume(resume);
+    }
+
+    public Map<String, List<Interview>> getInterview(Long userId) {
+        List<Interview> interviews = interviewDAO.findInterviewById(userId);
+
+        return interviews.stream()
+                .collect(Collectors.groupingBy(interview -> {
+                    Timestamp ts = interview.getInterviewDay(); // Timestamp
+                    return ts.toLocalDateTime().toLocalDate().toString(); // "YYYY-MM-DD"
+                }));
     }
 
     private User buildUser(Long userId, String imgUrl, UserInitProfileDTO dto) {
@@ -102,13 +127,4 @@ public class UserService {
                 .build();
     }
 
-    public Map<String, List<Interview>> getInterview(Long userId) {
-        List<Interview> interviews = interviewDAO.findInterviewById(userId);
-
-        return interviews.stream()
-                .collect(Collectors.groupingBy(interview -> {
-                    Timestamp ts = interview.getInterviewDay(); // Timestamp
-                    return ts.toLocalDateTime().toLocalDate().toString(); // "YYYY-MM-DD"
-                }));
-    }
 }
