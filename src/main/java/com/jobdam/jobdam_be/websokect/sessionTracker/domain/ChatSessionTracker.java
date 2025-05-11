@@ -16,7 +16,6 @@ public class ChatSessionTracker implements WebSocketSessionTracker {
     public void addSession(String roomId, String sessionId) {
         sessionMap.computeIfAbsent(roomId,
                 k-> ConcurrentHashMap.newKeySet()).add(sessionId);
-        sessionMap.get("1").forEach(System.out::println);
     }
 
     @Override

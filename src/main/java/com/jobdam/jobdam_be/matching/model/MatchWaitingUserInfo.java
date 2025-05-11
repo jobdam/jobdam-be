@@ -19,5 +19,6 @@ public class MatchWaitingUserInfo {
     private String jobDetail;//서브 조건
     private ExperienceType experienceType;//서브조건
     private boolean inProgress;//매칭상태체크(3명이상방에서 list에 3명담을건데 그떄 담겨져있는지 체크)
-    private Instant joinedAt;
+    private Instant joinedAt;//언제 참여했는지.
+    private InterviewPreference interviewPreference;
 }

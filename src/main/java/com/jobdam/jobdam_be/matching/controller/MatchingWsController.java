@@ -20,12 +20,21 @@ public class MatchingWsController {
 
     private final SimpMessagingTemplate simpMessagingTemplate;
 
+    //매칭 완료되면 그사람에게 참여 신호를줌
     public void matchingComplete( List<MatchWaitingUserInfo> fullList, String roomId) {
         fullList.forEach(participant ->
-            simpMessagingTemplate.convertAndSendToUser(
-                    String.valueOf(participant.getUserId()),
-                    "/queue/match/"+participant.getJobGroup(),
-                    roomId
-            ));
+            joinChatRoom(participant.getUserId(), participant.getJobGroup(), roomId));
+    }
+    //매칭중인유저가 3~6명방일때 비어있는방 참여
+     public void userEnterEmptyRoom(MatchWaitingUserInfo userInfo, String roomId) {
+        joinChatRoom(userInfo.getUserId(), userInfo.getJobGroup(), roomId);
+    }
+
+    private void joinChatRoom(Long userId, String jopGroup, String roomId){
+        simpMessagingTemplate.convertAndSendToUser(
+                String.valueOf(userId),
+                "/queue/match/" + jopGroup,
+                roomId
+        );
     }
 }

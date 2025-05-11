@@ -70,10 +70,6 @@ public class WebSocketEventListener {
             addMatchingSubscribeInfo(accessor,roomId);
         }
 
-        if("chat".equals(purpose)){
-            addMatchingSubscribeInfo(accessor,roomId);
-        }
-
         log.info("[웹소켓 구독 완료!] purpose={} roomId={} sessionId={}" ,purpose,roomId,accessor.getSessionId());
     }
 
@@ -150,16 +146,6 @@ public class WebSocketEventListener {
         String introducer = accessor.getFirstNativeHeader("introducer");
         InterviewType interviewType = InterviewType.valueOf(accessor.getFirstNativeHeader("interviewType"));
 
-        MatchWaitingUserInfo matchWaitingUserInfo = MatchWaitingUserInfo.builder()
-                .sessionId(accessor.getSessionId())
-                .userId(userId)
-                .jobGroup(roomId)
-                .jobDetail(jobDetail)
-                .experienceType(experienceType)
-                .matchType(matchType)
-                .inProgress(false)
-                .joinedAt(Instant.now())
-                .build();
 
         InterviewPreference interviewPreference = InterviewPreference.builder()
                 .userId(userId)
@@ -170,12 +156,21 @@ public class WebSocketEventListener {
                 .interviewType(interviewType)
                 .build();
 
+        MatchWaitingUserInfo matchWaitingUserInfo = MatchWaitingUserInfo.builder()
+                .sessionId(accessor.getSessionId())
+                .userId(userId)
+                .jobGroup(roomId)
+                .jobDetail(jobDetail)
+                .experienceType(experienceType)
+                .matchType(matchType)
+                .inProgress(false)
+                .joinedAt(Instant.now())
+                .interviewPreference(interviewPreference)
+                .build();
+
         //매칭 풀에 매칭정보 넣기!
         matchingWaitingPool.add(matchWaitingUserInfo);
 
-        //웹소켓 세션에 채팅때 보여줄 넣는다.(채팅방에가서는 필드에 넣을예정)
-        Objects.requireNonNull(accessor.getSessionAttributes())
-                .put("interviewPreference", interviewPreference);
     }
 
     // 제거메서드
