@@ -49,7 +49,7 @@ public class CustomLogoutFilter extends GenericFilter {
         return LOGOUT_URI.equals(request.getRequestURI()) && "POST".equalsIgnoreCase(request.getMethod());
     }
 
-    private void handleLogout(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private void handleLogout(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = extractRefreshTokenFromCookies(request);
         try {
             if (refreshToken == null || !isValidRefreshToken(refreshToken)) {
@@ -58,10 +58,10 @@ public class CustomLogoutFilter extends GenericFilter {
             }
         } catch (MalformedJwtException e) {
             request.setAttribute("exception", INVALID_TOKEN);
-            throw new JwtAuthException(INVALID_TOKEN);
+            throw new JwtAuthException(INVALID_TOKEN, e);
         } catch (ExpiredJwtException e) {
             request.setAttribute("exception", EXPIRED_TOKEN);
-            throw new JwtAuthException(EXPIRED_TOKEN);
+            throw new JwtAuthException(EXPIRED_TOKEN, e);
         }
 
         // 로그아웃 처리

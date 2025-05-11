@@ -68,7 +68,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         } catch (IOException e) {
             request.setAttribute("exception", UNSUPPORTED_TYPE);
-            throw new JwtAuthException(UNSUPPORTED_TYPE);
+            throw new JwtAuthException(UNSUPPORTED_TYPE, e);
         }
     }
 
@@ -92,7 +92,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         TokenProperties.TokenConfig refreshConfig = tokenProperties.getRefreshToken();
 
         String access = jwtProvider.createJwt(accessConfig.getName(), userId, accessConfig.getExpiry());
-        String refresh = jwtProvider.createJwt(refreshConfig.getName(),userId, refreshConfig.getExpiry());
+        String refresh = jwtProvider.createJwt(refreshConfig.getName(), userId, refreshConfig.getExpiry());
 
         response.setHeader("Authorization", "Bearer " + access);
         Cookie refreshCookie = jwtService.createRefreshCookie(refresh);
@@ -113,7 +113,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             throw e;
         } else if (failed instanceof BadCredentialsException) {
             request.setAttribute("exception", INVALID_EMAIL_OR_PASSWORD);
-            throw new JwtAuthException(INVALID_EMAIL_OR_PASSWORD);
+            throw new JwtAuthException(INVALID_EMAIL_OR_PASSWORD, failed);
         } else {
             throw new JwtAuthException(UNKNOWN_ERROR);
         }

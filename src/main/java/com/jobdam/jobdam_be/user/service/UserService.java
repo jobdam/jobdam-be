@@ -1,24 +1,31 @@
 package com.jobdam.jobdam_be.user.service;
 
 import com.jobdam.jobdam_be.global.exception.type.CommonErrorCode;
+import com.jobdam.jobdam_be.interview.dao.InterviewDAO;
 import com.jobdam.jobdam_be.user.dao.UserDAO;
 import com.jobdam.jobdam_be.user.dto.UserInitProfileDTO;
 import com.jobdam.jobdam_be.user.dto.UserProfileDTO;
 import com.jobdam.jobdam_be.user.exception.UserErrorCode;
 import com.jobdam.jobdam_be.user.exception.UserException;
+import com.jobdam.jobdam_be.interview.model.Interview;
 import com.jobdam.jobdam_be.user.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserDAO userDAO;
+    private final InterviewDAO interviewDAO;
 
     public void initProfile(Long userId, UserInitProfileDTO dto, String imgUrl) {
         User updateUser = buildUser(userId, imgUrl, dto);
@@ -30,7 +37,7 @@ public class UserService {
             throw e;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            throw new UserException(CommonErrorCode.INTERNAL_SERVER_ERROR);
+            throw new UserException(CommonErrorCode.INTERNAL_SERVER_ERROR, e);
         }
     }
 
@@ -40,7 +47,7 @@ public class UserService {
             optionalUser = userDAO.findById(userId);
 
         } catch (Exception e) {
-            throw new UserException(CommonErrorCode.INTERNAL_SERVER_ERROR);
+            throw new UserException(CommonErrorCode.INTERNAL_SERVER_ERROR, e);
         }
 
         if (optionalUser.isEmpty())
@@ -76,8 +83,7 @@ public class UserService {
         } catch (UserException e) {
             throw e;
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new UserException(CommonErrorCode.INTERNAL_SERVER_ERROR);
+            throw new UserException(CommonErrorCode.INTERNAL_SERVER_ERROR, e);
         }
     }
 
@@ -94,5 +100,15 @@ public class UserService {
                 .educationLevel(dto.getEducationLevel())
                 .educationStatus(dto.getEducationStatus())
                 .build();
+    }
+
+    public Map<String, List<Interview>> getInterview(Long userId) {
+        List<Interview> interviews = interviewDAO.findInterviewById(userId);
+
+        return interviews.stream()
+                .collect(Collectors.groupingBy(interview -> {
+                    Timestamp ts = interview.getInterviewDay(); // Timestamp
+                    return ts.toLocalDateTime().toLocalDate().toString(); // "YYYY-MM-DD"
+                }));
     }
 }

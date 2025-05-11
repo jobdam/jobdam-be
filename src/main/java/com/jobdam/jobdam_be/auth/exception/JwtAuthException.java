@@ -12,4 +12,9 @@ public class JwtAuthException extends AuthenticationException {
         super(errorCode.getMessage());
         this.errorCode = errorCode;
     }
+
+    public JwtAuthException(ErrorCode errorCode, Throwable cause) {
+        super(errorCode.getMessage(), cause); // 부모 생성자로 cause 전달
+        this.errorCode = errorCode;
+    }
 }
