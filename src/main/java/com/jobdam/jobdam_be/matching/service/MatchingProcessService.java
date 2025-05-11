@@ -79,7 +79,7 @@ public class MatchingProcessService {
                 })
                 .collect(Collectors.toList());
     }
-
+    //매칭이 충분한지 체크
     private boolean isMatchEnough(MatchType type, int count) {
         if (type == MatchType.ONE_TO_ONE || type == MatchType.NONE) {
             return count >= 1;
