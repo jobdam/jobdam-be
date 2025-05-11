@@ -1,5 +1,6 @@
 package com.jobdam.jobdam_be.user.mapper;
 
+import com.jobdam.jobdam_be.user.model.Resume;
 import com.jobdam.jobdam_be.user.model.User;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -29,7 +30,11 @@ public interface UserMapper {
 
     String findProfileImgUrlById(Long id);
 
+    String findResumeUrlById(Long id);
+
     boolean existsByEmail(String email);
 
     boolean existsJobById(Long id);
+
+    void saveOrUpdateResume(Resume resume);
 }

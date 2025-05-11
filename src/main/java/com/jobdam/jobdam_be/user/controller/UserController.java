@@ -14,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,12 +25,6 @@ import java.util.Map;
 public class UserController {
     private final UserService userService;
     private final S3Service s3Service;
-
-    @GetMapping("/test")
-    public String test() {
-        // userService.test();
-        return "test";
-    }
 
     @PostMapping("/profile")
     public ResponseEntity<String> saveProfile(@Valid @RequestPart("data") UserInitProfileDTO dto,
@@ -78,4 +73,27 @@ public class UserController {
 
         return ResponseEntity.ok(userService.getInterview(userId));
     }
+
+    @PostMapping("/resume")
+    public ResponseEntity<Map<String, String>> savePDF(@RequestParam MultipartFile file) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = Long.valueOf(authentication.getName());
+
+        String resumeUrl = null;
+        if (file != null && !file.isEmpty()) {
+            String findImgUrl = userService.getUserResumeUrl(userId);
+
+            resumeUrl = s3Service.uploadResume(file, findImgUrl, userId);
+        }
+
+        userService.savePDF(userId, resumeUrl);
+
+        // String pdfToString = PDFProvider.pdfToString(file);
+        Map<String, String> response = new HashMap<>();
+        response.put("resumeUrl", resumeUrl);
+        return ResponseEntity.ok(response);
+    }
+
+    // TODO: Ai를 활용하여 pdf 정보 추출 및 질문 생성하기
+
 }

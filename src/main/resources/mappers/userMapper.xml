@@ -45,11 +45,19 @@
                 #{providerId})
     </insert>
 
+    <insert id="saveOrUpdateResume">
+        INSERT INTO resume (user_id, url)
+        VALUES (#{userId}, #{url})
+        ON DUPLICATE KEY UPDATE
+            url = #{url}
+    </insert>
+
     <update id="updateCreatedAtByEmail">
         UPDATE user
         SET created_at = now()
         WHERE email = #{email}
     </update>
+
     <update id="updateSocialByEmail">
         UPDATE user
         SET provider_id = #{providerId},
@@ -60,6 +68,7 @@
         , profile_img_url = #{profileImgUrl}
         WHERE email = #{email}
     </update>
+
     <update id="initProfile">
         UPDATE user
         SET name                = #{name},
@@ -73,6 +82,7 @@
             education_status    = #{educationStatus}
         WHERE id = #{id}
     </update>
+
     <update id="updateProfile">
         UPDATE user
         <set>
@@ -95,12 +105,6 @@
         where id = #{id}
     </select>
 
-    <select id="existsByEmail" resultType="java.lang.Boolean">
-        SELECT COUNT(*) > 0
-        FROM user
-        WHERE email = #{email}
-    </select>
-
     <select id="findByEmail" resultMap="UserResultMap">
         SELECT *
         FROM user
@@ -118,19 +122,35 @@
         FROM user
         WHERE provider_id = #{providerId}
     </select>
+
+    <select id="findProfileImgUrlById" resultType="java.lang.String">
+        SELECT profile_img_url
+        FROM user
+        WHERE id = #{id}
+    </select>
+
+    <select id="findResumeUrlById">
+        SELECT url
+        FROM resume
+        WHERE user_id = #{id}
+    </select>
+
+    <select id="existsByEmail" resultType="java.lang.Boolean">
+        SELECT COUNT(*) > 0
+        FROM user
+        WHERE email = #{email}
+    </select>
+
     <select id="existsJobById" resultType="java.lang.Boolean">
         SELECT count(*) > 0
         FROM user
         WHERE id = #{id}
         <!-- 프로필 설정시 추가될 값들 -->
-          AND job_code IS NOT NULL
-          AND job_detail_code IS NOT NULL
-          AND experience_type IS NOT NULL
-          AND education_status IS NOT NULL
-          AND education_level IS NOT NULL
-    </select>
-    <select id="findProfileImgUrlById" resultType="java.lang.String">
-        SELECT profile_img_url FROM user WHERE id = #{id}
+        AND job_code IS NOT NULL
+        AND job_detail_code IS NOT NULL
+        AND experience_type IS NOT NULL
+        AND education_status IS NOT NULL
+        AND education_level IS NOT NULL
     </select>
 
 </mapper>

@@ -1,6 +1,7 @@
 package com.jobdam.jobdam_be.user.dao;
 
 import com.jobdam.jobdam_be.user.mapper.UserMapper;
+import com.jobdam.jobdam_be.user.model.Resume;
 import com.jobdam.jobdam_be.user.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -42,6 +43,10 @@ public class UserDAO {
         return userMapper.findProfileImgUrlById(id);
     }
 
+    public String findResumeUrlById(Long id) {
+        return userMapper.findResumeUrlById(id);
+    }
+
     // update
     public void updateCreatedAtByEmail(String email) {
         userMapper.updateCreatedAtByEmail(email);
@@ -68,4 +73,7 @@ public class UserDAO {
         return userMapper.existsJobById(id);
     }
 
+    public void saveOrUpdateResume(Resume resume) {
+        userMapper.saveOrUpdateResume(resume);
+    }
 }
