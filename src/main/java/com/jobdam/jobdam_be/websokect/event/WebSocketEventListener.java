@@ -70,6 +70,10 @@ public class WebSocketEventListener {
             addMatchingSubscribeInfo(accessor,roomId);
         }
 
+        if("chat".equals(purpose)){
+            addMatchingSubscribeInfo(accessor,roomId);
+        }
+
         log.info("[웹소켓 구독 완료!] purpose={} roomId={} sessionId={}" ,purpose,roomId,accessor.getSessionId());
     }
 
