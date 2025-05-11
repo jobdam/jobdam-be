@@ -14,7 +14,7 @@ public class CustomExceptionHandler {
     //커스텀한 예외처리 보내기.
     @ExceptionHandler(AbstractException.class)
     public ResponseEntity<ErrorResponse> customExceptionHandle(AbstractException e){
-        log.error("Exception occurred: ", e);
+        log.error("Exception occurred: {}",e.getMessage(), e);
 
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .code(e.getExceptionResponse().getCode())
@@ -37,7 +37,7 @@ public class CustomExceptionHandler {
     //nullPoint 예외처리
     @ExceptionHandler(NullPointerException.class)
     public ResponseEntity<ErrorResponse> nullPointExceptionHandle(NullPointerException e){
-        log.error("nullPointException occurred: ", e);
+        log.error("nullPointException occurred: {}",e.getMessage(), e);
         int errorCode = HttpStatus.INTERNAL_SERVER_ERROR.value();
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .code(errorCode)
@@ -50,7 +50,7 @@ public class CustomExceptionHandler {
     //나머지 예외처리
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> ExceptionHandle(Exception e) {
-        log.error("Exception occurred: ", e);
+        log.error("Exception occurred: {}",e.getMessage(), e);
         int errorCode = HttpStatus.INTERNAL_SERVER_ERROR.value();
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .code(errorCode)
