@@ -3,38 +3,30 @@ package com.jobdam.jobdam_be.websokect.sessionTracker.domain;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
-import com.jobdam.jobdam_be.chat.storage.ChatRoomStore;
+import com.jobdam.jobdam_be.matching.pool.MatchingWaitingPool;
 import com.jobdam.jobdam_be.websokect.sessionTracker.WebSocketSessionTracker;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Component("chat")
+@Component("matching")
 @RequiredArgsConstructor
-public class ChatSessionTracker implements WebSocketSessionTracker {
-
+public class MatchingSessionTracker implements WebSocketSessionTracker {
+    // 방번호/세션set
     private final Map<String, Set<String>> sessionMap = new ConcurrentHashMap<>();
-    //세션아이디/userId 맵핑
-    private final BiMap<String, Long> sessionIdToUserIdMap = Maps.synchronizedBiMap(HashBiMap.create());
-    private final ChatRoomStore chatRoomStore;
 
+    private final MatchingWaitingPool matchingWaitingPool;
     @Override
-    public void addSession(String roomId, String sessionId) {
-        sessionMap.computeIfAbsent(roomId,
+    public void addSession(String videoChatRoomId, String sessionId) {
+        sessionMap.computeIfAbsent(videoChatRoomId,
                 k -> ConcurrentHashMap.newKeySet()).add(sessionId);
-
-        Long userId = sessionIdToUserIdMap.get(sessionId);
-        if (userId != null) {
-            chatRoomStore.markConnected(roomId, userId);
-        }
     }
 
-    public void addSessionUserMapping(String sessionId, Long userId) {
-        sessionIdToUserIdMap.put(sessionId, userId);
-    }
 
     @Override
     public void removeSession(String roomId, String sessionId) {
@@ -46,10 +38,7 @@ public class ChatSessionTracker implements WebSocketSessionTracker {
                 sessionMap.remove(roomId);
             }
         }
-        Long userId = sessionIdToUserIdMap.remove(sessionId);
-        if (userId != null) {
-            chatRoomStore.markDisconnected(roomId, userId);
-        }
+        matchingWaitingPool.removeByJobGroupAndSessionId(roomId, sessionId);
     }
 
     @Override
@@ -61,12 +50,9 @@ public class ChatSessionTracker implements WebSocketSessionTracker {
                 if (sessions.isEmpty()) {
                     sessionMap.remove(roomId);
                 }
-                Long userId = sessionIdToUserIdMap.remove(sessionId);
-                if (userId != null) {
-                    chatRoomStore.markDisconnected(roomId, userId);
-                    break;
-                }
+                break;
             }
         }
+        matchingWaitingPool.removeBySessionId(sessionId);
     }
 }

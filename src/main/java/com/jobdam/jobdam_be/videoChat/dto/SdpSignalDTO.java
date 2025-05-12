@@ -1,6 +1,6 @@
-package com.jobdam.jobdam_be.websokect.dto.webRTCSignal;
+package com.jobdam.jobdam_be.videoChat.dto;
 
-import com.jobdam.jobdam_be.websokect.type.SignalType;
+import com.jobdam.jobdam_be.videoChat.type.SignalType;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

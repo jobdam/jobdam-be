@@ -1,9 +1,17 @@
 package com.jobdam.jobdam_be.websokect.event;
 
+import com.jobdam.jobdam_be.matching.pool.MatchingWaitingPool;
 import com.jobdam.jobdam_be.websokect.exception.WebSocketException;
 import com.jobdam.jobdam_be.websokect.exception.type.WebSocketErrorCode;
+import com.jobdam.jobdam_be.matching.model.InterviewPreference;
+import com.jobdam.jobdam_be.matching.model.MatchWaitingUserInfo;
 import com.jobdam.jobdam_be.websokect.model.WebSocketBaseSessionInfo;
 import com.jobdam.jobdam_be.websokect.sessionTracker.SessionTrackerRegistry;
+import com.jobdam.jobdam_be.matching.type.ExperienceType;
+import com.jobdam.jobdam_be.matching.type.InterviewType;
+import com.jobdam.jobdam_be.matching.type.MatchType;
+import com.jobdam.jobdam_be.websokect.sessionTracker.WebSocketSessionTracker;
+import com.jobdam.jobdam_be.websokect.sessionTracker.domain.ChatSessionTracker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -14,6 +22,7 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 
+import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -27,6 +36,7 @@ import java.util.Optional;
 public class WebSocketEventListener {
 
     private final SessionTrackerRegistry trackerRegistry;
+    private final MatchingWaitingPool matchingWaitingPool;
 
     @EventListener
     public void handleSessionConnect(SessionConnectEvent event){
@@ -39,22 +49,36 @@ public class WebSocketEventListener {
     @EventListener
     public void handleSessionSubscribe(SessionSubscribeEvent event){
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-        System.out.println(accessor.getDestination());
+        log.info("[웹소켓 구독] 경로={}",accessor.getDestination());
         WebSocketBaseSessionInfo webSocketBaseSessionInfo =
                 buildSessionInfoFromDestination(accessor.getDestination());
 
         if(Objects.isNull(webSocketBaseSessionInfo)){
-            log.info("[웹소켓 구독 error] sessionId={}", accessor.getSessionId());
+            log.info("[웹소켓 error 구독함] sessionId={}", accessor.getSessionId());
             return;
         }
+        //웹소켓 세션에 기본정보를 넣는다
         Objects.requireNonNull(accessor.getSessionAttributes())
                 .put("webSocketBaseSessionInfo", webSocketBaseSessionInfo);
 
         String purpose = webSocketBaseSessionInfo.getPurpose();
         String roomId = webSocketBaseSessionInfo.getRoomId();
 
+        //트래커를 통해서 세션아이디와 방번호를 넣는다.
         trackerRegistry.getTracker(purpose)
                .addSession(roomId, accessor.getSessionId());
+
+        if("matching".equals(purpose)){
+            addMatchingSubscribeInfo(accessor,roomId);
+        }
+
+        if ("chat".equals(purpose)) {
+            WebSocketSessionTracker tracker = trackerRegistry.getTracker(purpose);
+            if (tracker instanceof ChatSessionTracker chatTracker) {
+                chatTracker.addSessionUserMapping(accessor.getSessionId(),
+                        Long.valueOf(Objects.requireNonNull(accessor.getUser()).getName()));
+            }
+        }
 
         log.info("[웹소켓 구독 완료!] purpose={} roomId={} sessionId={}" ,purpose,roomId,accessor.getSessionId());
     }
@@ -77,8 +101,10 @@ public class WebSocketEventListener {
         removeSession(accessor,sessionId,"[웹소켓 DISCONNECT]");
     }
     //이벤트리스너 끝 ---------------
-
+    /////////////////////////////
    //아래메소드 들은 유틸메소드
+
+    //구독경로를 파싱하여 유효성검사 및 모델로 전환
     private WebSocketBaseSessionInfo buildSessionInfoFromDestination(String destination){
         if(Objects.isNull(destination) || destination.isBlank()) {
             throw new WebSocketException(WebSocketErrorCode.MISSING_SUBSCRIBE);
@@ -92,10 +118,10 @@ public class WebSocketEventListener {
             throw new WebSocketException(WebSocketErrorCode.INVALID_BROKER_PREFIX);//잘못 온 경우
         }
 
-        if("topic".equals(brokerPrefix)) {
-            purpose = parts[2]; //matching, chat, signal
+        if("topic".equals(brokerPrefix)) {//브로드캐스트용구독
+            purpose = parts[2]; //chat
             roomId = parts[3];
-        }else {
+        }else {//user(1:1)용 구독
             purpose = parts[3];
             roomId = parts[4];
             if("error".equals(purpose))
@@ -108,7 +134,7 @@ public class WebSocketEventListener {
                 .roomId(roomId)
                 .build();
     }
-
+    //목적,방 유효성검사
     private void validatePurposeAndRoomId(String purpose, String roomId){
         if(Objects.isNull(purpose) || purpose.isBlank()){
             throw new WebSocketException(WebSocketErrorCode.MISSING_PURPOSE);
@@ -119,6 +145,42 @@ public class WebSocketEventListener {
         if(Objects.isNull(roomId) || roomId.isBlank()){
             throw new WebSocketException(WebSocketErrorCode.MISSING_ROOM_ID);
         }
+    }
+    //매칭일경우 구독시 날라온 정보저장
+    private void addMatchingSubscribeInfo(StompHeaderAccessor accessor, String roomId){
+        //여기서 roomId는 직무조건(ex:개발,사무등등)이다.(매칭 조건구분)
+        Long userId = Long.valueOf(Objects.requireNonNull(accessor.getUser()).getName());
+        String jobDetail = accessor.getFirstNativeHeader("jobDetail");
+        ExperienceType experienceType = ExperienceType.valueOf(accessor.getFirstNativeHeader("experienceType"));
+        MatchType matchType = MatchType.valueOf(accessor.getFirstNativeHeader("matchType"));
+        String introducer = accessor.getFirstNativeHeader("introducer");
+        InterviewType interviewType = InterviewType.valueOf(accessor.getFirstNativeHeader("interviewType"));
+
+
+        InterviewPreference interviewPreference = InterviewPreference.builder()
+                .userId(userId)
+                .jobGroup(roomId)
+                .jobDetail(jobDetail)
+                .introducer(introducer)
+                .experienceType(experienceType)
+                .interviewType(interviewType)
+                .build();
+
+        MatchWaitingUserInfo matchWaitingUserInfo = MatchWaitingUserInfo.builder()
+                .sessionId(accessor.getSessionId())
+                .userId(userId)
+                .jobGroup(roomId)
+                .jobDetail(jobDetail)
+                .experienceType(experienceType)
+                .matchType(matchType)
+                .inProgress(false)
+                .joinedAt(Instant.now())
+                .interviewPreference(interviewPreference)
+                .build();
+
+        //매칭 풀에 매칭정보 넣기!
+        matchingWaitingPool.add(matchWaitingUserInfo);
+
     }
 
     // 제거메서드

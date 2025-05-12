@@ -12,10 +12,16 @@ import java.util.List;
 // 로그인 성공 시, 또는 토큰 필터를 통해 SecurityContext 에 저장되는 유저 정보를 담은 객체
 public class CustomUserDetails implements UserDetails {
 
-    private final User user;
+    private final Long userId;
+    private final String name;
+    private final String profileImgUrl;
+    private final String password;
 
     public CustomUserDetails(User user) {
-        this.user = user;
+        this.userId = user.getId();
+        this.name = user.getName();
+        this.profileImgUrl = user.getProfileImgUrl();
+        this.password = user.getPassword();
     }
 
     // 계정이 만료되지 않았는가?
@@ -66,11 +72,14 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return password;
     }
 
     @Override
     public String getUsername() {
-        return String.valueOf(user.getId());
+        return String.valueOf(userId);
     }
+
+    public String getRealName() { return name; }
+    public String getProfileImageUrl() { return profileImgUrl; }
 }
