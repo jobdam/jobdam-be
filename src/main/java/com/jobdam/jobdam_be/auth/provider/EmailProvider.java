@@ -22,6 +22,8 @@ public class EmailProvider {
     private final JavaMailSender javaMailSender;
 
     private final TemplateEngine templateEngine;  // Thymeleaf
+    @Value("${frontEnd.url}")
+    private String frontUrl;
 
     @Value("${spring.mail.username}")
     private String fromAddress;
@@ -46,6 +48,7 @@ public class EmailProvider {
             Context context = new Context();
             context.setVariable("email", email);
             context.setVariable("token", token);
+            context.setVariable("frontEnd", frontUrl);
             String htmlContent = templateEngine.process("email-verification", context); // templates/email-verification.html
 
             messageHelper.setTo(email);     // 대상의 이메일 주소
