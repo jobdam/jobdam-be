@@ -156,7 +156,6 @@ public class WebSocketEventListener {
         String introduce = accessor.getFirstNativeHeader("introduce");
         InterviewType interviewType = InterviewType.valueOf(accessor.getFirstNativeHeader("interviewType"));
 
-
         InterviewPreference interviewPreference = InterviewPreference.builder()
                 .userId(userId)
                 .jobGroupCode(roomId)
