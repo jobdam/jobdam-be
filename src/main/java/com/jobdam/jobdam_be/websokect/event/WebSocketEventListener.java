@@ -150,18 +150,18 @@ public class WebSocketEventListener {
     private void addMatchingSubscribeInfo(StompHeaderAccessor accessor, String roomId){
         //여기서 roomId는 직무조건(ex:개발,사무등등)이다.(매칭 조건구분)
         Long userId = Long.valueOf(Objects.requireNonNull(accessor.getUser()).getName());
-        String jobDetail = accessor.getFirstNativeHeader("jobDetail");
+        String jobDetailCode = accessor.getFirstNativeHeader("jobDetailCode");
         ExperienceType experienceType = ExperienceType.valueOf(accessor.getFirstNativeHeader("experienceType"));
         MatchType matchType = MatchType.valueOf(accessor.getFirstNativeHeader("matchType"));
-        String introducer = accessor.getFirstNativeHeader("introducer");
+        String introduce = accessor.getFirstNativeHeader("introduce");
         InterviewType interviewType = InterviewType.valueOf(accessor.getFirstNativeHeader("interviewType"));
 
 
         InterviewPreference interviewPreference = InterviewPreference.builder()
                 .userId(userId)
-                .jobGroup(roomId)
-                .jobDetail(jobDetail)
-                .introducer(introducer)
+                .jobGroupCode(roomId)
+                .jobDetailCode(jobDetailCode)
+                .introduce(introduce)
                 .experienceType(experienceType)
                 .interviewType(interviewType)
                 .build();
@@ -169,8 +169,8 @@ public class WebSocketEventListener {
         MatchWaitingUserInfo matchWaitingUserInfo = MatchWaitingUserInfo.builder()
                 .sessionId(accessor.getSessionId())
                 .userId(userId)
-                .jobGroup(roomId)
-                .jobDetail(jobDetail)
+                .jobGroupCode(roomId)
+                .jobDetailCode(jobDetailCode)
                 .experienceType(experienceType)
                 .matchType(matchType)
                 .inProgress(false)

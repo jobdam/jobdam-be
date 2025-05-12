@@ -3,6 +3,7 @@ package com.jobdam.jobdam_be.user.controller;
 import com.jobdam.jobdam_be.interview.model.Interview;
 import com.jobdam.jobdam_be.s3.service.S3Service;
 import com.jobdam.jobdam_be.user.dto.UserInitProfileDTO;
+import com.jobdam.jobdam_be.user.dto.UserMatchingProfileDTO;
 import com.jobdam.jobdam_be.user.dto.UserProfileDTO;
 import com.jobdam.jobdam_be.user.service.UserService;
 import jakarta.validation.Valid;
@@ -92,6 +93,12 @@ public class UserController {
         Map<String, String> response = new HashMap<>();
         response.put("resumeUrl", resumeUrl);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/me/matching-profile")
+    public ResponseEntity<UserMatchingProfileDTO.Response> myMatchingProfile(Authentication authentication){
+        Long userId = Long.valueOf(authentication.getName());
+        return ResponseEntity.ok(userService.myMatchingProfile(userId));
     }
 
     // TODO: Ai를 활용하여 pdf 정보 추출 및 질문 생성하기

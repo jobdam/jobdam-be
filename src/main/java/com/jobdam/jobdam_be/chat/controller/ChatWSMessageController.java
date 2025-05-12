@@ -2,7 +2,6 @@ package com.jobdam.jobdam_be.chat.controller;
 
 import com.jobdam.jobdam_be.auth.service.CustomUserDetails;
 import com.jobdam.jobdam_be.chat.dto.ChatMessageDto;
-import com.jobdam.jobdam_be.user.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;

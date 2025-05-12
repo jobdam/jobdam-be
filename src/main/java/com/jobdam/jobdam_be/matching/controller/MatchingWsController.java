@@ -23,11 +23,11 @@ public class MatchingWsController {
     //매칭 완료되면 그사람에게 참여 신호를줌
     public void matchingComplete( List<MatchWaitingUserInfo> fullList, String roomId) {
         fullList.forEach(participant ->
-            joinChatRoom(participant.getUserId(), participant.getJobGroup(), roomId));
+            joinChatRoom(participant.getUserId(), participant.getJobGroupCode(), roomId));
     }
     //매칭중인유저가 3~6명방일때 비어있는방 참여
      public void userEnterEmptyRoom(MatchWaitingUserInfo userInfo, String roomId) {
-        joinChatRoom(userInfo.getUserId(), userInfo.getJobGroup(), roomId);
+        joinChatRoom(userInfo.getUserId(), userInfo.getJobGroupCode(), roomId);
     }
 
     private void joinChatRoom(Long userId, String jopGroup, String roomId){
