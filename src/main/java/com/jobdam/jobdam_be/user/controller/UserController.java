@@ -96,9 +96,9 @@ public class UserController {
     }
 
     @GetMapping("/me/matching-profile")
-    public ResponseEntity<UserMatchingProfileDTO.Response> myMatchingProfile(Authentication authentication){
+    public ResponseEntity<UserMatchingProfileDTO.Response> getMyMatchingProfile(Authentication authentication){
         Long userId = Long.valueOf(authentication.getName());
-        return ResponseEntity.ok(userService.myMatchingProfile(userId));
+        return ResponseEntity.ok(userService.getMyMatchingProfile(userId));
     }
 
     // TODO: Ai를 활용하여 pdf 정보 추출 및 질문 생성하기

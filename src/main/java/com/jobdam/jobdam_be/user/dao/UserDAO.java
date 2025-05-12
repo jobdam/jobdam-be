@@ -47,6 +47,10 @@ public class UserDAO {
         return userMapper.findResumeUrlById(id);
     }
 
+    public String findNameById(Long id) {
+        return userMapper.findNameById(id);
+    }
+
     // update
     public void updateCreatedAtByEmail(String email) {
         userMapper.updateCreatedAtByEmail(email);

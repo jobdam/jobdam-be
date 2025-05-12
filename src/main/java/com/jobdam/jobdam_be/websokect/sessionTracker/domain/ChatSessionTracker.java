@@ -25,7 +25,7 @@ public class ChatSessionTracker implements WebSocketSessionTracker {
     public void addSession(String roomId, String sessionId) {
         sessionMap.computeIfAbsent(roomId,
                 k -> ConcurrentHashMap.newKeySet()).add(sessionId);
-
+        //접송중
         Long userId = sessionIdToUserIdMap.get(sessionId);
         if (userId != null) {
             chatRoomStore.markConnected(roomId, userId);
@@ -46,6 +46,7 @@ public class ChatSessionTracker implements WebSocketSessionTracker {
                 sessionMap.remove(roomId);
             }
         }
+        //잠시 접속종류
         Long userId = sessionIdToUserIdMap.remove(sessionId);
         if (userId != null) {
             chatRoomStore.markDisconnected(roomId, userId);

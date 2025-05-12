@@ -32,6 +32,8 @@ public interface UserMapper {
 
     String findResumeUrlById(Long id);
 
+    String findNameById(Long id);
+
     boolean existsByEmail(String email);
 
     boolean existsJobById(Long id);
