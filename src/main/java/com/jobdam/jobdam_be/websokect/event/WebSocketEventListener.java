@@ -10,6 +10,8 @@ import com.jobdam.jobdam_be.websokect.sessionTracker.SessionTrackerRegistry;
 import com.jobdam.jobdam_be.matching.type.ExperienceType;
 import com.jobdam.jobdam_be.matching.type.InterviewType;
 import com.jobdam.jobdam_be.matching.type.MatchType;
+import com.jobdam.jobdam_be.websokect.sessionTracker.WebSocketSessionTracker;
+import com.jobdam.jobdam_be.websokect.sessionTracker.domain.ChatSessionTracker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -68,6 +70,14 @@ public class WebSocketEventListener {
 
         if("matching".equals(purpose)){
             addMatchingSubscribeInfo(accessor,roomId);
+        }
+
+        if ("chat".equals(purpose)) {
+            WebSocketSessionTracker tracker = trackerRegistry.getTracker(purpose);
+            if (tracker instanceof ChatSessionTracker chatTracker) {
+                chatTracker.addSessionUserMapping(accessor.getSessionId(),
+                        Long.valueOf(Objects.requireNonNull(accessor.getUser()).getName()));
+            }
         }
 
         log.info("[웹소켓 구독 완료!] purpose={} roomId={} sessionId={}" ,purpose,roomId,accessor.getSessionId());

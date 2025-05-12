@@ -1,6 +1,11 @@
 package com.jobdam.jobdam_be.websokect.sessionTracker.domain;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Maps;
+import com.jobdam.jobdam_be.chat.storage.ChatRoomStore;
 import com.jobdam.jobdam_be.websokect.sessionTracker.WebSocketSessionTracker;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -8,14 +13,27 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component("chat")
+@RequiredArgsConstructor
 public class ChatSessionTracker implements WebSocketSessionTracker {
 
     private final Map<String, Set<String>> sessionMap = new ConcurrentHashMap<>();
+    //세션아이디/userId 맵핑
+    private final BiMap<String, Long> sessionIdToUserIdMap = Maps.synchronizedBiMap(HashBiMap.create());
+    private final ChatRoomStore chatRoomStore;
 
     @Override
     public void addSession(String roomId, String sessionId) {
         sessionMap.computeIfAbsent(roomId,
-                k-> ConcurrentHashMap.newKeySet()).add(sessionId);
+                k -> ConcurrentHashMap.newKeySet()).add(sessionId);
+
+        Long userId = sessionIdToUserIdMap.get(sessionId);
+        if (userId != null) {
+            chatRoomStore.markConnected(roomId, userId);
+        }
+    }
+
+    public void addSessionUserMapping(String sessionId, Long userId) {
+        sessionIdToUserIdMap.put(sessionId, userId);
     }
 
     @Override
@@ -28,6 +46,10 @@ public class ChatSessionTracker implements WebSocketSessionTracker {
                 sessionMap.remove(roomId);
             }
         }
+        Long userId = sessionIdToUserIdMap.remove(sessionId);
+        if (userId != null) {
+            chatRoomStore.markDisconnected(roomId, userId);
+        }
     }
 
     @Override
@@ -39,7 +61,11 @@ public class ChatSessionTracker implements WebSocketSessionTracker {
                 if (sessions.isEmpty()) {
                     sessionMap.remove(roomId);
                 }
-                break;
+                Long userId = sessionIdToUserIdMap.remove(sessionId);
+                if (userId != null) {
+                    chatRoomStore.markDisconnected(roomId, userId);
+                    break;
+                }
             }
         }
     }

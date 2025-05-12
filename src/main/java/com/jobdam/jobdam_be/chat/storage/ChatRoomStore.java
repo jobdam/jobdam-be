@@ -1,10 +1,12 @@
 package com.jobdam.jobdam_be.chat.storage;
 
+import com.jobdam.jobdam_be.chat.model.ChatParticipant;
 import com.jobdam.jobdam_be.chat.model.ChatRoom;
 import com.jobdam.jobdam_be.matching.model.InterviewPreference;
 import com.jobdam.jobdam_be.matching.type.MatchType;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -18,14 +20,16 @@ public class ChatRoomStore {
 
     //유저 한명 추가
     public void add(String roomId, MatchType matchType, InterviewPreference preference) {
-        roomMap.computeIfAbsent(roomId, k -> new ChatRoom(matchType, new CopyOnWriteArrayList<>()))
-                .getInterviewPreferenceList().add(preference);
+        roomMap.computeIfAbsent(roomId, k -> new ChatRoom(matchType))
+                .getParticipants().add(new ChatParticipant(preference));
     }
 
     //해당방의 참가자 목록조회
     public Optional<List<InterviewPreference>> get(String roomId) {
         return Optional.ofNullable(roomMap.get(roomId))
-                .map(ChatRoom::getInterviewPreferenceList);
+                .map(room -> room.getParticipants().stream()
+                        .map(ChatParticipant::getInfo)
+                        .toList());
     }
 
     //특정 roomID의 matchType조회
@@ -40,8 +44,11 @@ public class ChatRoomStore {
     }
     //방의 현재 인원수
     public int getRoomSize(String roomId) {
-        return roomMap.getOrDefault(roomId, new ChatRoom(MatchType.GROUP, List.of()))
-                .getInterviewPreferenceList().size();
+        return Optional.ofNullable(roomMap.get(roomId))
+                .map(room -> (int) room.getParticipants().stream()
+                        .filter(ChatParticipant::isConnected)
+                        .count())
+                .orElse(0);
     }
 
     //방이 가득찼는지 확인
@@ -52,8 +59,42 @@ public class ChatRoomStore {
     public Optional<String> findAvailableGroupRoom(int maxSize) {
         return roomMap.entrySet().stream()
                 .filter(entry -> entry.getValue().getMatchType() == MatchType.GROUP) //그룹방필터
-                .filter(entry -> entry.getValue().getInterviewPreferenceList().size() < maxSize)//최대인원수보다 적은방만
+                .filter(entry -> entry.getValue().getParticipants().stream()
+                        .filter(ChatParticipant::isConnected)
+                        .count() < maxSize) //최대인원수보다 적은방만
                 .map(Map.Entry::getKey)//roomId만 반환
                 .findFirst();
     }
+    // 연결 끊김 처리 (disconnect)
+    public void markDisconnected(String roomId, Long userId) {
+        ChatRoom room = roomMap.get(roomId);
+        if (room != null) {
+            room.getParticipants().stream()
+                    .filter(p -> p.getInfo().getUserId().equals(userId))
+                    .findFirst()
+                    .ifPresent(p -> p.setConnected(false));
+        }
+    }
+
+    // 재접속 처리
+    public void markConnected(String roomId, Long userId) {
+        ChatRoom room = roomMap.get(roomId);
+        if (room != null) {
+            room.getParticipants().stream()
+                    .filter(p -> p.getInfo().getUserId().equals(userId))
+                    .findFirst()
+                    .ifPresent(p -> p.setConnected(true));
+        }
+    }
+
+    // 일정 시간 이상 끊긴 유저 제거 (스케줄러에서 호출)
+    public void removeDisconnectedBefore(Instant cutoff) {
+        roomMap.values().forEach(room ->
+                room.getParticipants().removeIf(p ->
+                        !p.isConnected() &&
+                                p.getLastDisconnectedAt() != null &&
+                                p.getLastDisconnectedAt().isBefore(cutoff))
+        );
+    }
+
 }
