@@ -49,6 +49,7 @@ public class AuthService {
     private final UserDAO userDAO;
     private final RefreshDAO refreshDAO;
     private final TempTokenDAO tempTokenDAO;
+    private final EmailVerificationDAO emailVerificationDAO;
 
     public ResponseEntity<Map<String, Boolean>> checkEmail(String email) {
         Map<String, Boolean> response = new HashMap<>();
@@ -114,7 +115,13 @@ public class AuthService {
 
     @Transactional
     public void resendVerificationEmail(ResendDTO dto) {
-        String email = dto.getEmail();
+        String token = dto.getToken();
+        Optional<EmailVerification> optional = emailVerificationDAO.findByToken(token);
+        if (optional.isEmpty()) {
+            throw new AuthException(INVALID_TOKEN);
+        }
+        EmailVerification emailVerification = optional.get();
+        String email = emailVerification.getEmail();
         User user = userDAO.findByEmail(email).orElseThrow(() -> new AuthException(INVALID_USER));
 
         if (user.getCreatedAt() != null) {
