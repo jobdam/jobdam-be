@@ -1,10 +1,10 @@
-package com.jobdam.jobdam_be.websokect.controller;
+package com.jobdam.jobdam_be.videoChat.controller;
 
-import com.jobdam.jobdam_be.websokect.dto.webRTCSignal.CandidateSignalDTO;
-import com.jobdam.jobdam_be.websokect.dto.webRTCSignal.JoinListSignalDTO;
-import com.jobdam.jobdam_be.websokect.dto.webRTCSignal.SdpSignalDTO;
+import com.jobdam.jobdam_be.videoChat.dto.CandidateSignalDTO;
+import com.jobdam.jobdam_be.videoChat.dto.JoinListSignalDTO;
+import com.jobdam.jobdam_be.videoChat.dto.SdpSignalDTO;
 import com.jobdam.jobdam_be.websokect.sessionTracker.domain.WebRTCSignalSessionTracker;
-import com.jobdam.jobdam_be.websokect.type.SignalType;
+import com.jobdam.jobdam_be.videoChat.type.SignalType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;

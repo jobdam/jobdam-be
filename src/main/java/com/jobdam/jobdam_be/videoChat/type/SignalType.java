@@ -1,4 +1,4 @@
-package com.jobdam.jobdam_be.websokect.type;
+package com.jobdam.jobdam_be.videoChat.type;
 
 public enum SignalType {
     JOIN_LIST,OFFER,ANSWER,CANDIDATE
