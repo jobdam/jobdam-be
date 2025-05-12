@@ -13,6 +13,7 @@ import com.jobdam.jobdam_be.auth.config.TokenProperties;
 import com.jobdam.jobdam_be.user.dao.UserDAO;
 import com.jobdam.jobdam_be.user.model.User;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -92,6 +93,7 @@ public class AuthService {
     @Transactional
     public Long verifyEmail(String token) {
         EmailVerification verification = verificationDAO.findByToken(token).orElseThrow(() -> new AuthException(INVALID_TOKEN));
+
         long timeElapsed = System.currentTimeMillis() - verification.getCreatedAt().getTime();
         if (timeElapsed > TimeUnit.MINUTES.toMillis(5)) {
             throw new AuthException(EXPIRED_TOKEN);
@@ -222,9 +224,9 @@ public class AuthService {
         try {
             jwtProvider.isExpired(token);
         } catch (ExpiredJwtException e) {
-            throw new AuthException(EXPIRED_TOKEN);
-        } catch (io.jsonwebtoken.JwtException e) {
-            throw new AuthException(INVALID_SIGNATURE);
+            throw new AuthException(EXPIRED_TOKEN, e);
+        } catch (JwtException e) {
+            throw new AuthException(INVALID_SIGNATURE, e);
         }
     }
 }

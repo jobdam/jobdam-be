@@ -3,9 +3,7 @@ package com.jobdam.jobdam_be.auth.oauth2;
 import com.jobdam.jobdam_be.auth.dao.TempTokenDAO;
 import com.jobdam.jobdam_be.auth.model.OauthTempToken;
 import com.jobdam.jobdam_be.auth.service.CustomOAuth2User;
-import com.jobdam.jobdam_be.auth.service.JwtService;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +20,6 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
-    private final JwtService jwtService;
     private final TempTokenDAO tempTokenDAO;
 
     @Value("${frontEnd.url}")
@@ -37,12 +34,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String uuid = UUID.randomUUID().toString();
         OauthTempToken token = new OauthTempToken(uuid, id);
         tempTokenDAO.save(token);
-
-        Cookie tempCookie = jwtService.createTempCookie(uuid);
-
-        response.addCookie(tempCookie);
-
-        response.setContentType("application/json");
-        response.getWriter().write("{\"redirectUrl\": \"" + frontUrl + "/oauth-redirect\"}");
+        String redirectUrl = frontUrl + "/oauth-redirect?token=" + uuid;
+        response.sendRedirect(redirectUrl);
     }
 }

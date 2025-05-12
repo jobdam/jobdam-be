@@ -49,26 +49,35 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             // JSON 요청 바디 파싱
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String, String> loginData = objectMapper.readValue(request.getInputStream(), Map.class);
+
             String email = loginData.get("email");
             String password = loginData.get("password");
             if (email == null || password == null) {
                 request.setAttribute("exception", EMPTY_EMAIL_OR_PASSWORD);
                 throw new JwtAuthException(EMPTY_EMAIL_OR_PASSWORD);
             }
+
             Optional<User> findUser = userDAO.findByEmail(email);
             if (findUser.isEmpty()) {
                 request.setAttribute("exception", INVALID_EMAIL_OR_PASSWORD);
                 throw new JwtAuthException(INVALID_EMAIL_OR_PASSWORD);
             }
+            User user = findUser.get();
+
+            if(user.getCreatedAt() == null){
+                request.setAttribute("exception", EMAIL_VERIFICATION_REQUIRED);
+                throw new JwtAuthException(EMAIL_VERIFICATION_REQUIRED);
+            }
+
             //스프링 시큐리티에서 userId와 password를 검증하기 위해서는 token에 담아야 함
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(findUser.get().getId(), password, null);
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(user.getId(), password, null);
 
             //token에 담은 검증을 위한 AuthenticationManager로 전달
             return authenticationManager.authenticate(authToken);
 
         } catch (IOException e) {
             request.setAttribute("exception", UNSUPPORTED_TYPE);
-            throw new JwtAuthException(UNSUPPORTED_TYPE);
+            throw new JwtAuthException(UNSUPPORTED_TYPE, e);
         }
     }
 
@@ -92,13 +101,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         TokenProperties.TokenConfig refreshConfig = tokenProperties.getRefreshToken();
 
         String access = jwtProvider.createJwt(accessConfig.getName(), userId, accessConfig.getExpiry());
-        String refresh = jwtProvider.createJwt(refreshConfig.getName(),userId, refreshConfig.getExpiry());
+        String refresh = jwtProvider.createJwt(refreshConfig.getName(), userId, refreshConfig.getExpiry());
 
         response.setHeader("Authorization", "Bearer " + access);
         Cookie refreshCookie = jwtService.createRefreshCookie(refresh);
         response.addCookie(refreshCookie);
 
-        boolean isSaved = jwtService.saveRefreshToken(userId, refresh, 86400000L);
+        boolean isSaved = jwtService.saveRefreshToken(userId, refresh, refreshConfig.getExpiry());
         if (!isSaved) {
             request.setAttribute("exception", DB_ERROR);
         }
@@ -113,7 +122,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             throw e;
         } else if (failed instanceof BadCredentialsException) {
             request.setAttribute("exception", INVALID_EMAIL_OR_PASSWORD);
-            throw new JwtAuthException(INVALID_EMAIL_OR_PASSWORD);
+            throw new JwtAuthException(INVALID_EMAIL_OR_PASSWORD, failed);
         } else {
             throw new JwtAuthException(UNKNOWN_ERROR);
         }

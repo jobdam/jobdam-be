@@ -1,6 +1,7 @@
 package com.jobdam.jobdam_be.user.dao;
 
 import com.jobdam.jobdam_be.user.mapper.UserMapper;
+import com.jobdam.jobdam_be.user.model.Resume;
 import com.jobdam.jobdam_be.user.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -38,6 +39,14 @@ public class UserDAO {
         return userMapper.findIdByEmail(email);
     }
 
+    public String findProfileImgUrlById(Long id) {
+        return userMapper.findProfileImgUrlById(id);
+    }
+
+    public String findResumeUrlById(Long id) {
+        return userMapper.findResumeUrlById(id);
+    }
+
     // update
     public void updateCreatedAtByEmail(String email) {
         userMapper.updateCreatedAtByEmail(email);
@@ -47,16 +56,24 @@ public class UserDAO {
         userMapper.updateSocialByEmail(user);
     }
 
+    public boolean initProfile(User updateUser) {
+        return userMapper.initProfile(updateUser) > 0;
+    }
+
+    public boolean updateProfile(User updateUser) {
+        return userMapper.updateProfile(updateUser) > 0;
+    }
+
     // exists
     public boolean existsByEmail(String email) {
         return userMapper.existsByEmail(email);
     }
 
-    public boolean initProfile(User updateUser) {
-        return userMapper.initProfile(updateUser) > 0;
+    public boolean existsJobById(Long id) {
+        return userMapper.existsJobById(id);
     }
 
-    public boolean existsJobById(Long userId) {
-        return userMapper.existsJobById(userId);
+    public void saveOrUpdateResume(Resume resume) {
+        userMapper.saveOrUpdateResume(resume);
     }
 }

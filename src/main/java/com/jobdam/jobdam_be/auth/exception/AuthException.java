@@ -9,4 +9,8 @@ public class AuthException extends AbstractException {
     public AuthException(ErrorCode errorCode) {
         super(errorCode);
     }
+
+    public AuthException(ErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause); // 부모 생성자로 cause 전달
+    }
 }

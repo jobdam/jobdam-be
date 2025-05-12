@@ -1,6 +1,5 @@
 package com.jobdam.jobdam_be.auth.filter;
 
-import com.jobdam.jobdam_be.auth.exception.AuthErrorCode;
 import com.jobdam.jobdam_be.auth.exception.JwtAuthException;
 import com.jobdam.jobdam_be.auth.service.CustomUserDetails;
 import com.jobdam.jobdam_be.auth.provider.JwtProvider;
@@ -10,7 +9,6 @@ import com.jobdam.jobdam_be.user.model.User;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +21,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Optional;
+
+import static com.jobdam.jobdam_be.auth.exception.AuthErrorCode.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -48,20 +48,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             // 토큰 만료 여부 확인, 만료시 다음 필터로 넘기지 않음
             if (jwtProvider.isExpired(accessToken)) {
-                throw new JwtAuthException(AuthErrorCode.EXPIRED_TOKEN);
+                throw new JwtAuthException(EXPIRED_TOKEN);
             }
             // 토큰이 access인지 확인 (발급시 페이로드에 명시)
             String category = jwtProvider.getCategory(accessToken);
             if (!category.equals(tokenProperties.getAccessToken().getName())) {
-                throw new JwtAuthException(AuthErrorCode.INVALID_TOKEN);
+                throw new JwtAuthException(INVALID_TOKEN);
             }
 
             // HACK: role 값을 추가한다면 해당 코드에도 변경해야 함
             Long userId = jwtProvider.getUserId(accessToken);
-            // String role = jwtProvider.getRole(accessToken);
             Optional<User> findUser = userDAO.findById(userId);
             if (findUser.isEmpty()) {
-                throw new JwtAuthException(AuthErrorCode.INVALID_USER);
+                throw new JwtAuthException(INVALID_USER);
             }
 
             CustomUserDetails customUserDetails = new CustomUserDetails(findUser.orElse(null));
@@ -70,11 +69,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authToken);
 
         } catch (ExpiredJwtException e) {
-            request.setAttribute("exception", AuthErrorCode.EXPIRED_TOKEN);
+            request.setAttribute("exception", EXPIRED_TOKEN);
+            throw new JwtAuthException(EXPIRED_TOKEN, e);
         } catch (JwtAuthException e) {
             request.setAttribute("exception", e.getErrorCode());
+            throw e;
         } catch (Exception e) {
-            request.setAttribute("exception", AuthErrorCode.INVALID_TOKEN);
+            request.setAttribute("exception", INVALID_TOKEN);
+            throw new JwtAuthException(INVALID_TOKEN, e);
+
         }
         filterChain.doFilter(request, response);
     }
