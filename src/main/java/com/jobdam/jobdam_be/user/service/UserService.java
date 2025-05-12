@@ -4,6 +4,7 @@ import com.jobdam.jobdam_be.global.exception.type.CommonErrorCode;
 import com.jobdam.jobdam_be.interview.dao.InterviewDAO;
 import com.jobdam.jobdam_be.user.dao.UserDAO;
 import com.jobdam.jobdam_be.user.dto.UserInitProfileDTO;
+import com.jobdam.jobdam_be.user.dto.UserMatchingProfileDTO;
 import com.jobdam.jobdam_be.user.dto.UserProfileDTO;
 import com.jobdam.jobdam_be.user.exception.UserErrorCode;
 import com.jobdam.jobdam_be.user.exception.UserException;
@@ -12,6 +13,7 @@ import com.jobdam.jobdam_be.user.model.Resume;
 import com.jobdam.jobdam_be.user.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +29,7 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserDAO userDAO;
     private final InterviewDAO interviewDAO;
+    private final ModelMapper modelMapper;
 
     public void initProfile(Long userId, UserInitProfileDTO dto, String imgUrl) {
         User updateUser = buildUser(userId, imgUrl, dto);
@@ -126,5 +129,10 @@ public class UserService {
                 .educationStatus(dto.getEducationStatus())
                 .build();
     }
-
+    //매칭시 먼저 선택할 내정보가져오기
+    public UserMatchingProfileDTO.Response myMatchingProfile(Long userId) {
+        User user = userDAO.findById(userId)
+                .orElseThrow(() -> new UserException(CommonErrorCode.USER_NOT_FOUND));
+        return modelMapper.map(user, UserMatchingProfileDTO.Response.class);
+    }
 }

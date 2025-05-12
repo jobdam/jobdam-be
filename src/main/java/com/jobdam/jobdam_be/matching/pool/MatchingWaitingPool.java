@@ -18,7 +18,7 @@ public class MatchingWaitingPool {
 
     // 유저 추가
     public void add(MatchWaitingUserInfo userInfo) {
-        pool.computeIfAbsent(userInfo.getJobGroup(), k -> new ConcurrentHashMap<>())
+        pool.computeIfAbsent(userInfo.getJobGroupCode(), k -> new ConcurrentHashMap<>())
                 .computeIfAbsent(userInfo.getMatchType(), k -> new ConcurrentLinkedQueue<>())
                 .add(userInfo);
     }

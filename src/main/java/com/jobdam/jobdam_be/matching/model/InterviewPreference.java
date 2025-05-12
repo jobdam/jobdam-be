@@ -9,9 +9,9 @@ import lombok.Getter;
 @Builder
 public class InterviewPreference {
     private Long userId;
-    private String jobGroup;
-    private String jobDetail;
+    private String jobGroupCode;
+    private String jobDetailCode;
     private ExperienceType experienceType;
-    private String introducer;
+    private String introduce;
     private InterviewType interviewType;
 }

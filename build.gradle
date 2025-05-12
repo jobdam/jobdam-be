@@ -52,6 +52,7 @@ dependencies {
 
     //util
     implementation "com.google.guava:guava:32.1.2-jre"//고성능 map
+    implementation 'org.modelmapper:modelmapper:3.1.1'
 
     // 이메일 발송을 위한 인증 페이지 작성 thymeleaf
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'

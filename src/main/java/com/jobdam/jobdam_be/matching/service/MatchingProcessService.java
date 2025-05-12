@@ -49,7 +49,7 @@ public class MatchingProcessService {
             for (MatchType type : matchTypes) {
                 //매칭 풀에서 같은직군, 같은타입체크해서 리스트로 반환
                 List<MatchWaitingUserInfo> poolList =
-                        matchingWaitingPool.getReadyWaitingList(target.getJobGroup(), type);
+                        matchingWaitingPool.getReadyWaitingList(target.getJobGroupCode(), type);
                 //매칭을 시작(스케쥴에서 선택된 유저랑 pool List랑 비교해서 필터로 골라줌)
                 List<MatchWaitingUserInfo> matched = filterCandidates(target, poolList);
                 candidates.addAll(matched);
@@ -102,7 +102,7 @@ public class MatchingProcessService {
                     boolean strict = target.getJoinedAt().plusSeconds(180).isAfter(now)
                             && candidate.getJoinedAt().plusSeconds(180).isAfter(now);
                     if (strict) {//3분이내 서브조건 검사(세부직군/신입,경력구분이같은지 체크)
-                        return Objects.equals(candidate.getJobDetail(), target.getJobDetail()) &&
+                        return Objects.equals(candidate.getJobDetailCode(), target.getJobDetailCode()) &&
                                 candidate.getExperienceType() == target.getExperienceType();
                     }//매칭 시간지나면 그냥 필터통과시켜줌
                     return true; // relaxed
