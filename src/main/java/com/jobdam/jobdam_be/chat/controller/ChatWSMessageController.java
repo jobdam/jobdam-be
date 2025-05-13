@@ -39,7 +39,7 @@ public class ChatWSMessageController {
         ChatMessageDto.Response response = ChatMessageDto.Response.builder()
                 .chatMessageType(ChatMessageType.CHAT)
                 .userId(Long.valueOf(user.getUsername()))
-                .username(user.getRealName())
+                .userName(user.getRealName())
                 .profileImageUrl(user.getProfileImageUrl())
                 .content(request.getContent())
                 .time(time)

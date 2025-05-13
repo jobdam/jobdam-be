@@ -13,7 +13,7 @@ public class ChatUserInfoDTO {
     @Data
     @Builder
     public static class Response{
-        private long id;
+        private long userId;
         private String name;
         private String targetCompanySize;
         private String profileImgUrl;
@@ -24,7 +24,7 @@ public class ChatUserInfoDTO {
 
         private String jobGroup;
         private String jobDetail;
-        private String experienceType;
+        private ExperienceType experienceType;
         private String introduce;
         private InterviewType interviewType;
     }

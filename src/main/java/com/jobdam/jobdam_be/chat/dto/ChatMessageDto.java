@@ -17,7 +17,7 @@ public class ChatMessageDto {
     public static class Response {
         private ChatMessageType chatMessageType;
         private Long userId;
-        private String username;
+        private String userName;
         private String profileImageUrl;
         private String content;
         private String time;

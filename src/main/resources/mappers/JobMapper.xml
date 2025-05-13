@@ -24,7 +24,7 @@
         FROM job_detail
         WHERE job_code = #{jobCode}
     </select>
-    <select id="getJobGroupDetailJoinModel" resultMap="com.jobdam.jobdam_be.job.model.JobGroupDetailJoinModel">
+    <select id="getJobGroupDetailJoinModel" resultType="com.jobdam.jobdam_be.job.model.JobGroupDetailJoinModel">
         SELECT job_detail.job_code AS jobCode, job_group.job_group AS jobGroup,
         job_detail_code AS jobDetailCode, job_detail AS jobDetail
         FROM job_detail
