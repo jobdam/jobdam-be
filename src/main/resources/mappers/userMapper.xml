@@ -153,4 +153,25 @@
         AND education_level IS NOT NULL
     </select>
 
+    <!-- 유저정보+job정보(jobCode를 한글로 보여주기 위해) -->
+    <select id="findUserJobJoinById" resultType="com.jobdam.jobdam_be.user.model.UserJobJoinModel">
+        SELECT
+        id,
+        email,
+        name,
+        birthday,
+        target_company_size AS targetCompanySize,
+        profile_img_url AS profileImgUrl,
+        user.job_code AS jobCode,
+        job_group.job_group,
+        user.job_detail_code AS jobDetailCode,
+        job_detail.job_detail,
+        experience_type AS experienceType,
+        education_level AS educationLevel,
+        education_status AS educationStatus
+        FROM user
+        LEFT JOIN job_group ON user.job_code = job_group.job_code
+        LEFT JOIN job_detail ON user.job_detail_code = job_detail.job_detail_code
+        WHERE id = #{id}
+    </select>
 </mapper>

@@ -1,5 +1,6 @@
 package com.jobdam.jobdam_be.chat.controller;
 
+import com.jobdam.jobdam_be.chat.dto.ChatUserInfoDTO;
 import com.jobdam.jobdam_be.chat.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,8 +18,8 @@ public class ChatController {
 
     private final ChatService chatService;
 
-    @GetMapping("/userInfo/{userId}")
-    public ResponseEntity<?> getChatUserInfo(@PathVariable Long userId){
-        return ResponseEntity.ok(chatService.getChatUserInfo(userId));
+    @GetMapping("/userInfo/{roomId}/{userId}")
+    public ResponseEntity<ChatUserInfoDTO.Response> getChatUserInfo(@PathVariable String roomId, @PathVariable Long userId){
+        return ResponseEntity.ok(chatService.getChatUserInfo(roomId,userId));
     }
 }

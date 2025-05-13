@@ -11,6 +11,7 @@ import com.jobdam.jobdam_be.user.exception.UserException;
 import com.jobdam.jobdam_be.interview.model.Interview;
 import com.jobdam.jobdam_be.user.model.Resume;
 import com.jobdam.jobdam_be.user.model.User;
+import com.jobdam.jobdam_be.user.model.UserJobJoinModel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -134,5 +135,16 @@ public class UserService {
         User user = userDAO.findById(userId)
                 .orElseThrow(() -> new UserException(CommonErrorCode.USER_NOT_FOUND));
         return modelMapper.map(user, UserMatchingProfileDTO.Response.class);
+    }
+    //userJobJoin 가져오기(jobCode 말고 한글로) chat에서 사용할 줄 알았는데
+    //생각해보니 UI에서 선택한거 보여줘야해서 사용 보류..
+    public UserJobJoinModel getUserJobJoinModel(Long userId){
+        return userDAO.findUserJobJoinById(userId)
+                .orElseThrow(() -> new UserException(CommonErrorCode.USER_NOT_FOUND));
+    }
+    //유저정보 id로 가져오기
+    public User getUserById(Long userId){
+        return userDAO.findById(userId)
+                .orElseThrow(() -> new UserException(CommonErrorCode.USER_NOT_FOUND));
     }
 }

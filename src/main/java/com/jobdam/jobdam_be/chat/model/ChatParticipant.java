@@ -6,7 +6,9 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;
 
-
+//유저가 채팅방에서 새로고침,접속끊김등으로인해
+//나갔는지, 진짜나갔는지 판단하기위해 연결상태를 확인하는모델
+//스케쥴을 통해서 일정시간이 지나면 storage에서 삭제을 시켜준다.
 @Getter
 @RequiredArgsConstructor
 public class ChatParticipant {
