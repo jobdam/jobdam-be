@@ -135,9 +135,4 @@ public class UserService {
                 .orElseThrow(() -> new UserException(CommonErrorCode.USER_NOT_FOUND));
         return modelMapper.map(user, UserMatchingProfileDTO.Response.class);
     }
-
-    //유저 아이디로 이름가져오기
-    public String findNameById(Long userId){
-        return userDAO.findNameById(userId);
-    }
 }
