@@ -96,7 +96,7 @@ public class UserController {
     }
 
     @GetMapping("/me/matching-profile")
-    public ResponseEntity<UserMatchingProfileDTO.Response> myMatchingProfile(Authentication authentication){
+    public ResponseEntity<UserMatchingProfileDTO.Response> myMatchingProfile(Authentication authentication) {
         Long userId = Long.valueOf(authentication.getName());
         return ResponseEntity.ok(userService.myMatchingProfile(userId));
     }
