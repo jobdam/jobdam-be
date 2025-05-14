@@ -2,6 +2,9 @@ package com.jobdam.jobdam_be.chat.controller;
 
 import com.jobdam.jobdam_be.auth.service.CustomUserDetails;
 import com.jobdam.jobdam_be.chat.dto.ChatMessageDto;
+import com.jobdam.jobdam_be.chat.dto.ChatStatusMessageDTO;
+import com.jobdam.jobdam_be.chat.type.ChatMessageType;
+import com.jobdam.jobdam_be.websokect.sessionTracker.domain.ChatSessionTracker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -22,6 +25,7 @@ public class ChatWSMessageController {
 
     private final SimpMessagingTemplate simpMessagingTemplate;
 
+    //채팅 보내기
     @MessageMapping("/chat/send/{roomId}")
     public void sendChat(@DestinationVariable String roomId,
                          ChatMessageDto.Request request,
@@ -29,13 +33,13 @@ public class ChatWSMessageController {
 
         CustomUserDetails user = (CustomUserDetails) ((Authentication) principal).getPrincipal();
 
-
         String time = LocalTime.now()
                 .format(DateTimeFormatter.ofPattern("a h:mm").withLocale(Locale.KOREA));
 
         ChatMessageDto.Response response = ChatMessageDto.Response.builder()
+                .chatMessageType(ChatMessageType.CHAT)
                 .userId(Long.valueOf(user.getUsername()))
-                .username(user.getRealName())
+                .userName(user.getRealName())
                 .profileImageUrl(user.getProfileImageUrl())
                 .content(request.getContent())
                 .time(time)

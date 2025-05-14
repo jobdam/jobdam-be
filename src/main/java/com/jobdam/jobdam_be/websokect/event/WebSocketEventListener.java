@@ -1,5 +1,6 @@
 package com.jobdam.jobdam_be.websokect.event;
 
+import com.jobdam.jobdam_be.auth.service.CustomUserDetails;
 import com.jobdam.jobdam_be.matching.pool.MatchingWaitingPool;
 import com.jobdam.jobdam_be.websokect.exception.WebSocketException;
 import com.jobdam.jobdam_be.websokect.exception.type.WebSocketErrorCode;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
@@ -64,10 +66,6 @@ public class WebSocketEventListener {
         String purpose = webSocketBaseSessionInfo.getPurpose();
         String roomId = webSocketBaseSessionInfo.getRoomId();
 
-        //트래커를 통해서 세션아이디와 방번호를 넣는다.
-        trackerRegistry.getTracker(purpose)
-               .addSession(roomId, accessor.getSessionId());
-
         if("matching".equals(purpose)){
             addMatchingSubscribeInfo(accessor,roomId);
         }
@@ -75,11 +73,24 @@ public class WebSocketEventListener {
         if ("chat".equals(purpose)) {
             WebSocketSessionTracker tracker = trackerRegistry.getTracker(purpose);
             if (tracker instanceof ChatSessionTracker chatTracker) {
-                chatTracker.addSessionUserMapping(accessor.getSessionId(),
-                        Long.valueOf(Objects.requireNonNull(accessor.getUser()).getName()));
+                  Authentication auth =  (Authentication) accessor.getUser();
+
+                  if(Objects.isNull(auth))
+                      throw new WebSocketException(WebSocketErrorCode.MISSING_AUTH);
+
+                  CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+
+                  Long userId = Long.valueOf(userDetails.getUsername());
+                  String username = userDetails.getRealName();
+
+                  chatTracker.addSessionUserMapping(accessor.getSessionId(), userId);
+                  chatTracker.addUserNameMapping(userId, username);
+                  log.info("[chat구독!] userId={} username={}", userId, username);
             }
         }
-
+        //트래커를 통해서 세션아이디와 방번호를 넣는다.
+        trackerRegistry.getTracker(purpose)
+                .addSession(roomId, accessor.getSessionId());
         log.info("[웹소켓 구독 완료!] purpose={} roomId={} sessionId={}" ,purpose,roomId,accessor.getSessionId());
     }
 

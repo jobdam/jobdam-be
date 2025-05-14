@@ -23,11 +23,23 @@ public class ChatRoomStore {
         roomMap.computeIfAbsent(roomId, k -> new ChatRoom(matchType))
                 .getParticipants().add(new ChatParticipant(preference));
     }
+    //방,유저아이디로 유저가 작성한 정보 조회
+    public Optional<InterviewPreference> getUserInfo(String roomId, Long userId) {
+        ChatRoom room = roomMap.get(roomId);
+        //비어있으면 빈값 리턴
+        if (room == null) return Optional.empty();
+
+        return room.getParticipants().stream()
+                .map(ChatParticipant::getInfo)
+                .filter(info -> info.getUserId().equals(userId))
+                .findFirst();
+    }
 
     //해당방의 참가자 목록조회
     public Optional<List<InterviewPreference>> get(String roomId) {
         return Optional.ofNullable(roomMap.get(roomId))
                 .map(room -> room.getParticipants().stream()
+                        .filter(ChatParticipant::isConnected)
                         .map(ChatParticipant::getInfo)
                         .toList());
     }
