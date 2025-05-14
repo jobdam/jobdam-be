@@ -27,7 +27,7 @@ public class ChatController {
     }
 
     //방에 있는 유저 전부 조회
-    @GetMapping("/userInfo/{roomId}")
+    @GetMapping("/userInfos/{roomId}")
     public ResponseEntity<List<ChatUserInfoDTO.Response>> getChatUserInfoList(@PathVariable String roomId) {
         return ResponseEntity.ok(chatService.getChatUserInfoList(roomId));
     }

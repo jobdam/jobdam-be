@@ -20,11 +20,12 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ChatService {
-    private UserService userService;
-    private JobService jobService;
-    private ChatRoomStore chatRoomStore;
+    private final UserService userService;
+    private final JobService jobService;
+    private final ChatRoomStore chatRoomStore;
     //채팅방 유저정보 한명만조회
     public ChatUserInfoDTO.Response getChatUserInfo(String roomId, Long userId) {
+
         User user = userService.getUserById(userId);
         InterviewPreference info = chatRoomStore.getUserInfo(roomId, userId)
                 .orElseThrow(() -> new ChatException(ChatErrorCode.INVALID_USER));

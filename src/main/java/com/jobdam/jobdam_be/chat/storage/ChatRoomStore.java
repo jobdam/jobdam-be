@@ -39,6 +39,7 @@ public class ChatRoomStore {
     public Optional<List<InterviewPreference>> get(String roomId) {
         return Optional.ofNullable(roomMap.get(roomId))
                 .map(room -> room.getParticipants().stream()
+                        .filter(ChatParticipant::isConnected)
                         .map(ChatParticipant::getInfo)
                         .toList());
     }
