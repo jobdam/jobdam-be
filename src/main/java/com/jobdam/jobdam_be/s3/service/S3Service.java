@@ -45,7 +45,7 @@ public class S3Service {
 
         // 기존의 프로필 이미지가 있었다면 삭제
         if (profileImgUrl != null)
-            amazonS3.deleteObject(bucket, getImageKey(profileImgUrl));
+            amazonS3.deleteObject(bucket, getFileKey(profileImgUrl));
 
         return getPublicUrl(fileName);
     }
@@ -65,7 +65,7 @@ public class S3Service {
 
         // 기존의 이력서가 있었다면 삭제
         if (pdfUrl != null) {
-            amazonS3.deleteObject(bucket, getImageKey(pdfUrl));
+            amazonS3.deleteObject(bucket, getFileKey(pdfUrl));
         }
 
         return getPublicUrl(fileName);
@@ -87,13 +87,13 @@ public class S3Service {
     }
 
     /**
-     * s3 url 에서 profile 키 값만 부분만 추출
+     * s3 url 에서 파일 키 값만 부분만 추출
      *
-     * @param profileImg - 기존의 프로필 이미지 주소
-     * @return 프로필 이미지 키 값
+     * @param url 기존의 파일 주소
+     * @return 파일 키 값
      */
-    private String getImageKey(String profileImg) {
-        return profileImg.substring(profileImg.lastIndexOf('/') + 1);
+    private String getFileKey(String url) {
+        return url.split(".com/")[1];
     }
 
     /**
