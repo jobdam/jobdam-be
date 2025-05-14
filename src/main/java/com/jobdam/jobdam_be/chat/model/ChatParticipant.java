@@ -3,6 +3,7 @@ package com.jobdam.jobdam_be.chat.model;
 import com.jobdam.jobdam_be.matching.model.InterviewPreference;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 import java.time.Instant;
 
@@ -13,7 +14,9 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class ChatParticipant {
     private final InterviewPreference info;
-    private volatile boolean connected = true;
+    private volatile boolean connected = true;//연결상태확인
+    @Setter
+    private volatile boolean ready = false;//화상채팅 준비상태
     private Instant lastDisconnectedAt;
 
     public void setConnected(boolean connected) {
@@ -22,4 +25,5 @@ public class ChatParticipant {
             this.lastDisconnectedAt = Instant.now();
         }
     }
+
 }

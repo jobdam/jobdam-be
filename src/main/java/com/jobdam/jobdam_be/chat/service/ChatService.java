@@ -3,6 +3,7 @@ package com.jobdam.jobdam_be.chat.service;
 import com.jobdam.jobdam_be.chat.dto.ChatUserInfoDTO;
 import com.jobdam.jobdam_be.chat.exception.ChatErrorCode;
 import com.jobdam.jobdam_be.chat.exception.ChatException;
+import com.jobdam.jobdam_be.chat.model.ChatParticipant;
 import com.jobdam.jobdam_be.chat.storage.ChatRoomStore;
 import com.jobdam.jobdam_be.job.model.JobGroupDetailJoinModel;
 import com.jobdam.jobdam_be.job.service.JobService;
@@ -47,13 +48,16 @@ public class ChatService {
     }
     //챗팅방 유저정보 전체조회
     public List<ChatUserInfoDTO.Response> getChatUserInfoList(String roomId) {
-        List<InterviewPreference> infos = chatRoomStore.get(roomId)
+        List<ChatParticipant> participants = chatRoomStore.getParticipants(roomId)
                 .orElseThrow(() -> new ChatException(ChatErrorCode.INVALID_ROOM));
 
-        return infos.stream()
-                .map(info -> {
+        return participants.stream()
+                .map(p -> {
+                    InterviewPreference info = p.getInfo();
+                    boolean isReady = p.isReady();
                     User user = userService.getUserById(info.getUserId());
-                    JobGroupDetailJoinModel jobGroupDetailJoinModel = jobService.getJobGroupDetailJoinModel(info.getJobDetailCode());
+                    JobGroupDetailJoinModel jobGroupDetailJoinModel =
+                            jobService.getJobGroupDetailJoinModel(info.getJobDetailCode());
 
                     return ChatUserInfoDTO.Response.builder()
                             .userId(user.getId())
@@ -67,6 +71,7 @@ public class ChatService {
                             .experienceType(info.getExperienceType())
                             .introduce(info.getIntroduce())
                             .interviewType(info.getInterviewType())
+                            .ready(isReady)
                             .build();
                 })
                 .toList();
