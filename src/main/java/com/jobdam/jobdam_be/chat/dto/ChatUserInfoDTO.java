@@ -27,5 +27,8 @@ public class ChatUserInfoDTO {
         private ExperienceType experienceType;
         private String introduce;
         private InterviewType interviewType;
+
+        //화상채팅 준비상태
+        private boolean ready;
     }
 }
