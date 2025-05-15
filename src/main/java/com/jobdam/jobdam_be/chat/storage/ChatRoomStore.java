@@ -4,25 +4,49 @@ import com.jobdam.jobdam_be.chat.model.ChatParticipant;
 import com.jobdam.jobdam_be.chat.model.ChatRoom;
 import com.jobdam.jobdam_be.matching.model.InterviewPreference;
 import com.jobdam.jobdam_be.matching.type.MatchType;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+@Slf4j
 @Component
 public class ChatRoomStore {
     //roomID / 채팅방(매칭타입,유저들)
     private final Map<String, ChatRoom> roomMap = new ConcurrentHashMap<>();
 
-    //유저 한명 추가
+    //방생성 및 유저 추가
     public void add(String roomId, MatchType matchType, InterviewPreference preference) {
-        roomMap.computeIfAbsent(roomId, k -> new ChatRoom(matchType))
-                .getParticipants().add(new ChatParticipant(preference));
+        //첫입장시 방을 생성한다.
+        ChatRoom room = roomMap.compute(roomId, (key, existingRoom) -> (
+         Objects.requireNonNullElseGet(existingRoom, () -> new ChatRoom(matchType, preference))
+        ));
+        //방에 이미있는 유저인지 파악하고 넣어준다. (중복입장방지)
+        if (!isUserInRoom(roomId, preference.getUserId())) {
+            room.getParticipants().add(new ChatParticipant(preference));
+        }
     }
+
+    //방에 유저가 있는지 확인한다.
+    public boolean isUserInRoom(String roomId, Long userId) {
+        ChatRoom room = roomMap.get(roomId);
+        if (room == null) return false;
+
+        return room.getParticipants().stream()
+                .anyMatch(p -> p.getInfo().getUserId().equals(userId));
+    }
+
+    //방번호로 chatRoom을 가져온다.
+    public Optional<ChatRoom> getRoom(String roomId) {
+        return Optional.ofNullable(roomMap.get(roomId));
+    }
+
     //방,유저아이디로 유저가 작성한 정보 조회
     public Optional<InterviewPreference> getUserInfo(String roomId, Long userId) {
         ChatRoom room = roomMap.get(roomId);
@@ -94,15 +118,15 @@ public class ChatRoomStore {
     public boolean isRoomFull(String roomId, int maxSize) {
         return getRoomSize(roomId) >= maxSize;
     }
-    //최대인원수보다 작은방을 찾아준다.
-    public Optional<String> findAvailableGroupRoom(int maxSize) {
+    //최대인원수보다 작은방들을 찾아준다.
+    public List<String> findAvailableGroupRoom(int maxSize) {
         return roomMap.entrySet().stream()
                 .filter(entry -> entry.getValue().getMatchType() == MatchType.GROUP) //그룹방필터
                 .filter(entry -> entry.getValue().getParticipants().stream()
                         .filter(ChatParticipant::isConnected)
                         .count() < maxSize) //최대인원수보다 적은방만
                 .map(Map.Entry::getKey)//roomId만 반환
-                .findFirst();
+                .toList();
     }
     // 연결 끊김 처리 (disconnect)
     public void markDisconnected(String roomId, Long userId) {
