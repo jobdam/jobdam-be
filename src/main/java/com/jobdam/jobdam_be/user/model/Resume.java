@@ -1,16 +1,14 @@
 package com.jobdam.jobdam_be.user.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class Resume {
-    private Long id;
+    private Long resumeId;
     private Long userId;
     private String url;
 }

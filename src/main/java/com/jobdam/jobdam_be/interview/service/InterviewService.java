@@ -2,9 +2,11 @@ package com.jobdam.jobdam_be.interview.service;
 
 import com.jobdam.jobdam_be.interview.dao.InterviewDAO;
 import com.jobdam.jobdam_be.interview.dto.QuestionFeedbackDto;
+import com.jobdam.jobdam_be.interview.model.AiResumeQuestion;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -16,6 +18,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class InterviewService {
     private final InterviewDAO interviewDAO;
+
     public List<QuestionFeedbackDto> getFeedback(Long interviewId, Long userId) {
 
         List<Map<String, Object>> rows = interviewDAO.findFeedbackByInterviewIdAndUserId(interviewId, userId);
@@ -39,6 +42,12 @@ public class InterviewService {
         }
 
         return new ArrayList<>(grouped.values());
-
     }
+
+    @Transactional
+    public void replaceAllAiQuestions(Long resumeId, List<AiResumeQuestion> questions) {
+        interviewDAO.resetAiQuestion(resumeId);
+        int result = interviewDAO.insertAiQuestions(questions);
+    }
+
 }

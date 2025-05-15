@@ -1,5 +1,6 @@
 package com.jobdam.jobdam_be.interview.mapper;
 
+import com.jobdam.jobdam_be.interview.model.AiResumeQuestion;
 import com.jobdam.jobdam_be.interview.model.Interview;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -11,4 +12,8 @@ public interface InterviewMapper {
     List<Interview> findInterviewById(Long userId);
 
     List<Map<String, Object>> findFeedbackByInterviewIdAndUserId(Long interviewId, Long userId);
+
+    int insertAiQuestions(List<AiResumeQuestion> questions);
+
+    void resetAiQuestion(Long resumeId);
 }
