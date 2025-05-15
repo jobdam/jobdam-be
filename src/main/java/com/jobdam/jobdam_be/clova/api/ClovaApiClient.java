@@ -23,7 +23,7 @@ public class ClovaApiClient {
     private String apiKey;
 
     // 요약 AI 요청
-    public Mono<String> sampling(String requestId, ChatRequest request) {
+    public Mono<String> samplingResume(String requestId, ChatRequest request) {
         return webClient.post()
                 .uri("testapp/v3/chat-completions/HCX-005")
                 .header("Authorization", "Bearer " + apiKey)
@@ -40,6 +40,21 @@ public class ClovaApiClient {
 
     // 질문 생성 AI 요청
     public Mono<String> generateQuestions(String requestId, ChatRequest request) {
+        return webClient.post()
+                .uri("/testapp/v3/chat-completions/HCX-DASH-002")
+                .header("Authorization", "Bearer " + apiKey)
+                .header("X-NCP-CLOVASTUDIO-REQUEST-ID", requestId)
+                .header("Content-Type", "application/json")
+                .header("Accept", "text/event-stream")
+                .bodyValue(request)
+                .retrieve()
+                .bodyToFlux(String.class)
+                .filter(line -> !line.contains("[DONE]") && line.contains("\"message\""))
+                .map(this::extractQuestionContent)
+                .last();
+    }
+    // 질문 생성 AI 요청
+    public Mono<String> samplingFeedBack(String requestId, ChatRequest request) {
         return webClient.post()
                 .uri("/testapp/v3/chat-completions/HCX-DASH-002")
                 .header("Authorization", "Bearer " + apiKey)

@@ -25,7 +25,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ResumeAiService {
+public class ClovaAiService {
     private final ClovaApiClient clovaApiClient;
     private final InterviewService interviewService;
 
@@ -36,9 +36,12 @@ public class ResumeAiService {
 
     @Value("${clova.resume.sampling.id}")
     private String samplingId;
+    private String samplingResumePrompt;
 
     @Value("${clova.resume.question.id}")
     private String questionId;
+    @Value("${clova.resume.sampling.id}")
+    private String samplingResumeId;
 
     private static final int MIN_TEXT_LENGTH_FOR_SAMPLING = 500;
 
@@ -56,15 +59,15 @@ public class ResumeAiService {
     // 내용이 적기에 요약이 필요하지 않을 경우
     private void analyzeWithoutSampling(String resumeText, Long resumeId) {
         String questions = buildQuestionMono(resumeText).block();
-         saveQuestionsAsync(resumeId, questions);
+        saveQuestionsAsync(resumeId, questions);
     }
 
     // 내용이 많아 요약이 필요할 경우
     private void analyzeWithSampling(String resumeText, Long resumeId) {
         ChatRequest samplingRequest = new ChatRequest(
-                List.of(new Message("system", samplingPrompt), new Message("user", resumeText)),1000);
+                List.of(new Message("system", samplingResumePrompt), new Message("user", resumeText)), 1000);
 
-        String samplingResume = clovaApiClient.sampling(samplingId, samplingRequest).block();
+        String samplingResume = clovaApiClient.samplingResume(samplingResumeId, samplingRequest).block();
         String questions = buildQuestionMono(samplingResume).block();
         saveQuestionsAsync(resumeId, questions);
     }
@@ -72,7 +75,7 @@ public class ResumeAiService {
     // 질문 생성
     private Mono<String> buildQuestionMono(String inputText) {
         ChatRequest chatRequest = new ChatRequest(
-                List.of(new Message("system", questionPrompt), new Message("user", inputText)),800);
+                List.of(new Message("system", questionPrompt), new Message("user", inputText)), 800);
         return clovaApiClient.generateQuestions(questionId, chatRequest);
     }
 

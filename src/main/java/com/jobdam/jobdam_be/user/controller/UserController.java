@@ -1,6 +1,6 @@
 package com.jobdam.jobdam_be.user.controller;
 
-import com.jobdam.jobdam_be.clova.service.ResumeAiService;
+import com.jobdam.jobdam_be.clova.service.ClovaAiService;
 import com.jobdam.jobdam_be.interview.model.Interview;
 import com.jobdam.jobdam_be.s3.service.S3Service;
 import com.jobdam.jobdam_be.user.dto.UserInitProfileDTO;
@@ -28,7 +28,7 @@ import java.util.Map;
 public class UserController {
     private final UserService userService;
     private final S3Service s3Service;
-    private final ResumeAiService resumeAiService;
+    private final ClovaAiService clovaAiService;
 
     @PostMapping("/profile")
     public ResponseEntity<String> saveProfile(@Valid @RequestPart("data") UserInitProfileDTO dto,
@@ -93,7 +93,7 @@ public class UserController {
         Resume resume = new Resume(null, userId, resumeUrl);
         userService.savePDF(resume);
 
-        resumeAiService.analyzeResumeAndPDF(file, resume.getResumeId());
+        clovaAiService.analyzeResumeAndPDF(file, resume.getResumeId());
 
         // String pdfToString = PDFProvider.pdfToString(file);
         Map<String, String> response = new HashMap<>();
