@@ -1,6 +1,7 @@
 package com.jobdam.jobdam_be.interview.dao;
 
 import com.jobdam.jobdam_be.interview.mapper.InterviewMapper;
+import com.jobdam.jobdam_be.interview.model.AiResumeQuestion;
 import com.jobdam.jobdam_be.interview.model.Interview;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -19,5 +20,13 @@ public class InterviewDAO {
 
     public List<Map<String, Object>> findFeedbackByInterviewIdAndUserId(Long interviewId, Long userId) {
         return interviewMapper.findFeedbackByInterviewIdAndUserId(interviewId, userId);
+    }
+
+    public int insertAiQuestions(List<AiResumeQuestion> questions) {
+        return interviewMapper.insertAiQuestions(questions);
+    }
+
+    public void resetAiQuestion(Long resumeId) {
+        interviewMapper.resetAiQuestion(resumeId);
     }
 }
