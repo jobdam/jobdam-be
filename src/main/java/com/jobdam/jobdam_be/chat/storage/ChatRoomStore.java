@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 @Slf4j
 @Component
@@ -27,9 +26,11 @@ public class ChatRoomStore {
         ChatRoom room = roomMap.compute(roomId, (key, existingRoom) -> (
          Objects.requireNonNullElseGet(existingRoom, () -> new ChatRoom(matchType, preference))
         ));
-        //방에 이미있는 유저인지 파악하고 넣어준다. (중복입장방지)
-        if (!isUserInRoom(roomId, preference.getUserId())) {
-            room.getParticipants().add(new ChatParticipant(preference));
+        synchronized (room) {
+            //방에 이미있는 유저인지 파악하고 넣어준다. (중복입장방지)
+            if (!isUserInRoom(roomId, preference.getUserId())) {
+                room.getParticipants().add(new ChatParticipant(preference));
+            }
         }
     }
 
@@ -91,33 +92,15 @@ public class ChatRoomStore {
     public Optional<List<ChatParticipant>> getParticipants(String roomId) {
         return Optional.ofNullable(roomMap.get(roomId))
                 .map(room -> room.getParticipants().stream()
-                        .filter(ChatParticipant::isConnected)
+                        .filter(ChatParticipant::isConnected) //연결되있는유저만 반환
                         .toList());
-    }
-
-    //특정 roomID의 matchType조회
-    public Optional<MatchType> getMatchType(String roomId) {
-        return Optional.ofNullable(roomMap.get(roomId))
-                .map(ChatRoom::getMatchType);
     }
 
     //방을 제거
     public void remove(String roomId) {
         roomMap.remove(roomId);
     }
-    //방의 현재 인원수
-    public int getRoomSize(String roomId) {
-        return Optional.ofNullable(roomMap.get(roomId))
-                .map(room -> (int) room.getParticipants().stream()
-                        .filter(ChatParticipant::isConnected)
-                        .count())
-                .orElse(0);
-    }
 
-    //방이 가득찼는지 확인
-    public boolean isRoomFull(String roomId, int maxSize) {
-        return getRoomSize(roomId) >= maxSize;
-    }
     //최대인원수보다 작은방들을 찾아준다.
     public List<String> findAvailableGroupRoom(int maxSize) {
         return roomMap.entrySet().stream()
@@ -135,7 +118,10 @@ public class ChatRoomStore {
             room.getParticipants().stream()
                     .filter(p -> p.getInfo().getUserId().equals(userId))
                     .findFirst()
-                    .ifPresent(p -> p.setConnected(false));
+                    .ifPresent(p -> {
+                        p.setConnected(false);
+                        p.setReady(false);}
+                    );
         }
     }
 
