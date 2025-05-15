@@ -8,10 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
@@ -22,16 +19,18 @@ public class ChatRoomStore {
 
     //방생성 및 유저 추가
     public void add(String roomId, MatchType matchType, InterviewPreference preference) {
-        //첫입장시 방을 생성한다.
-        ChatRoom room = roomMap.compute(roomId, (key, existingRoom) -> (
-         Objects.requireNonNullElseGet(existingRoom, () -> new ChatRoom(matchType, preference))
-        ));
-        synchronized (room) {
-            //방에 이미있는 유저인지 파악하고 넣어준다. (중복입장방지)
-            if (!isUserInRoom(roomId, preference.getUserId())) {
+        roomMap.compute(roomId, (key, existingRoom) -> {
+            ChatRoom room = Objects.requireNonNullElseGet(existingRoom, () -> new ChatRoom(matchType, preference));
+
+            boolean alreadyExists = room.getParticipants().stream()
+                    .anyMatch(p -> p.getInfo().getUserId().equals(preference.getUserId()));
+
+            if (!alreadyExists) {
                 room.getParticipants().add(new ChatParticipant(preference));
             }
-        }
+
+            return room;
+        });
     }
 
     //방에 유저가 있는지 확인한다.
@@ -138,12 +137,23 @@ public class ChatRoomStore {
 
     // 일정 시간 이상 끊긴 유저 제거 (스케줄러에서 호출)
     public void removeDisconnectedBefore(Instant cutoff) {
-        roomMap.values().forEach(room ->
-                room.getParticipants().removeIf(p ->
-                        !p.isConnected() &&
-                                p.getLastDisconnectedAt() != null &&
-                                p.getLastDisconnectedAt().isBefore(cutoff))
-        );
+        roomMap.entrySet().removeIf(entry -> {
+            ChatRoom room = entry.getValue();
+
+            // 끊긴 유저 제거
+            room.getParticipants().removeIf(p ->
+                    !p.isConnected() &&
+                            p.getLastDisconnectedAt() != null &&
+                            p.getLastDisconnectedAt().isBefore(cutoff)
+            );
+
+            // 방이 비었으면 이 entry 자체를 제거
+            boolean empty = room.getParticipants().isEmpty();
+            if (empty) {
+                log.info("[채팅방 제거] roomId={} (비정상 종료 후 유저 제거로 삭제)", entry.getKey());
+            }
+            return empty;
+        });
     }
 
 }

@@ -139,6 +139,10 @@ public class MatchingProcessService {
                     if (chatRoomStore.isUserInRoom(roomId, target.getUserId())) {
                         return false;
                     }
+                    // 방 인원이 2명 이상 있어야 입장 대상
+                    if (room.getParticipants().size() < 2) {
+                        return false;
+                    }
                     // 필수 조건: 직군코드
                     if (!Objects.equals(room.getJobGroupCode(), target.getJobGroupCode())) {
                         return false;
