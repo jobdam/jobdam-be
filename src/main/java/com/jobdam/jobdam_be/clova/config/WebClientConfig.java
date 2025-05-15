@@ -1,4 +1,4 @@
-package com.jobdam.jobdam_be.global.config;
+package com.jobdam.jobdam_be.clova.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
