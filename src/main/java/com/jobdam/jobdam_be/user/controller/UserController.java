@@ -88,6 +88,8 @@ public class UserController {
         }
 
         userService.savePDF(userId, resumeUrl);
+        Resume resume = new Resume(null, userId, resumeUrl);
+        userService.savePDF(resume);
 
         // String pdfToString = PDFProvider.pdfToString(file);
         Map<String, String> response = new HashMap<>();
