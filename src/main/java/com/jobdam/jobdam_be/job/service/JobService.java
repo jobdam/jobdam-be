@@ -4,6 +4,7 @@ import com.jobdam.jobdam_be.job.dao.JobDao;
 import com.jobdam.jobdam_be.job.dto.JobDetailDTO;
 import com.jobdam.jobdam_be.job.dto.JobGroupDTO;
 import com.jobdam.jobdam_be.job.model.JobGroup;
+import com.jobdam.jobdam_be.job.model.JobGroupDetailJoinModel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,5 +37,10 @@ public class JobService {
             dto.setDetails(details);
             return dto;
         }).collect(Collectors.toList());
+    }
+
+    //detailcode로 joinModel가져오기
+    public JobGroupDetailJoinModel getJobGroupDetailJoinModel(String jobDetailCode){
+        return  jobDao.getJobGroupDetailJoinModel(jobDetailCode);
     }
 }

@@ -2,6 +2,7 @@ package com.jobdam.jobdam_be.user.mapper;
 
 import com.jobdam.jobdam_be.user.model.Resume;
 import com.jobdam.jobdam_be.user.model.User;
+import com.jobdam.jobdam_be.user.model.UserJobJoinModel;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.Optional;
@@ -37,4 +38,6 @@ public interface UserMapper {
     boolean existsJobById(Long id);
 
     void saveOrUpdateResume(Resume resume);
+
+    Optional<UserJobJoinModel> findUserJobJoinById(Long id);
 }

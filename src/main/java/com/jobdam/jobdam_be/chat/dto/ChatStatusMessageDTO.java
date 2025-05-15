@@ -1,25 +1,20 @@
 package com.jobdam.jobdam_be.chat.dto;
 
 import com.jobdam.jobdam_be.chat.type.ChatMessageType;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-
-public class ChatMessageDto {
-
-    @Getter
-    public static class Request{
-        private String content;
-    }
+public class ChatStatusMessageDTO {
 
     @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Builder
-    public static class Response {
+    public static class Response{
         private ChatMessageType chatMessageType;
         private Long userId;
         private String userName;
-        private String profileImageUrl;
-        private String content;
-        private String time;
     }
 }

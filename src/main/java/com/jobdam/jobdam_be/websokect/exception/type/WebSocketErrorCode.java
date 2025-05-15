@@ -16,9 +16,9 @@ public enum WebSocketErrorCode implements ErrorCode {
     INVALID_BROKER_PREFIX(400,"[웹소켓 연결 에러]유효하지 않은 brokerPrefix입니다."),
     MISSING_PURPOSE(400, "[웹소켓 연결 에러]목적(purpose) 헤더가 없습니다."),
     INVALID_PURPOSE(400, "[웹소켓 연결 에러]유효하지 않은 purpose입니다."),
-    MISSING_ROOM_ID(400, "[웹소켓 연결 에러]roomId 정보가 없습니다.");
+    MISSING_ROOM_ID(400, "[웹소켓 연결 에러]roomId 정보가 없습니다."),
 
-
+    MISSING_AUTH(400, "[웹소켓 구독 에러]auth 정보가 없습니다.");
 
 
     private final int code;

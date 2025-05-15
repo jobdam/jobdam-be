@@ -23,12 +23,51 @@ public class ChatRoomStore {
         roomMap.computeIfAbsent(roomId, k -> new ChatRoom(matchType))
                 .getParticipants().add(new ChatParticipant(preference));
     }
+    //방,유저아이디로 유저가 작성한 정보 조회
+    public Optional<InterviewPreference> getUserInfo(String roomId, Long userId) {
+        ChatRoom room = roomMap.get(roomId);
+        //비어있으면 빈값 리턴
+        if (room == null) return Optional.empty();
 
-    //해당방의 참가자 목록조회
+        return room.getParticipants().stream()
+                .map(ChatParticipant::getInfo)
+                .filter(info -> info.getUserId().equals(userId))
+                .findFirst();
+    }
+    //화상채팅 준비버튼
+    public void markReady(String roomId, Long userId, boolean ready) {
+        ChatRoom room = roomMap.get(roomId);
+        if (room != null) {
+            room.getParticipants().stream()
+                    .filter(p -> p.getInfo().getUserId().equals(userId))
+                    .findFirst()
+                    .ifPresent(p -> p.setReady(ready));
+        }
+    }
+    //전체가 다 ready인지 체크하기
+    public boolean isAllReady(String roomId) {
+        ChatRoom room = roomMap.get(roomId);
+        if (room == null) return false;
+
+        return room.getParticipants().stream()
+                .filter(ChatParticipant::isConnected) // 연결된 사람만 대상으로
+                .allMatch(ChatParticipant::isReady);  // 모두 ready이면 true
+    }
+
+
+    //해당방의 참가자 목록조회 (info만)
     public Optional<List<InterviewPreference>> get(String roomId) {
         return Optional.ofNullable(roomMap.get(roomId))
                 .map(room -> room.getParticipants().stream()
+                        .filter(ChatParticipant::isConnected)
                         .map(ChatParticipant::getInfo)
+                        .toList());
+    }
+    //해당방 참가자의 목록조회하는데 participant 전체 조회
+    public Optional<List<ChatParticipant>> getParticipants(String roomId) {
+        return Optional.ofNullable(roomMap.get(roomId))
+                .map(room -> room.getParticipants().stream()
+                        .filter(ChatParticipant::isConnected)
                         .toList());
     }
 

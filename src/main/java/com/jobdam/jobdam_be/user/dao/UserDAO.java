@@ -3,6 +3,7 @@ package com.jobdam.jobdam_be.user.dao;
 import com.jobdam.jobdam_be.user.mapper.UserMapper;
 import com.jobdam.jobdam_be.user.model.Resume;
 import com.jobdam.jobdam_be.user.model.User;
+import com.jobdam.jobdam_be.user.model.UserJobJoinModel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -76,4 +77,7 @@ public class UserDAO {
     public void saveOrUpdateResume(Resume resume) {
         userMapper.saveOrUpdateResume(resume);
     }
+
+    //join and find
+    public Optional<UserJobJoinModel> findUserJobJoinById(Long id) {return userMapper.findUserJobJoinById(id);}
 }
