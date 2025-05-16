@@ -28,21 +28,13 @@ public class IdInsertTest {
     @Commit
     public void insertUser(){
         String password = "qweQWE12!";
-        for(int i=1; i<4; i++) {
+        for(int i=5; i<6; i++) {
             String email = "test"+i+"@gmail.com";
             String encodedPassword = passwordEncoder.encode(password);
             User user = User.builder()
                     .email(email)
                     .name("잡담"+i)
-                    .password(encodedPassword)
-                    .birthday(Timestamp.valueOf(LocalDateTime.now()))
-                    .targetCompanySize("대기업")
-                    .jobCode("10031")
-                    .jobDetailCode("1000229")
-                    .experienceType("NEW")
-                    .educationLevel("UNIVERSITY_4")
-                    .educationStatus("GRADUATED")
-                    .build();
+                    .password(encodedPassword).build();
             userDAO.saveEmail(user);
         }
     }

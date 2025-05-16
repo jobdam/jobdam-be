@@ -31,4 +31,6 @@ public class ChatController {
     public ResponseEntity<List<ChatUserInfoDTO.Response>> getChatUserInfoList(@PathVariable String roomId) {
         return ResponseEntity.ok(chatService.getChatUserInfoList(roomId));
     }
+
+    //방나가기!
 }
