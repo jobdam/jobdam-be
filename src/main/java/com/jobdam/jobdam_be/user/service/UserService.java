@@ -1,14 +1,12 @@
 package com.jobdam.jobdam_be.user.service;
 
 import com.jobdam.jobdam_be.global.exception.type.CommonErrorCode;
-import com.jobdam.jobdam_be.interview.dao.InterviewDAO;
 import com.jobdam.jobdam_be.user.dao.UserDAO;
 import com.jobdam.jobdam_be.user.dto.UserInitProfileDTO;
 import com.jobdam.jobdam_be.user.dto.UserMatchingProfileDTO;
 import com.jobdam.jobdam_be.user.dto.UserProfileDTO;
 import com.jobdam.jobdam_be.user.exception.UserErrorCode;
 import com.jobdam.jobdam_be.user.exception.UserException;
-import com.jobdam.jobdam_be.interview.model.Interview;
 import com.jobdam.jobdam_be.user.model.Resume;
 import com.jobdam.jobdam_be.user.model.User;
 import com.jobdam.jobdam_be.user.model.UserJobJoinModel;
@@ -18,18 +16,13 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserDAO userDAO;
-    private final InterviewDAO interviewDAO;
     private final ModelMapper modelMapper;
 
     public void initProfile(Long userId, UserInitProfileDTO dto, String imgUrl) {
@@ -103,16 +96,6 @@ public class UserService {
      */
     public void savePDF(Resume resume) {
         userDAO.saveOrUpdateResume(resume);
-    }
-
-    public Map<String, List<Interview>> getInterview(Long userId) {
-        List<Interview> interviews = interviewDAO.findInterviewById(userId);
-
-        return interviews.stream()
-                .collect(Collectors.groupingBy(interview -> {
-                    Timestamp ts = interview.getInterviewDay(); // Timestamp
-                    return ts.toLocalDateTime().toLocalDate().toString(); // "YYYY-MM-DD"
-                }));
     }
 
     private User buildUser(Long userId, String imgUrl, UserInitProfileDTO dto) {

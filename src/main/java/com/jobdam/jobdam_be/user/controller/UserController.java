@@ -1,7 +1,6 @@
 package com.jobdam.jobdam_be.user.controller;
 
 import com.jobdam.jobdam_be.clova.service.ClovaAiService;
-import com.jobdam.jobdam_be.interview.model.Interview;
 import com.jobdam.jobdam_be.s3.service.S3Service;
 import com.jobdam.jobdam_be.user.dto.UserInitProfileDTO;
 import com.jobdam.jobdam_be.user.dto.UserMatchingProfileDTO;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -70,30 +68,23 @@ public class UserController {
         return ResponseEntity.ok("업데이트 성공");
     }
 
-    @GetMapping("/interviews")
-    public ResponseEntity<Map<String, List<Interview>>> getInterview() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long userId = Long.valueOf(authentication.getName());
-
-        return ResponseEntity.ok(userService.getInterview(userId));
-    }
-
+    // Ai를 활용하여 pdf 정보 추출 및 질문 생성하기
     @PostMapping("/resume")
-    public ResponseEntity<Map<String, String>> savePDF(@RequestParam MultipartFile file) {
+    public ResponseEntity<Map<String, String>> savePDF(@RequestParam MultipartFile pdfFile) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Long userId = Long.valueOf(authentication.getName());
 
         String resumeUrl = null;
-        if (file != null && !file.isEmpty()) {
+        if (pdfFile != null && !pdfFile.isEmpty()) {
             String findImgUrl = userService.getUserResumeUrl(userId);
 
-            resumeUrl = s3Service.uploadResume(file, findImgUrl, userId);
+            resumeUrl = s3Service.uploadResume(pdfFile, findImgUrl, userId);
         }
 
         Resume resume = new Resume(null, userId, resumeUrl);
         userService.savePDF(resume);
 
-        clovaAiService.analyzeResumeAndPDF(file, resume.getResumeId());
+        clovaAiService.analyzeResumeAndPDF(pdfFile, resume.getResumeId());
 
         // String pdfToString = PDFProvider.pdfToString(file);
         Map<String, String> response = new HashMap<>();
@@ -106,7 +97,4 @@ public class UserController {
         Long userId = Long.valueOf(authentication.getName());
         return ResponseEntity.ok(userService.getMyMatchingProfile(userId));
     }
-
-    // TODO: Ai를 활용하여 pdf 정보 추출 및 질문 생성하기
-
 }

@@ -1,6 +1,7 @@
 package com.jobdam.jobdam_be.interview.controller;
 
 import com.jobdam.jobdam_be.interview.dto.QuestionFeedbackDto;
+import com.jobdam.jobdam_be.interview.model.Interview;
 import com.jobdam.jobdam_be.interview.service.InterviewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -18,6 +20,14 @@ import java.util.List;
 public class InterviewController {
 
     private final InterviewService interviewService;
+
+    @GetMapping
+    public ResponseEntity<Map<String, List<Interview>>> getInterview() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = Long.valueOf(authentication.getName());
+
+        return ResponseEntity.ok(interviewService.getInterview(userId));
+    }
 
     // GET user/interviews/5/feedback
     @GetMapping("/{interviewId}/feedback")
