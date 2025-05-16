@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -25,6 +26,7 @@ public class UserService {
     private final UserDAO userDAO;
     private final ModelMapper modelMapper;
 
+    @Transactional
     public void initProfile(Long userId, UserInitProfileDTO dto, String imgUrl) {
         User updateUser = buildUser(userId, imgUrl, dto);
 
@@ -76,6 +78,7 @@ public class UserService {
         return userDAO.findResumeUrlById(userId);
     }
 
+    @Transactional
     public void updateProfile(Long userId, String imgUrl, UserInitProfileDTO dto) {
         User updateUser = buildUser(userId, imgUrl, dto);
 
@@ -94,6 +97,7 @@ public class UserService {
      *
      * @param resume - 새롭게 생성된 이력서 모델
      */
+    @Transactional
     public void savePDF(Resume resume) {
         userDAO.saveOrUpdateResume(resume);
     }
