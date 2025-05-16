@@ -9,7 +9,7 @@ import com.jobdam.jobdam_be.matching.model.MatchWaitingUserInfo;
 import com.jobdam.jobdam_be.websokect.model.WebSocketBaseSessionInfo;
 import com.jobdam.jobdam_be.websokect.sessionTracker.SessionTrackerRegistry;
 import com.jobdam.jobdam_be.matching.type.ExperienceType;
-import com.jobdam.jobdam_be.matching.type.InterviewType;
+import com.jobdam.jobdam_be.interview.type.InterviewType;
 import com.jobdam.jobdam_be.matching.type.MatchType;
 import com.jobdam.jobdam_be.websokect.sessionTracker.WebSocketSessionTracker;
 import com.jobdam.jobdam_be.websokect.sessionTracker.domain.ChatSessionTracker;
