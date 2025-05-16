@@ -1,4 +1,4 @@
-package com.jobdam.jobdam_be.matching.type;
+package com.jobdam.jobdam_be.interview.type;
 
 import lombok.Getter;
 

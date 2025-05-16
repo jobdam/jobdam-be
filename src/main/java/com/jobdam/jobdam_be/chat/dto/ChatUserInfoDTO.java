@@ -1,12 +1,9 @@
 package com.jobdam.jobdam_be.chat.dto;
 
 import com.jobdam.jobdam_be.matching.type.ExperienceType;
-import com.jobdam.jobdam_be.matching.type.InterviewType;
+import com.jobdam.jobdam_be.interview.type.InterviewType;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
-
-import java.sql.Timestamp;
 
 public class ChatUserInfoDTO {
 
@@ -21,8 +18,9 @@ public class ChatUserInfoDTO {
         private String educationStatus;
 
         //위에는 유저db 정보 아래는 프론트에서 입력한정보
-
+        private String jobCode;
         private String jobGroup;
+        private String jobDetailCode;
         private String jobDetail;
         private ExperienceType experienceType;
         private String introduce;

@@ -1,7 +1,7 @@
 package com.jobdam.jobdam_be.matching.model;
 
 import com.jobdam.jobdam_be.matching.type.ExperienceType;
-import com.jobdam.jobdam_be.matching.type.InterviewType;
+import com.jobdam.jobdam_be.interview.type.InterviewType;
 import lombok.Builder;
 import lombok.Getter;
 

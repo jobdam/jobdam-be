@@ -1,5 +1,6 @@
 package com.jobdam.jobdam_be.interview.model;
 
+import com.jobdam.jobdam_be.interview.type.InterviewType;
 import lombok.*;
 
 import java.sql.Timestamp;
@@ -12,8 +13,8 @@ import java.sql.Timestamp;
 @Builder
 public class Interview {
     private Long id;
-    private int userId;
-    private String interviewType;
+    private Long userId;
+    private InterviewType interviewType;
     private Timestamp interviewDay;
     private String jobCode;
     private String wellDone;

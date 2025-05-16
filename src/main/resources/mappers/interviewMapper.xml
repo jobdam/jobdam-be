@@ -13,6 +13,12 @@
         <result property="jobCode" column="job_code"/>
     </resultMap>
 
+    <resultMap id="InterviewQuestionResultMap" type="com.jobdam.jobdam_be.interview.model.InterviewQuestion">
+        <result property="id" column="id"/>
+        <result property="interviewId" column="interview_id"/>
+        <result property="context" column="context"/>
+    </resultMap>
+
     <insert id="insertAiQuestions">
         INSERT INTO ai_resume_question (resume_id, question)
         VALUES
@@ -57,4 +63,36 @@
           AND fc.target_user_id = #{userId}
         ORDER BY iq.id
     </select>
+    
+    <insert id="saveInterview" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO interview (user_id,interview_type,interview_day,job_code)
+        VALUES(#{userId},#{interviewType},now(),#{jobCode});
+    </insert>
+
+    <insert id="copyAiToInterviewQuestions">
+        INSERT INTO interview_question (interview_id, context)
+        SELECT #{interviewId}, question
+        FROM ai_resume_question
+        WHERE resume_id = (SELECT id
+                           FROM resume
+                           WHERE user_id = #{userId}
+        );
+    </insert>
+
+    <select id="findAllByInterviewId" resultMap="InterviewQuestionResultMap">
+        SELECT id, interview_id, context
+        FROM interview_question
+        WHERE interview_id = #{interviewId}
+    </select>
+
+    <insert id="saveQuestion" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO interview_question (interview_id, context)
+        VALUES(#{interviewId},#{context});
+    </insert>
+
+    <insert id="saveFeedBack">
+        INSERT INTO feedback (target_user_id, content, interview_question_id)
+        VALUES (#{targetUserId}, #{content}, #{interviewQuestionId});
+    </insert>
+
 </mapper>

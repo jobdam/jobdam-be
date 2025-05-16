@@ -26,4 +26,5 @@ public class JobDao {
     public JobGroupDetailJoinModel getJobGroupDetailJoinModel(String jobDetailCode){
      return jobMapper.getJobGroupDetailJoinModel(jobDetailCode);
     }
+
 }
