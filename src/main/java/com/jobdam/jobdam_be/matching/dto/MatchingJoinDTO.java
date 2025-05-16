@@ -11,6 +11,6 @@ public class MatchingJoinDTO {
     @NoArgsConstructor
     public static class Response{
         private String roomId;
-        private boolean isFirstJoin;
+        private boolean firstJoin;
     }
 }

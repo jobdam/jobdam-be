@@ -26,11 +26,11 @@ public class MatchingWsController {
         joinChatRoom(userInfo.getUserId(), userInfo.getJobGroupCode(), roomId,false);
     }
 
-    private void joinChatRoom(Long userId, String jopGroup, String roomId, boolean isFirstJoin){
+    private void joinChatRoom(Long userId, String jopGroup, String roomId, boolean firstJoin){
         simpMessagingTemplate.convertAndSendToUser(
                 String.valueOf(userId),
                 "/queue/matching/" + jopGroup,
-                new MatchingJoinDTO.Response(roomId,isFirstJoin)
+                new MatchingJoinDTO.Response(roomId,firstJoin)
         );
     }
 }
