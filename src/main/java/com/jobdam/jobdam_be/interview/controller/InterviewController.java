@@ -45,12 +45,12 @@ public class InterviewController {
     //화상채팅들어갔을떄 초기입력
     @PostMapping("/init")
     public ResponseEntity<VideoChatInterViewDTO.Response> initInterview(Authentication authentication,
-                                                                        InterviewDTO.Request request){
+                                                                        @RequestBody InterviewDTO.Request request){
         Long userId = Long.valueOf(authentication.getName());
         return ResponseEntity.ok(interviewService.initInterview(userId,request));
     }
     //인터뷰id기준 질문들 전부가져오기
-    @GetMapping("{interviewId}/questions/")
+    @GetMapping("{interviewId}/questions")
     public ResponseEntity<List<InterviewQuestionDTO.Response>> getInterviewQuestions(
             @PathVariable Long interviewId){
         return ResponseEntity.ok(interviewService.getInterviewQuestions(interviewId));
