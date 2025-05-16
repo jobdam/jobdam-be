@@ -6,6 +6,7 @@ import com.jobdam.jobdam_be.auth.config.TokenProperties;
 import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 
@@ -15,6 +16,7 @@ public class JwtService {
     private final TokenProperties tokenProperties;
     private final RefreshDAO refreshDAO;
 
+    @Transactional
     public boolean saveRefreshToken(Long userId, String refreshToken, long expiredMs) {
         Timestamp expiration = new Timestamp(System.currentTimeMillis() + expiredMs);
         RefreshToken entity = new RefreshToken(userId, refreshToken, expiration.toString());

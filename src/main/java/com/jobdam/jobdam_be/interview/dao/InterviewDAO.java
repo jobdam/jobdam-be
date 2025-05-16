@@ -29,4 +29,14 @@ public class InterviewDAO {
     public void resetAiQuestion(Long resumeId) {
         interviewMapper.resetAiQuestion(resumeId);
     }
+
+    public List<String> findFeedbacksForSameInterview(Long interviewId) {
+
+        return interviewMapper.findFeedbacksForSameInterview(interviewId);
+    }
+
+    public void updateInterviewReports(Interview interview) {
+        int updatedRows = interviewMapper.updateInterviewReports(interview);
+        System.out.println("업데이트된 행 수: " + updatedRows); // 0이면 조건 불일치
+    }
 }

@@ -16,4 +16,8 @@ public interface InterviewMapper {
     int insertAiQuestions(List<AiResumeQuestion> questions);
 
     void resetAiQuestion(Long resumeId);
+
+    List<String> findFeedbacksForSameInterview(Long interviewId);
+
+    int updateInterviewReports(Interview interview);
 }

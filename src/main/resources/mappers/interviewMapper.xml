@@ -21,11 +21,25 @@
         </foreach>
     </insert>
 
+    <update id="updateInterviewReports">
+        UPDATE interview
+        SET well_done  = #{wellDone},
+            to_improve = #{toImprove}
+        WHERE id = #{id}
+    </update>
+
     <delete id="resetAiQuestion">
         DELETE
         FROM ai_resume_question
         WHERE resume_id = #{resumeID}
     </delete>
+
+    <select id="findFeedbacksForSameInterview">
+        SELECT fc.content
+        FROM feedback_content AS fc
+                 JOIN interview_question iq on iq.id = fc.interview_question_id
+        WHERE iq.interview_id = #{interviewId}
+    </select>
 
     <select id="findInterviewById" resultMap="InterviewResultMap">
         SELECT *

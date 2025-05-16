@@ -175,6 +175,7 @@ public class AuthService {
         return ResponseEntity.ok().body("토큰 재발급 성공");
     }
 
+    @Transactional
     public Long setLoginToken(String token, HttpServletResponse response) {
         Long userId = tempTokenDAO.findUserIdByToken(token);
         if (userId == null) {
