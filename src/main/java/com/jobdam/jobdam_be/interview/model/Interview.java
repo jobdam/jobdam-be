@@ -11,9 +11,11 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @Builder
 public class Interview {
-    private int id;
+    private Long id;
     private int userId;
     private String interviewType;
     private Timestamp interviewDay;
     private String jobCode;
+    private String wellDone;
+    private String toImprove;
 }

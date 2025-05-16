@@ -32,8 +32,7 @@ public class InterviewService {
                 }));
     }
 
-    public List<QuestionFeedbackDto> getFeedback(Long interviewId, Long userId) {
-
+    public List<QuestionFeedbackDto> getFeedbackHistory(Long interviewId, Long userId) {
         List<Map<String, Object>> rows = interviewDAO.findFeedbackByInterviewIdAndUserId(interviewId, userId);
 
         Map<Long, QuestionFeedbackDto> grouped = new LinkedHashMap<>();
@@ -57,10 +56,29 @@ public class InterviewService {
         return new ArrayList<>(grouped.values());
     }
 
+    public String getFeedbacksForSameInterview(Long interviewId) {
+        List<String> feedbacks = interviewDAO.findFeedbacksForSameInterview(interviewId);
+        return feedbacks.toString();
+    }
+
     @Transactional
     public void replaceAllAiQuestions(Long resumeId, List<AiResumeQuestion> questions) {
         interviewDAO.resetAiQuestion(resumeId);
         int result = interviewDAO.insertAiQuestions(questions);
     }
 
+    @Transactional
+    public void insertFeedbackReport(Long interviewId, List<String> reports) {
+        String wellDone = reports.get(0);
+        String toImprove = reports.get(1);
+
+        Interview interview = Interview.builder()
+                .id(interviewId)
+                .wellDone(wellDone)
+                .toImprove(toImprove)
+                .build();
+
+        log.info("interview: {}", interview);
+        interviewDAO.updateInterviewReports(interview);
+    }
 }

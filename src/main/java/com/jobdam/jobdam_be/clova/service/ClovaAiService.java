@@ -5,11 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jobdam.jobdam_be.clova.api.ClovaApiClient;
 import com.jobdam.jobdam_be.clova.dto.Message;
 import com.jobdam.jobdam_be.clova.dto.ChatRequest;
+import com.jobdam.jobdam_be.clova.exception.ClovaErrorCode;
+import com.jobdam.jobdam_be.clova.exception.ClovaException;
 import com.jobdam.jobdam_be.common.PDFProvider;
-import com.jobdam.jobdam_be.global.exception.type.CommonErrorCode;
 import com.jobdam.jobdam_be.interview.model.AiResumeQuestion;
 import com.jobdam.jobdam_be.interview.service.InterviewService;
-import com.jobdam.jobdam_be.user.exception.UserException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +21,7 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -32,16 +33,16 @@ public class ClovaAiService {
     @Value("${clova.resume.question.prompt}")
     private String questionPrompt;
     @Value("${clova.resume.sampling.prompt}")
-    private String samplingPrompt;
-
-    @Value("${clova.resume.sampling.id}")
-    private String samplingId;
     private String samplingResumePrompt;
+    @Value("${clova.feedback.sampling.prompt}")
+    private String feedbackSamplingPrompt;
 
     @Value("${clova.resume.question.id}")
     private String questionId;
     @Value("${clova.resume.sampling.id}")
     private String samplingResumeId;
+    @Value("${clova.feedback.sampling.id}")
+    private String feedbackSamplingId;
 
     private static final int MIN_TEXT_LENGTH_FOR_SAMPLING = 500;
 
@@ -54,6 +55,28 @@ public class ClovaAiService {
         } else {
             analyzeWithSampling(resumeText, resumeId);
         }
+    }
+
+    /**
+     * 피드백 기반 리포트 추출
+     *
+     * @return aaaa
+     */
+    @Async("clovaExecutor")
+    public CompletableFuture<List<String>> analyzeFeedback(String feedbackText) throws Exception {
+        ChatRequest samplingRequest = new ChatRequest(
+                List.of(new Message("system", feedbackSamplingPrompt), new Message("user", feedbackText)), 200);
+
+        String samplingFeedback = "";
+        samplingFeedback += clovaApiClient.samplingFeedBack(feedbackSamplingId, samplingRequest).block();
+        List<String> reports = extractReports(samplingFeedback);
+        if (reports.size() < 2)
+            throw new ClovaException(ClovaErrorCode.AI_RESPONSE_INVALID);
+        return CompletableFuture.completedFuture(reports);
+
+        // 원하는 방식에 따라 직접 연결해도 괜찮음
+        // return 타입만 CompletableFuture<List<String>> 에서 void로 변경 후
+        // interviewService.insertFeedbackReport(/*인터뷰 아이디*/ 4L, reports);
     }
 
     // 내용이 적기에 요약이 필요하지 않을 경우
@@ -85,7 +108,7 @@ public class ClovaAiService {
             List<AiResumeQuestion> questions = extractQuestions(resumeId, response);
             interviewService.replaceAllAiQuestions(resumeId, questions);
         } catch (Exception e) {
-            log.error("질문 분할 실패: {}", e.getMessage(), e);
+            throw new ClovaException(ClovaErrorCode.AI_RESPONSE_PARSING_FAILED, e);
         }
     }
 
@@ -97,7 +120,7 @@ public class ClovaAiService {
 
         JsonNode questionsNode = root.get("questions");
         if (questionsNode == null || !questionsNode.isObject()) {
-            throw new UserException(CommonErrorCode.INTERNAL_SERVER_ERROR);
+            throw new ClovaException(ClovaErrorCode.AI_RESPONSE_PARSING_FAILED);
         }
 
         List<AiResumeQuestion> questionList = new ArrayList<>();
@@ -116,5 +139,28 @@ public class ClovaAiService {
         }
 
         return questionList;
+    }
+
+    // json 으로 받은 답변 쪼개기
+    private List<String> extractReports(String json) throws Exception {
+        String cleanedJson = json.replaceAll("(?s)```(?:json)?\\s*|```", "").trim();
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(cleanedJson);
+
+        List<String> reportsList = new ArrayList<>();
+
+        for (Iterator<String> it = root.fieldNames(); it.hasNext(); ) {
+            String field = it.next();
+            JsonNode arr = root.get(field);
+            StringBuilder report = new StringBuilder();
+            if (arr.isArray()) {
+                for (JsonNode q : arr) {
+                    report.append(q.asText()).append(" ");
+                }
+            }
+            reportsList.add(String.valueOf(report));
+        }
+
+        return reportsList;
     }
 }
