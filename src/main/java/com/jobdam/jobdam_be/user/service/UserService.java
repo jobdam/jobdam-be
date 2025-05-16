@@ -95,14 +95,13 @@ public class UserService {
             throw new UserException(CommonErrorCode.INTERNAL_SERVER_ERROR, e);
         }
     }
+
     /**
      * 이력서 저장
      *
-     * @param fileUrl - 새롭게 생성된 파일 url
+     * @param resume - 새롭게 생성된 이력서 모델
      */
-    public void savePDF(Long userId, String fileUrl) {
-        Resume resume = new Resume(null, userId, fileUrl);
-
+    public void savePDF(Resume resume) {
         userDAO.saveOrUpdateResume(resume);
     }
 
@@ -130,18 +129,21 @@ public class UserService {
                 .educationStatus(dto.getEducationStatus())
                 .build();
     }
+
     //매칭시 먼저 선택할 내정보가져오기
     public UserMatchingProfileDTO.Response getMyMatchingProfile(Long userId) {
         User user = userDAO.findById(userId)
                 .orElseThrow(() -> new UserException(CommonErrorCode.USER_NOT_FOUND));
         return modelMapper.map(user, UserMatchingProfileDTO.Response.class);
     }
+
     //userJobJoin 가져오기(jobCode 말고 한글로) chat에서 사용할 줄 알았는데
     //생각해보니 UI에서 선택한거 보여줘야해서 사용 보류..
     public UserJobJoinModel getUserJobJoinModel(Long userId){
         return userDAO.findUserJobJoinById(userId)
                 .orElseThrow(() -> new UserException(CommonErrorCode.USER_NOT_FOUND));
     }
+
     //유저정보 id로 가져오기
     public User getUserById(Long userId){
         return userDAO.findById(userId)

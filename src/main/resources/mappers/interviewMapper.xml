@@ -13,6 +13,20 @@
         <result property="jobCode" column="job_code"/>
     </resultMap>
 
+    <insert id="insertAiQuestions">
+        INSERT INTO ai_resume_question (resume_id, question)
+        VALUES
+        <foreach collection="questions" item="q" separator=",">
+            (#{q.resumeId}, #{q.question})
+        </foreach>
+    </insert>
+
+    <delete id="resetAiQuestion">
+        DELETE
+        FROM ai_resume_question
+        WHERE resume_id = #{resumeID}
+    </delete>
+
     <select id="findInterviewById" resultMap="InterviewResultMap">
         SELECT *
         FROM interview
