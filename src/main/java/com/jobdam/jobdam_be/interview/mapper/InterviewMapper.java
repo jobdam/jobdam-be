@@ -29,4 +29,9 @@ public interface InterviewMapper {
     void saveQuestion(InterviewQuestion interviewQuestion);
 
     void saveFeedBack(FeedBack feedBack);
+
+    List<String> findFeedbacksForSameInterview(Long interviewId);
+
+    int updateInterviewReports(Interview interview);
+
 }

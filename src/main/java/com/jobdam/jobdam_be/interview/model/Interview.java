@@ -17,4 +17,6 @@ public class Interview {
     private InterviewType interviewType;
     private Timestamp interviewDay;
     private String jobCode;
+    private String wellDone;
+    private String toImprove;
 }
