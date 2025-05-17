@@ -80,4 +80,8 @@ public class ChatService {
                 })
                 .toList();
     }
+
+    public void removeUserFromRoom(Long userId, String roomId) {
+        chatRoomStore.removeUserFromRoom(roomId,userId);
+    }
 }

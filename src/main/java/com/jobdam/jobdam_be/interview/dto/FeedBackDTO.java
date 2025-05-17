@@ -1,10 +1,10 @@
 package com.jobdam.jobdam_be.interview.dto;
 
-import lombok.Getter;
+import lombok.Data;
 
 public class FeedBackDTO {
 
-    @Getter
+    @Data
     public static class Request{
         private long targetUserId;
         private String content;

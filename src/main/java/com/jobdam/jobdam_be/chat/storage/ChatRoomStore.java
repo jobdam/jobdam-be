@@ -95,10 +95,7 @@ public class ChatRoomStore {
                         .toList());
     }
 
-    //방을 제거
-    public void remove(String roomId) {
-        roomMap.remove(roomId);
-    }
+
 
     //최대인원수보다 작은방들을 찾아준다.
     public List<String> findAvailableGroupRoom(int maxSize) {
@@ -154,6 +151,19 @@ public class ChatRoomStore {
             }
             return empty;
         });
+    }
+    //방에서 나가기
+    public void removeUserFromRoom(String roomId, Long userId) {
+        ChatRoom room = roomMap.get(roomId);
+        if (room == null) return;
+
+        room.getParticipants().removeIf(p -> p.getInfo().getUserId().equals(userId));
+
+        // 남은 인원이 없으면 방 제거
+        if (room.getParticipants().isEmpty()) {
+            roomMap.remove(roomId);
+            log.info("[방 제거] roomId={} (마지막 유저가 나감)", roomId);
+        }
     }
 
 }

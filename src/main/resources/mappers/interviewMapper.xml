@@ -79,10 +79,13 @@
         );
     </insert>
 
-    <select id="findAllByInterviewId" resultMap="InterviewQuestionResultMap">
-        SELECT id, interview_id, context
+    <select id="findAllLatestQuestionsByUserId" resultMap="InterviewQuestionResultMap">
+        SELECT *
         FROM interview_question
-        WHERE interview_id = #{interviewId}
+        WHERE interview_id = (SELECT id
+                              FROM interview
+                              WHERE user_id = #{userId}
+                              order by interview_day desc limit 1);
     </select>
 
     <insert id="saveQuestion" useGeneratedKeys="true" keyProperty="id">

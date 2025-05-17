@@ -8,6 +8,7 @@ import com.jobdam.jobdam_be.interview.model.AiResumeQuestion;
 import com.jobdam.jobdam_be.interview.model.FeedBack;
 import com.jobdam.jobdam_be.interview.model.Interview;
 import com.jobdam.jobdam_be.interview.model.InterviewQuestion;
+import com.jobdam.jobdam_be.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 public class InterviewService {
     private final InterviewDAO interviewDAO;
     private final ModelMapper modelMapper;
+    private final UserService userService;
 
     public Map<String, List<Interview>> getInterview(Long userId) {
         List<Interview> interviews = interviewDAO.findInterviewById(userId);
@@ -73,7 +75,7 @@ public class InterviewService {
     //화상채팅에 들어가면 인터뷰 테이블을 생성하고
     //ai질문을 인터뷰테이블로 복사하고 질문을 가져오는 초기화함수
     @Transactional
-    public VideoChatInterViewDTO.Response initInterview(Long userId, InterviewDTO.Request request) {
+    public void initInterview(Long userId, InterviewDTO.Request request) {
         //인터뷰 insert
         Interview interview = Interview.builder()
                 .userId(userId)
@@ -87,20 +89,20 @@ public class InterviewService {
 
         //Ai질문을 인터뷰질문테이블로 복사
         interviewDAO.copyAiToInterviewQuestions(userId,interview.getId());
-        //질문 가져오기
-        List<InterviewQuestionDTO.Response> iqResponses = getInterviewQuestions(interview.getId());
-
-        return VideoChatInterViewDTO.Response.builder()
-               .interviewId(interview.getId())
-               .interviewQuestions(iqResponses)
-               .build();
     }
-    //인터뷰질문들 조회
-    public List<InterviewQuestionDTO.Response> getInterviewQuestions(Long interviewId) {
-        return interviewDAO.findAllByInterviewId(interviewId)
+    //화경면접 초기데이터 가져오기(이력서+ai질문들)
+    public InterviewFullDataDTO.Response getInterviewFullData(Long userId) {
+        String resumeUrl = userService.getUserResumeUrl(userId);
+
+        List<InterviewQuestionDTO.Response> questions = interviewDAO.findAllLatestQuestionsByUserId(userId)
                 .stream()
                 .map(iq  ->  modelMapper.map(iq ,InterviewQuestionDTO.Response.class))
                 .toList();
+
+        return InterviewFullDataDTO.Response.builder()
+                .resumeUrl(resumeUrl)
+                .interviewQuestions(questions)
+                .build();
     }
 
     //질문 저장

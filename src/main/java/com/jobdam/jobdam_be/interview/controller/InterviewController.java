@@ -42,18 +42,19 @@ public class InterviewController {
         List<QuestionFeedbackDto> feedbackList = interviewService.getFeedbackHistory(interviewId, userId);
         return ResponseEntity.ok(feedbackList);
     }
-    //화상채팅들어갔을떄 초기입력
+    //화상채팅 진입전 인터뷰db 초기화()
     @PostMapping("/init")
-    public ResponseEntity<VideoChatInterViewDTO.Response> initInterview(Authentication authentication,
-                                                                        @RequestBody InterviewDTO.Request request){
+    public ResponseEntity<Void> initInterview(Authentication authentication,
+                                              @RequestBody InterviewDTO.Request request){
         Long userId = Long.valueOf(authentication.getName());
-        return ResponseEntity.ok(interviewService.initInterview(userId,request));
+        interviewService.initInterview(userId,request);
+        return ResponseEntity.ok().build();
     }
-    //인터뷰id기준 질문들 전부가져오기
-    @GetMapping("{interviewId}/questions")
-    public ResponseEntity<List<InterviewQuestionDTO.Response>> getInterviewQuestions(
-            @PathVariable Long interviewId){
-        return ResponseEntity.ok(interviewService.getInterviewQuestions(interviewId));
+    //userId기준 질문들 전부+이력서 url 가져오기(다른사람ID+가장최신꺼)
+    @GetMapping("/data/{userId}")
+    public ResponseEntity<InterviewFullDataDTO.Response> getInterviewFullData(
+            @PathVariable Long userId){
+        return ResponseEntity.ok(interviewService.getInterviewFullData(userId));
     }
     //인터뷰id기준 질문 하나 post
     @PostMapping("{interviewId}/question")

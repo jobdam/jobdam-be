@@ -7,14 +7,14 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-public class VideoChatInterViewDTO {
+public class InterviewFullDataDTO {
 
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
     public static class Response{
-        private Long interviewId;
-        private List<InterviewQuestionDTO.Response> interviewQuestions;
+       private String resumeUrl;
+       private List<InterviewQuestionDTO.Response> interviewQuestions;
     }
 }
