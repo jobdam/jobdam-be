@@ -42,8 +42,8 @@ public class InterviewDAO {
         interviewMapper.copyAiToInterviewQuestions(userId, interviewId);
     }
 
-    public List<InterviewQuestion> findAllByInterviewId(Long interviewId) {
-        return interviewMapper.findAllByInterviewId(interviewId);
+    public List<InterviewQuestion> findAllLatestQuestionsByUserId(Long userId) {
+        return interviewMapper.findAllLatestQuestionsByUserId(userId);
     }
 
     public void saveQuestion(InterviewQuestion interviewQuestion) {

@@ -24,7 +24,7 @@ public interface InterviewMapper {
 
     void copyAiToInterviewQuestions(Long userId, Long interviewId);
 
-    List<InterviewQuestion> findAllByInterviewId(Long interviewId);
+    List<InterviewQuestion> findAllLatestQuestionsByUserId(Long userId);
 
     void saveQuestion(InterviewQuestion interviewQuestion);
 

@@ -55,10 +55,9 @@ public class WebSocketEventListener {
         WebSocketBaseSessionInfo webSocketBaseSessionInfo =
                 buildSessionInfoFromDestination(accessor.getDestination());
 
-        if(Objects.isNull(webSocketBaseSessionInfo)){
-            log.info("[웹소켓 error 구독함] sessionId={}", accessor.getSessionId());
+        if(Objects.isNull(webSocketBaseSessionInfo))
             return;
-        }
+
         //웹소켓 세션에 기본정보를 넣는다
         Objects.requireNonNull(accessor.getSessionAttributes())
                 .put("webSocketBaseSessionInfo", webSocketBaseSessionInfo);
@@ -130,13 +129,19 @@ public class WebSocketEventListener {
         }
 
         if("topic".equals(brokerPrefix)) {//브로드캐스트용구독
-            purpose = parts[2]; //chat
+            purpose = parts[2]; //chat,비디오챗에서 채팅
             roomId = parts[3];
-        }else {//user(1:1)용 구독
+            if("videoChat".equals(purpose)) {
+                log.info("[웹소켓 videoChat(채팅용) 구독함]");
+                return null;
+            }
+        }else {//user(1:1)용 구독(매칭,시그널)
             purpose = parts[3];
             roomId = parts[4];
-            if("error".equals(purpose))
+            if("error".equals(purpose)) {
+                log.info("[웹소켓 error 구독함]");
                 return null;
+            }
         }
         validatePurposeAndRoomId(purpose,roomId);
 

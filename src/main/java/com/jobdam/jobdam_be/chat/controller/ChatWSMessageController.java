@@ -70,4 +70,21 @@ public class ChatWSMessageController {
 
         simpMessagingTemplate.convertAndSend("/topic/chat/" + roomId,response);
     }
+
+    //화상면접방에서 채팅 보내기
+    @MessageMapping("/video/chat/send/{roomId}")
+    public void sendChatInVideo(@DestinationVariable String roomId,
+                         ChatMessageDto.Request request,
+                         Principal principal) {
+
+        CustomUserDetails user = (CustomUserDetails) ((Authentication) principal).getPrincipal();
+
+        ChatMessageDto.Response response = ChatMessageDto.Response.builder()
+                .userId(Long.valueOf(user.getUsername()))
+                .userName(user.getRealName())
+                .content(request.getContent())
+                .build();
+
+        simpMessagingTemplate.convertAndSend("/topic/videoChat/" + roomId, response);
+    }
 }
