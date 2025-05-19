@@ -79,14 +79,19 @@
         );
     </insert>
 
-    <select id="findAllLatestQuestionsByUserId" resultMap="InterviewQuestionResultMap">
+    <select id="findOneLatestInterviewByUserId" resultMap="InterviewResultMap">
+        SELECT *
+        FROM interview
+        WHERE user_id = #{userId}
+        order by interview_day desc limit 1
+    </select>
+
+    <select id="findAllLatestQuestionsByInterviewId" resultMap="InterviewQuestionResultMap">
         SELECT *
         FROM interview_question
-        WHERE interview_id = (SELECT id
-                              FROM interview
-                              WHERE user_id = #{userId}
-                              order by interview_day desc limit 1);
+        WHERE interview_id = #{interviewId}
     </select>
+
 
     <insert id="saveQuestion" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO interview_question (interview_id, context)
@@ -94,7 +99,7 @@
     </insert>
 
     <insert id="saveFeedBack">
-        INSERT INTO feedback (target_user_id, content, interview_question_id)
+        INSERT INTO feedback_content (target_user_id, content, interview_question_id)
         VALUES (#{targetUserId}, #{content}, #{interviewQuestionId});
     </insert>
 
