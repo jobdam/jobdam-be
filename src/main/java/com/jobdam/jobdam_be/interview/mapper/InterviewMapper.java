@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Mapper
 public interface InterviewMapper {
@@ -24,7 +25,7 @@ public interface InterviewMapper {
 
     void copyAiToInterviewQuestions(Long userId, Long interviewId);
 
-    List<InterviewQuestion> findAllLatestQuestionsByUserId(Long userId);
+    List<InterviewQuestion> findAllLatestQuestionsByInterviewId(Long interviewId);
 
     void saveQuestion(InterviewQuestion interviewQuestion);
 
@@ -34,4 +35,5 @@ public interface InterviewMapper {
 
     int updateInterviewReports(Interview interview);
 
+    Optional<Interview> findOneLatestInterviewByUserId(Long userId);
 }

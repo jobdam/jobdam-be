@@ -15,6 +15,7 @@ public class InterviewFullDataDTO {
     @Builder
     public static class Response{
        private String resumeUrl;
+       private Long interviewId;
        private List<InterviewQuestionDTO.Response> interviewQuestions;
     }
 }

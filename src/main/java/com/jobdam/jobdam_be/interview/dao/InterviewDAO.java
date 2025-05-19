@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -42,8 +43,8 @@ public class InterviewDAO {
         interviewMapper.copyAiToInterviewQuestions(userId, interviewId);
     }
 
-    public List<InterviewQuestion> findAllLatestQuestionsByUserId(Long userId) {
-        return interviewMapper.findAllLatestQuestionsByUserId(userId);
+    public List<InterviewQuestion> findAllLatestQuestionsByInterviewId(Long interviewId) {
+        return interviewMapper.findAllLatestQuestionsByInterviewId(interviewId);
     }
 
     public void saveQuestion(InterviewQuestion interviewQuestion) {
@@ -61,5 +62,9 @@ public class InterviewDAO {
     public void updateInterviewReports(Interview interview) {
         int updatedRows = interviewMapper.updateInterviewReports(interview);
         System.out.println("업데이트된 행 수: " + updatedRows); // 0이면 조건 불일치
+    }
+
+    public Optional<Interview> findOneLatestInterviewByUserId(Long userId) {
+        return interviewMapper.findOneLatestInterviewByUserId(userId);
     }
 }

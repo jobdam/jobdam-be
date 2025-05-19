@@ -94,13 +94,20 @@ public class InterviewService {
     public InterviewFullDataDTO.Response getInterviewFullData(Long userId) {
         String resumeUrl = userService.getUserResumeUrl(userId);
 
-        List<InterviewQuestionDTO.Response> questions = interviewDAO.findAllLatestQuestionsByUserId(userId)
+        Interview interview = interviewDAO.findOneLatestInterviewByUserId(userId)
+                .orElseThrow( ()->new InterviewException(InterviewErrorCode.NOT_FOUND_EXCEPTION));
+
+        List<InterviewQuestionDTO.Response> questions =  interviewDAO.findAllLatestQuestionsByInterviewId(interview.getId())
                 .stream()
-                .map(iq  ->  modelMapper.map(iq ,InterviewQuestionDTO.Response.class))
+                .map(iq  ->  InterviewQuestionDTO.Response.builder()
+                        .interviewQuestionId(iq.getId())
+                        .context(iq.getContext())
+                        .build())
                 .toList();
 
         return InterviewFullDataDTO.Response.builder()
                 .resumeUrl(resumeUrl)
+                .interviewId(interview.getId())
                 .interviewQuestions(questions)
                 .build();
     }
