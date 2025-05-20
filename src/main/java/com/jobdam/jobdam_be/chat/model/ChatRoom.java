@@ -6,6 +6,7 @@ import com.jobdam.jobdam_be.matching.type.MatchType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 //방이 매칭 완화된방인지, 아닌지 또한
@@ -19,11 +20,13 @@ public class ChatRoom {
     private final String jobDetailCode; // 선택
     private final ExperienceType experienceType; // 선택
     private final List<ChatParticipant> participants = new CopyOnWriteArrayList<>();
+    private final Date created;
 
     public ChatRoom(MatchType matchType, InterviewPreference preference) {
         this.matchType = matchType;
         this.jobGroupCode = preference.getJobGroupCode();
         this.jobDetailCode = preference.getJobDetailCode();
         this.experienceType = preference.getExperienceType();
+        created = new Date(System.currentTimeMillis());
     }
 }
