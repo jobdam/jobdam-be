@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 public class MatchingJoinDTO {
 
     @Getter
@@ -11,6 +13,7 @@ public class MatchingJoinDTO {
     @NoArgsConstructor
     public static class Response{
         private String roomId;
+        private Date created;
         private boolean firstJoin;
     }
 }
