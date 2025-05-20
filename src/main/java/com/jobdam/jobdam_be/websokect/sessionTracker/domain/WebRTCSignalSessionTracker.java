@@ -41,7 +41,14 @@ public class WebRTCSignalSessionTracker implements WebSocketSessionTracker {
                 .map(this::getUserId)
                 .toList();
     }
-
+    //방의 전체유저 조회
+    public List<Long> getAllUserIds(String roomId) {
+        return sessionMap.getOrDefault(roomId, Collections.emptySet())
+                .stream()
+                .map(this::getUserId)
+                .filter(Objects::nonNull)
+                .toList();
+    }
 
     @Override
     public void removeSession(String roomId, String sessionId) {

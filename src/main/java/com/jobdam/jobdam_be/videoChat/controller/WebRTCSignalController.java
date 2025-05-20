@@ -38,14 +38,13 @@ public class WebRTCSignalController {
         tracker.addSessionUserMapping(sessionId,enterUserId);
 
         //기존 참가자 목록을 조회하기
-        List<Long> existingUserIdList = tracker.getOtherUserIds(roomId,sessionId);
+        List<Long> allUserIdList = tracker.getAllUserIds(roomId);
 
-        //나에게 참여중인 유저목록 보내주기
-        if(!existingUserIdList.isEmpty()) {
-            simpMessagingTemplate.convertAndSendToUser(
-                    principal.getName(),
-                    destination(roomId),
-                    new JoinListSignalDTO(existingUserIdList)
+        //방인원 전체에게 리스트 목록전체 보내줌(동기화방지로 프론트에서 체크함)
+        if(!allUserIdList.isEmpty()) {
+            simpMessagingTemplate.convertAndSend(
+                    "/topic/signal/" + roomId,
+                    new JoinListSignalDTO(allUserIdList)
             );
         }
 
