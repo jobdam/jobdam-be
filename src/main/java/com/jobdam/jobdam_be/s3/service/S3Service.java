@@ -93,7 +93,11 @@ public class S3Service {
      * @return 파일 키 값
      */
     private String getFileKey(String url) {
-        return url.split(".com/")[1];
+        String[] split = url.split(".com/");
+        if(split.length < 2) {
+            return null;
+        }
+        return split[1];
     }
 
     /**
