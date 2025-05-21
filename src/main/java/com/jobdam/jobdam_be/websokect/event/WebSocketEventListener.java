@@ -131,6 +131,10 @@ public class WebSocketEventListener {
         if("topic".equals(brokerPrefix)) {//브로드캐스트용구독
             purpose = parts[2]; //chat,비디오챗에서 채팅
             roomId = parts[3];
+            if("signal".equals(purpose)) {
+                log.info("[웹소켓 signal(브로드캐스트용) 구독함]");
+                return null;
+            }
             if("videoChat".equals(purpose)) {
                 log.info("[웹소켓 videoChat(채팅용) 구독함]");
                 return null;
