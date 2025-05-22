@@ -5,6 +5,8 @@ import com.jobdam.jobdam_be.s3.service.S3Service;
 import com.jobdam.jobdam_be.user.dto.UserInitProfileDTO;
 import com.jobdam.jobdam_be.user.dto.UserMatchingProfileDTO;
 import com.jobdam.jobdam_be.user.dto.UserProfileDTO;
+import com.jobdam.jobdam_be.user.exception.UserErrorCode;
+import com.jobdam.jobdam_be.user.exception.UserException;
 import com.jobdam.jobdam_be.user.model.Resume;
 import com.jobdam.jobdam_be.user.service.UserService;
 import jakarta.validation.Valid;
@@ -76,9 +78,9 @@ public class UserController {
 
         String resumeUrl = null;
         if (pdfFile != null && !pdfFile.isEmpty()) {
-            String findImgUrl = userService.getUserResumeUrl(userId);
+            String findResumeUrl = userService.getUserResumeUrl(userId);
 
-            resumeUrl = s3Service.uploadResume(pdfFile, findImgUrl, userId);
+            resumeUrl = s3Service.uploadResume(pdfFile, findResumeUrl, userId);
         }
 
         Resume resume = new Resume(null, userId, resumeUrl);
@@ -91,6 +93,24 @@ public class UserController {
         response.put("resumeUrl", resumeUrl);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/resume")
+    public ResponseEntity<Map<String, String>> getResume() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = Long.valueOf(authentication.getName());
+
+        String resumeUrl = userService.getUserResumeUrl(userId);
+
+        if(resumeUrl == null) {
+            throw new UserException(UserErrorCode.USER_INFO_NOT_FOUND);
+        }
+
+        Map<String, String> response = new HashMap<>();
+
+        response.put("resumeUrl", resumeUrl);
+        return ResponseEntity.ok(response);
+    }
+
 
     @GetMapping("/me/matching-profile")
     public ResponseEntity<UserMatchingProfileDTO.Response> getMyMatchingProfile(Authentication authentication) {
