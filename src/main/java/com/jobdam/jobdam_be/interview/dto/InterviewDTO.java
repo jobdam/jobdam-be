@@ -1,10 +1,7 @@
 package com.jobdam.jobdam_be.interview.dto;
 
 import com.jobdam.jobdam_be.interview.type.InterviewType;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 public class InterviewDTO {
 
@@ -15,5 +12,18 @@ public class InterviewDTO {
     public static class Request{
         private InterviewType interviewType;
         private String jobCode;
+    }
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class Response{
+        private Long id;
+        private InterviewType interviewType;
+        private String interviewDay;
+        private String jobName;
+        private String wellDone;
+        private String toImprove;
     }
 }
