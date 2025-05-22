@@ -25,12 +25,14 @@ public class InterviewController {
     private final InterviewService interviewService;
     private final ClovaAiService clovaAiService;
 
-    @GetMapping
-    public ResponseEntity<Map<String, List<Interview>>> getInterview() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    @GetMapping("/paged")
+    public ResponseEntity<List<InterviewDateGroupDTO.Response>> getInterviewsPaged(Authentication authentication,
+                                                            @RequestParam(required = false) Long lastId,
+                                                            @RequestParam(defaultValue = "5") int limit) {
+
         Long userId = Long.valueOf(authentication.getName());
 
-        return ResponseEntity.ok(interviewService.getInterview(userId));
+        return ResponseEntity.ok(interviewService.getInterviewsPaged(userId,lastId,limit));
     }
 
     // GET user/interviews/5/feedback

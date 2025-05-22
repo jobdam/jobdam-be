@@ -4,10 +4,7 @@ import com.jobdam.jobdam_be.interview.dao.InterviewDAO;
 import com.jobdam.jobdam_be.interview.dto.*;
 import com.jobdam.jobdam_be.interview.exception.InterviewErrorCode;
 import com.jobdam.jobdam_be.interview.exception.InterviewException;
-import com.jobdam.jobdam_be.interview.model.AiResumeQuestion;
-import com.jobdam.jobdam_be.interview.model.FeedBack;
-import com.jobdam.jobdam_be.interview.model.Interview;
-import com.jobdam.jobdam_be.interview.model.InterviewQuestion;
+import com.jobdam.jobdam_be.interview.model.*;
 import com.jobdam.jobdam_be.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,14 +26,37 @@ public class InterviewService {
     private final ModelMapper modelMapper;
     private final UserService userService;
 
-    public Map<String, List<Interview>> getInterview(Long userId) {
-        List<Interview> interviews = interviewDAO.findInterviewById(userId);
+    public List<InterviewDateGroupDTO.Response> getInterviewsPaged(Long userId, Long lastId, int limit) {
+        List<InterviewJobJoinModel> interviews = interviewDAO.findPagedInterviews(userId, lastId, limit);
 
-        return interviews.stream()
-                .collect(Collectors.groupingBy(interview -> {
-                    Timestamp ts = interview.getInterviewDay(); // Timestamp
-                    return ts.toLocalDateTime().toLocalDate().toString(); // "YYYY-MM-DD"
-                }));
+        List<InterviewDTO.Response> interviewResponseList =
+                interviews.stream().map((ijModel) -> {
+                    InterviewDTO.Response dto = modelMapper.map(ijModel,InterviewDTO.Response.class);
+                    dto.setInterviewDay(ijModel.getInterviewDay()
+                            .toLocalDateTime()
+                            .toLocalDate()
+                            .toString());
+                    return dto;
+                }).toList();
+
+        // 날짜별로 그룹핑
+        Map<String, List<InterviewDTO.Response>> grouped =
+                interviewResponseList.stream()
+                        .collect(Collectors.groupingBy(InterviewDTO.Response::getInterviewDay));
+
+        return  grouped.entrySet().stream()
+                .sorted(Map.Entry.<String, List<InterviewDTO.Response>>comparingByKey().reversed())
+                .map(entry -> InterviewDateGroupDTO.Response.builder()
+                        .displayDate(formatDisplayDate(entry.getKey()))
+                        .interviews(entry.getValue())
+                        .build())
+                .toList();
+    }
+
+    private String formatDisplayDate(String yyyyMMdd) {
+        LocalDate date = LocalDate.parse(yyyyMMdd);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M월 d일 E요일", Locale.KOREAN);
+        return date.format(formatter); // ex: "5월 21일 수요일"
     }
 
     public List<QuestionFeedbackDto> getFeedbackHistory(Long interviewId, Long userId) {

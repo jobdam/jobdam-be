@@ -1,9 +1,6 @@
 package com.jobdam.jobdam_be.interview.mapper;
 
-import com.jobdam.jobdam_be.interview.model.AiResumeQuestion;
-import com.jobdam.jobdam_be.interview.model.FeedBack;
-import com.jobdam.jobdam_be.interview.model.Interview;
-import com.jobdam.jobdam_be.interview.model.InterviewQuestion;
+import com.jobdam.jobdam_be.interview.model.*;
 import com.jobdam.jobdam_be.interview.type.InterviewType;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -13,7 +10,7 @@ import java.util.Optional;
 
 @Mapper
 public interface InterviewMapper {
-    List<Interview> findInterviewById(Long userId);
+    List<InterviewJobJoinModel> findPagedInterviews(Long userId, Long lastId, int limit);
 
     List<Map<String, Object>> findFeedbackByInterviewIdAndUserId(Long interviewId, Long userId);
 
@@ -36,4 +33,5 @@ public interface InterviewMapper {
     int updateInterviewReports(Interview interview);
 
     Optional<Interview> findOneLatestInterviewByUserId(Long userId);
+
 }
