@@ -7,6 +7,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum UserErrorCode implements ErrorCode {
+    USER_INFO_NOT_FOUND(404, "유저가 정보를 가지고 있지 않습니다."),
     PROFILE_UPDATE_FAILED(401, "프로필 업데이트에 실패하였습니다."),
     DUPLICATE_USER_ID(1, "이미 가입된 사용자입니다.");
 
