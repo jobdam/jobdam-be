@@ -28,7 +28,8 @@ public class WebRTCSignalController {
         return "/queue/signal/"+roomId;
     }
 
-    @MessageMapping("/signal/join/{roomId}")  // 클라이언트가 /app/chat.send로 보내면 여기로 매핑
+    //처음입장시 리스트들을 받아서 보내줌
+    @MessageMapping("/signal/join/{roomId}")
     public void joinHandle(@DestinationVariable String roomId,
                            Principal principal,
                            @Header("simpSessionId") String sessionId) {
@@ -44,11 +45,35 @@ public class WebRTCSignalController {
         if(!allUserIdList.isEmpty()) {
             simpMessagingTemplate.convertAndSend(
                     "/topic/signal/" + roomId,
-                    new JoinListSignalDTO(allUserIdList)
+                    new JoinListSignalDTO(SignalType.JOIN_LIST,allUserIdList)
             );
         }
 
-        log.info("[SIGNAL서버 JOIN요청] roomId:{} userId:{} sessionId:{}",roomId,enterUserId,sessionId);
+        log.info("[SIGNAL서버 JOIN_List요청] roomId:{} userId:{} sessionId:{}",roomId,enterUserId,sessionId);
+    }
+    //새로고침해서 한명만 다시 연결시도하면!
+    @MessageMapping("/signal/joinOne/{roomId}")  //
+    public void joinOneHandle(@DestinationVariable String roomId,
+                           Principal principal,
+                           @Header("simpSessionId") String sessionId) {
+        Long enterUserId = Long.valueOf(principal.getName());
+
+        //세션 유저 맵핑(principal 말고 다른유저를 list로 보여주기위해 필요)
+        tracker.addSessionUserMapping(sessionId,enterUserId);
+
+        //기존 참가자 목록을 조회하기
+        List<Long> existingUserIdList = tracker.getOtherUserIds(roomId,sessionId);
+
+        //나에게 참여중인 유저목록 보내주기
+        if(!existingUserIdList.isEmpty()) {
+            simpMessagingTemplate.convertAndSendToUser(
+                    principal.getName(),
+                    destination(roomId),
+                    new JoinListSignalDTO(SignalType.JOIN_ONE,existingUserIdList)
+            );
+        }
+
+        log.info("[SIGNAL서버 JOIN_ONE요청] roomId:{} userId:{} sessionId:{}",roomId,enterUserId,sessionId);
     }
 
     //내가 상대방에게 p2p연결 하고싶다는 신호(상대방이 나의정보를 얻음)

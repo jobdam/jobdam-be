@@ -9,6 +9,6 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class JoinListSignalDTO {
-    private final SignalType signalType = SignalType.JOIN_LIST;
+    private final SignalType signalType;
     private final List<Long> userIdList;
 }
