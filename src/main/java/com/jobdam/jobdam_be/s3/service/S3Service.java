@@ -26,9 +26,9 @@ public class S3Service {
     /**
      * s3 서버에 이미지 업로드 (기존 값은 제거)
      *
-     * @param image      - 업로드할 이미지
+     * @param image         - 업로드할 이미지
      * @param profileImgUrl - 기존의 프로필 이미지 주소
-     * @param userId     - 업로드할 대상의 아이디
+     * @param userId        - 업로드할 대상의 아이디
      * @return 저장된 이미지의 퍼블릭 주소
      */
     public String uploadImage(MultipartFile image, String profileImgUrl, Long userId) {
@@ -39,13 +39,13 @@ public class S3Service {
             throw new S3Exception(S3ErrorCode.INVALID_FILE);
         }
         String dirName = "profile/" + userId + "/";
-        String fileName = dirName+ UUID.randomUUID() + "_" + userId + "_profile" + extension;
+        String fileName = dirName + UUID.randomUUID() + "_" + userId + "_profile" + extension;
 
         uploadFileToS3(image, fileName);
-
+        String fileKey = getFileKey(profileImgUrl);
         // 기존의 프로필 이미지가 있었다면 삭제
-        if (profileImgUrl != null)
-            amazonS3.deleteObject(bucket, getFileKey(profileImgUrl));
+        if (profileImgUrl != null && fileKey != null)
+            amazonS3.deleteObject(bucket, fileKey);
 
         return getPublicUrl(fileName);
     }
@@ -62,10 +62,10 @@ public class S3Service {
         String fileName = dirName + UUID.randomUUID() + "_" + userId + "_resume" + extension;
 
         uploadFileToS3(pdf, fileName);
-
+        String fileKey = getFileKey(pdfUrl);
         // 기존의 이력서가 있었다면 삭제
-        if (pdfUrl != null) {
-            amazonS3.deleteObject(bucket, getFileKey(pdfUrl));
+        if (pdfUrl != null && fileKey != null) {
+            amazonS3.deleteObject(bucket, fileKey);
         }
 
         return getPublicUrl(fileName);
@@ -94,7 +94,7 @@ public class S3Service {
      */
     private String getFileKey(String url) {
         String[] split = url.split(".com/");
-        if(split.length < 2) {
+        if (split.length < 2) {
             return null;
         }
         return split[1];
@@ -107,7 +107,7 @@ public class S3Service {
      * @return 접근 가능한 url
      */
     private String getPublicUrl(String fileName) {
-        return String.format("https://%s.s3.%s.amazonaws.com/%s", bucket, amazonS3.getRegionName(), fileName);
+        return "https://d25aj80izrl3th.cloudfront.net/" + fileName;
     }
 
     private void uploadFileToS3(MultipartFile file, String fileName) {
