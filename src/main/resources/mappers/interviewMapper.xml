@@ -47,10 +47,17 @@
         WHERE iq.interview_id = #{interviewId}
     </select>
 
-    <select id="findInterviewById" resultMap="InterviewResultMap">
-        SELECT *
-        FROM interview
-        WHERE user_id = #{userId}
+    <select id="findPagedInterviews" resultType="com.jobdam.jobdam_be.interview.model.InterviewJobJoinModel">
+        SELECT i.id, i.interview_type as interviewType, i.interview_day as interviewDay,
+        jb.job_group as jobName, i.well_done as wellDone, i.to_improve as toImprove
+        FROM interview i
+        JOIN job_group jb ON jb.job_code = i.job_code
+        WHERE i.user_id = #{userId}
+        <if test="lastId != null">
+            AND i.id &lt; #{lastId}
+        </if>
+        ORDER BY i.id DESC
+        LIMIT #{limit};
     </select>
 
     <select id="findFeedbackByInterviewIdAndUserId" resultType="java.util.Map">
