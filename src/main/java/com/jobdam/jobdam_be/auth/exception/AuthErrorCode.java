@@ -13,11 +13,11 @@ public enum AuthErrorCode implements ErrorCode {
     EMPTY_EMAIL_OR_PASSWORD(400, "이메일 또는 비밀번호가 누락되었습니다."),
     INVALID_EMAIL_OR_PASSWORD(400, "이메일 또는 비밀번호가 틀렸습니다."),
 
-    INVALID_REQUEST(401, "로그인에 실패했습니다."),
-    UNAUTHORIZED_REQUEST(401, "인증되지 않은 요청입니다."),
+    INVALID_REQUEST(400, "로그인에 실패했습니다."),
+    UNAUTHORIZED_REQUEST(400, "인증되지 않은 요청입니다."),
     EXPIRED_TOKEN(401, "토큰이 만료되었습니다."),
-    INVALID_TOKEN(401, "유효하지 않는 토큰입니다."),
-    INVALID_SIGNATURE(401, "JWT 서명이 일치하지 않습니다."),
+    INVALID_TOKEN(400, "유효하지 않는 토큰입니다."),
+    INVALID_SIGNATURE(400, "JWT 서명이 일치하지 않습니다."),
 
     EMAIL_VERIFICATION_REQUIRED(403, "이메일 인증을 먼저 진행하세요."),
 
