@@ -62,10 +62,10 @@ public class S3Service {
         String fileName = dirName + UUID.randomUUID() + "_" + userId + "_resume" + extension;
 
         uploadFileToS3(pdf, fileName);
-
+        String fileKey = getFileKey(pdfUrl);
         // 기존의 이력서가 있었다면 삭제
-        if (pdfUrl != null) {
-            amazonS3.deleteObject(bucket, getFileKey(pdfUrl));
+        if (pdfUrl != null && fileKey != null) {
+            amazonS3.deleteObject(bucket, fileKey);
         }
 
         return getPublicUrl(fileName);

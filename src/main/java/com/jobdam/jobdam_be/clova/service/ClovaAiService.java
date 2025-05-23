@@ -7,9 +7,13 @@ import com.jobdam.jobdam_be.clova.dto.Message;
 import com.jobdam.jobdam_be.clova.dto.ChatRequest;
 import com.jobdam.jobdam_be.clova.exception.ClovaErrorCode;
 import com.jobdam.jobdam_be.clova.exception.ClovaException;
+import com.jobdam.jobdam_be.clova.loader.FeedbackSamplingPromptLoader;
+import com.jobdam.jobdam_be.clova.loader.ResumeQuestionPromptLoader;
+import com.jobdam.jobdam_be.clova.loader.ResumeSamplingPromptLoader;
 import com.jobdam.jobdam_be.common.PDFProvider;
 import com.jobdam.jobdam_be.interview.model.AiResumeQuestion;
 import com.jobdam.jobdam_be.interview.service.InterviewService;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,12 +34,13 @@ public class ClovaAiService {
     private final ClovaApiClient clovaApiClient;
     private final InterviewService interviewService;
 
-    @Value("${clova.resume.question.prompt}")
     private String questionPrompt;
-    @Value("${clova.resume.sampling.prompt}")
     private String samplingResumePrompt;
-    @Value("${clova.feedback.sampling.prompt}")
     private String feedbackSamplingPrompt;
+
+    private final ResumeSamplingPromptLoader resumeSummaryPromptLoader;
+    private final ResumeQuestionPromptLoader resumeQuestionPromptLoader;
+    private final FeedbackSamplingPromptLoader feedbackSummaryPromptLoader;
 
     @Value("${clova.resume.question.id}")
     private String questionId;
@@ -46,15 +51,26 @@ public class ClovaAiService {
 
     private static final int MIN_TEXT_LENGTH_FOR_SAMPLING = 500;
 
+    @PostConstruct
+    public void loadPrompts() {
+        this.questionPrompt = resumeQuestionPromptLoader.getResumeQuestionPrompt();
+        this.samplingResumePrompt = resumeSummaryPromptLoader.getResumeSummaryPrompt();
+        this.feedbackSamplingPrompt = feedbackSummaryPromptLoader.getFeedbackSummaryPrompt();
+        log.info("Clova 프롬프트 로드 완료");
+        log.debug("Question Prompt: {}", questionPrompt);
+        log.debug("Sampling Resume Prompt: {}", samplingResumePrompt);
+        log.debug("Feedback Sampling Prompt: {}", feedbackSamplingPrompt);
+    }
+
     @Async("clovaExecutor")
     public void analyzeResumeAndPDF(MultipartFile resume, Long resumeId) {
         String resumeText = PDFProvider.pdfToString(resume);
-
         if (resumeText.length() < MIN_TEXT_LENGTH_FOR_SAMPLING) {
             analyzeWithoutSampling(resumeText, resumeId);
         } else {
             analyzeWithSampling(resumeText, resumeId);
         }
+        log.info("Clova Ai Success!!!!!!");
     }
 
     /**
