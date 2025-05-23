@@ -42,10 +42,10 @@ public class S3Service {
         String fileName = dirName + UUID.randomUUID() + "_" + userId + "_profile" + extension;
 
         uploadFileToS3(image, fileName);
-
+        String fileKey = getFileKey(profileImgUrl);
         // 기존의 프로필 이미지가 있었다면 삭제
-        if (profileImgUrl != null)
-            amazonS3.deleteObject(bucket, getFileKey(profileImgUrl));
+        if (profileImgUrl != null && fileKey != null)
+            amazonS3.deleteObject(bucket, fileKey);
 
         return getPublicUrl(fileName);
     }
