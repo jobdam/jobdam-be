@@ -101,10 +101,6 @@ public class UserController {
 
         String resumeUrl = userService.getUserResumeUrl(userId);
 
-        if(resumeUrl == null) {
-            throw new UserException(UserErrorCode.USER_INFO_NOT_FOUND);
-        }
-
         Map<String, String> response = new HashMap<>();
 
         response.put("resumeUrl", resumeUrl);
