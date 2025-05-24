@@ -61,11 +61,16 @@ public class ChatWSMessageController {
         //준비완료면 전체가 준비됐는지 확인해서 화상채팅방으로
         boolean allReady = chatRoomStore.isAllReady(roomId);
 
+        int userCount = 0;
+        if(allReady) {
+            userCount=chatRoomStore.getReadyUserCount(roomId);
+        }
         ChatReadyStatusDTO.Response response = ChatReadyStatusDTO.Response.builder()
                 .chatMessageType(ChatMessageType.READY)
                 .userId(userId)
                 .ready(request.getReady())
                 .allReady(allReady)
+                .userCount(userCount)
                 .build();
 
         simpMessagingTemplate.convertAndSend("/topic/chat/" + roomId,response);
