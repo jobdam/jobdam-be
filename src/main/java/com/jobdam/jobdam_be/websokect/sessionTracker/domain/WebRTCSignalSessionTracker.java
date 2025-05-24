@@ -3,18 +3,26 @@ package com.jobdam.jobdam_be.websokect.sessionTracker.domain;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
+import com.jobdam.jobdam_be.chat.event.ChatSessionEvent;
+import com.jobdam.jobdam_be.chat.type.ChatMessageType;
+import com.jobdam.jobdam_be.interview.event.InterviewLeaveEvent;
 import com.jobdam.jobdam_be.websokect.sessionTracker.WebSocketSessionTracker;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component("signal")
+@RequiredArgsConstructor
 public class WebRTCSignalSessionTracker implements WebSocketSessionTracker {
     // 방번호/세션set
     private final Map<String, Set<String>> sessionMap = new ConcurrentHashMap<>();
     //세션아이디/userId 맵핑
     private final BiMap<String, Long> sessionIdToUserIdMap = Maps.synchronizedBiMap(HashBiMap.create());
+
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public void addSession(String videoChatRoomId, String sessionId) {
@@ -60,7 +68,10 @@ public class WebRTCSignalSessionTracker implements WebSocketSessionTracker {
                 sessionMap.remove(roomId);
             }
         }
-        sessionIdToUserIdMap.remove(sessionId);
+        if(!Objects.isNull(getUserId(sessionId))) {
+            eventPublisher.publishEvent(new InterviewLeaveEvent(getUserId(sessionId)));
+            sessionIdToUserIdMap.remove(sessionId);
+        }
     }
     @Override
     public void removeSession(String sessionId) {
@@ -74,6 +85,9 @@ public class WebRTCSignalSessionTracker implements WebSocketSessionTracker {
                 break;
             }
         }
-        sessionIdToUserIdMap.remove(sessionId);
+        if(!Objects.isNull(getUserId(sessionId))) {
+            eventPublisher.publishEvent(new InterviewLeaveEvent(getUserId(sessionId)));
+            sessionIdToUserIdMap.remove(sessionId);
+        }
     }
 }
