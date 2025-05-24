@@ -165,5 +165,15 @@ public class ChatRoomStore {
             log.info("[방 제거] roomId={} (마지막 유저가 나감)", roomId);
         }
     }
+    //준비완료 유저수
+    public int getReadyUserCount(String roomId) {
+        ChatRoom room = roomMap.get(roomId);
+        if (room == null) return 0;
 
+        // 준비 완료 + 연결된 인원
+        return (int) room.getParticipants().stream()
+                .filter(ChatParticipant::isConnected)
+                .filter(ChatParticipant::isReady)
+                .count();
+    }
 }

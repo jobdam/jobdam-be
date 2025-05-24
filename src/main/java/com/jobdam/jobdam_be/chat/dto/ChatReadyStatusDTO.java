@@ -16,5 +16,6 @@ public class ChatReadyStatusDTO {
         private Long userId;
         private Boolean ready;
         private Boolean allReady;
+        private int userCount;
     }
 }
