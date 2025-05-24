@@ -35,7 +35,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-
+        String uri = request.getRequestURI();
+        if (uri.equals("/reissue")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         // 헤더에서 access키에 담긴 토큰을 꺼냄
         String accessToken = parseBearerToken(request);
 

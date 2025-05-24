@@ -163,7 +163,7 @@ public class AuthService {
 
         // Refresh 토큰 저장 DB에 기존의 Refresh 토큰 삭제 후 새 Refresh 토큰 저장
         refreshDAO.deleteByRefreshToken(refresh);
-        boolean isSaved = jwtService.saveRefreshToken(userId, refresh, refreshConfig.getExpiry());
+        boolean isSaved = jwtService.saveRefreshToken(userId, newRefresh, refreshConfig.getExpiry());
         if (!isSaved) {
             throw new AuthException(DB_ERROR);
         }
