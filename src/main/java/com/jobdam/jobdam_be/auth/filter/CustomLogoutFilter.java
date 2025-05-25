@@ -40,7 +40,6 @@ public class CustomLogoutFilter extends GenericFilter {
         }
 
         handleLogout(request, response);
-        return;
     }
 
     /**
@@ -51,7 +50,6 @@ public class CustomLogoutFilter extends GenericFilter {
     }
 
     private void handleLogout(HttpServletRequest request, HttpServletResponse response) {
-        log.info("여기들어오나?");
         String refreshToken = extractRefreshTokenFromCookies(request);
         try {
             if (refreshToken == null || !isValidRefreshToken(refreshToken)) {
