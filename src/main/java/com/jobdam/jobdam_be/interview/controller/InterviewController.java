@@ -3,7 +3,6 @@ package com.jobdam.jobdam_be.interview.controller;
 import com.jobdam.jobdam_be.interview.dto.*;
 import com.jobdam.jobdam_be.clova.service.ClovaAiService;
 import com.jobdam.jobdam_be.interview.dto.QuestionFeedbackDto;
-import com.jobdam.jobdam_be.interview.model.Interview;
 import com.jobdam.jobdam_be.interview.service.InterviewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +12,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -91,6 +89,9 @@ public class InterviewController {
     public ResponseEntity<String> testGenerateFeedbackReportTEST() throws Exception {
         // 다른 유저들에게 받은 피드백을 String으로 변환하여 받음
         String feedbacks = interviewService.getFeedbacksForSameInterview(4L);
+
+        if(feedbacks == null)
+            return ResponseEntity.ok("피드백 리포트 생성 없음");
 
         // List로 받을 때, 0번째 인덱스에는 잘한점, 1번째 인덱스에는 개선할 점이 포함
         // 잘한점과, 개선할 점을 하나의 문자열로 받고 있음 - 요청시 수정가능

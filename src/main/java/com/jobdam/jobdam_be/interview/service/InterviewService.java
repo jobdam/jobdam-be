@@ -1,6 +1,5 @@
 package com.jobdam.jobdam_be.interview.service;
 
-import com.jobdam.jobdam_be.clova.service.ClovaAiService;
 import com.jobdam.jobdam_be.interview.dao.InterviewDAO;
 import com.jobdam.jobdam_be.interview.dto.*;
 import com.jobdam.jobdam_be.interview.exception.InterviewErrorCode;
@@ -10,16 +9,12 @@ import com.jobdam.jobdam_be.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -89,6 +84,9 @@ public class InterviewService {
 
     public String getFeedbacksForSameInterview(Long interviewId) {
         List<String> feedbacks = interviewDAO.findFeedbacksForSameInterview(interviewId);
+        if (feedbacks.isEmpty()) {
+            return null;
+        }
         return feedbacks.toString();
     }
 
@@ -110,11 +108,11 @@ public class InterviewService {
                 .build();
         interviewDAO.saveInterview(interview);
 
-        if(Objects.isNull(interview.getId()))
+        if (Objects.isNull(interview.getId()))
             throw new InterviewException(InterviewErrorCode.DB_INSERT_ERROR);
 
         //Ai질문을 인터뷰질문테이블로 복사
-        interviewDAO.copyAiToInterviewQuestions(userId,interview.getId());
+        interviewDAO.copyAiToInterviewQuestions(userId, interview.getId(), interview.getInterviewType());
     }
     //화경면접 초기데이터 가져오기(이력서+ai질문들)
     public InterviewFullDataDTO.Response getInterviewFullData(Long userId) {

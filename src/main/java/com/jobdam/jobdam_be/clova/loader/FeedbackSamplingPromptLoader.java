@@ -25,7 +25,6 @@ public class FeedbackSamplingPromptLoader {
     public void loadPrompt() {
         try {
             feedbackSummaryPrompt = Files.readString(Paths.get(promptFile.getURI()));
-            log.info("피드백 요약 프롬프트 로드 완료: {}", feedbackSummaryPrompt);
         } catch (IOException e) {
             log.error("피드백 요약 프롬프트 파일 로드 실패:  {}", e.getMessage(), e);
             feedbackSummaryPrompt = "다음은 여러 면접관에게 받은 모의 면접 피드백 내용입니다. 피드백을 종합해 JSON 형식으로 정리해줘.\n" +
