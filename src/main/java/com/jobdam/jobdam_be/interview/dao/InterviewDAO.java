@@ -2,9 +2,7 @@ package com.jobdam.jobdam_be.interview.dao;
 
 import com.jobdam.jobdam_be.interview.mapper.InterviewMapper;
 import com.jobdam.jobdam_be.interview.model.*;
-import com.jobdam.jobdam_be.interview.type.InterviewType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

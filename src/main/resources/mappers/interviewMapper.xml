@@ -19,11 +19,11 @@
         <result property="context" column="context"/>
     </resultMap>
 
-    <insert id="insertAiQuestions">
-        INSERT INTO ai_resume_question (resume_id, question)
+    <insert id="insertAiQuestions" parameterType="java.util.Map">
+        INSERT INTO ai_resume_question (resume_id, question, interview_type)
         VALUES
         <foreach collection="questions" item="q" separator=",">
-            (#{q.resumeId}, #{q.question})
+            (#{q.resumeId}, #{q.question}, #{q.interviewType})
         </foreach>
     </insert>
 
