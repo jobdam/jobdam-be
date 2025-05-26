@@ -20,7 +20,7 @@ public interface InterviewMapper {
 
     void saveInterview(Interview interview);
 
-    void copyAiToInterviewQuestions(Long userId, Long interviewId);
+    void copyAiToInterviewQuestions(Long userId, Long interviewId, InterviewType interviewType);
 
     List<InterviewQuestion> findAllLatestQuestionsByInterviewId(Long interviewId);
 

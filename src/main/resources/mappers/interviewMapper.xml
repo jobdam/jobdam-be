@@ -83,7 +83,7 @@
         WHERE resume_id = (SELECT id
                            FROM resume
                            WHERE user_id = #{userId}
-        );
+        ) AND interview_type = #{interviewType};
     </insert>
 
     <select id="findOneLatestInterviewByUserId" resultMap="InterviewResultMap">

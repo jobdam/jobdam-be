@@ -2,6 +2,7 @@ package com.jobdam.jobdam_be.interview.dao;
 
 import com.jobdam.jobdam_be.interview.mapper.InterviewMapper;
 import com.jobdam.jobdam_be.interview.model.*;
+import com.jobdam.jobdam_be.interview.type.InterviewType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -33,8 +34,8 @@ public class InterviewDAO {
          interviewMapper.saveInterview(interview);
     }
 
-    public void copyAiToInterviewQuestions(Long userId, Long interviewId) {
-        interviewMapper.copyAiToInterviewQuestions(userId, interviewId);
+    public void copyAiToInterviewQuestions(Long userId, Long interviewId, InterviewType interviewType) {
+        interviewMapper.copyAiToInterviewQuestions(userId, interviewId, interviewType);
     }
 
     public List<InterviewQuestion> findAllLatestQuestionsByInterviewId(Long interviewId) {

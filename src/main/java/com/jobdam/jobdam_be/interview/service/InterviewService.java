@@ -108,11 +108,11 @@ public class InterviewService {
                 .build();
         interviewDAO.saveInterview(interview);
 
-        if(Objects.isNull(interview.getId()))
+        if (Objects.isNull(interview.getId()))
             throw new InterviewException(InterviewErrorCode.DB_INSERT_ERROR);
 
         //Ai질문을 인터뷰질문테이블로 복사
-        interviewDAO.copyAiToInterviewQuestions(userId,interview.getId());
+        interviewDAO.copyAiToInterviewQuestions(userId, interview.getId(), interview.getInterviewType());
     }
     //화경면접 초기데이터 가져오기(이력서+ai질문들)
     public InterviewFullDataDTO.Response getInterviewFullData(Long userId) {
