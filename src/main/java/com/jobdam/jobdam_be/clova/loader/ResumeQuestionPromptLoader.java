@@ -25,7 +25,6 @@ public class ResumeQuestionPromptLoader {
     public void loadPrompt() {
         try {
             resumeQuestionPrompt = Files.readString(Paths.get(promptFile.getURI()));
-            log.info("자기소개서 질문 추출 프롬프트 로드 완료: {}", resumeQuestionPrompt);
         } catch (IOException e) {
             log.error("자기소개서 질문 추출 프롬프트 파일 로드 실패:  {}", e.getMessage(), e);
             resumeQuestionPrompt = "당신은 HR 면접관이자 채용 담당 역할을 수행하는 AI입니다.\n" +

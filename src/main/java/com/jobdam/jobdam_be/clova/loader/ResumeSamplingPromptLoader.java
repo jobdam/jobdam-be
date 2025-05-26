@@ -25,7 +25,6 @@ public class ResumeSamplingPromptLoader {
     public void loadPrompt() {
         try {
             resumeSummaryPrompt = Files.readString(Paths.get(promptFile.getURI()));
-            log.info("자기소개서 요약 프롬프트 로드 완료: {}", resumeSummaryPrompt);
         } catch (IOException e) {
             log.error("자기소개서 요약 프롬프트 파일 로드 실패:  {}", e.getMessage(), e);
             resumeSummaryPrompt = "너는 사용자의 자기소개서를 면접 질문 생성을 위한 핵심 정보로 요약하는 역할이야.\n" +

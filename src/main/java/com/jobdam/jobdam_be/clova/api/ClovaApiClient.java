@@ -55,7 +55,7 @@ public class ClovaApiClient {
                 .last();
     }
 
-    // 질문 생성 AI 요청
+    // 피드백 생성 AI 요청
     public Mono<String> samplingFeedBack(String requestId, ChatRequest request) {
         return webClient.post()
                 .uri("/testapp/v3/chat-completions/HCX-DASH-002")

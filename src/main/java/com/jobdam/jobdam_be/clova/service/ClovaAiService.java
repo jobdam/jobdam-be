@@ -13,6 +13,7 @@ import com.jobdam.jobdam_be.clova.loader.ResumeSamplingPromptLoader;
 import com.jobdam.jobdam_be.common.PDFProvider;
 import com.jobdam.jobdam_be.interview.model.AiResumeQuestion;
 import com.jobdam.jobdam_be.interview.service.InterviewService;
+import com.jobdam.jobdam_be.interview.type.InterviewType;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,9 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -57,9 +56,6 @@ public class ClovaAiService {
         this.samplingResumePrompt = resumeSummaryPromptLoader.getResumeSummaryPrompt();
         this.feedbackSamplingPrompt = feedbackSummaryPromptLoader.getFeedbackSummaryPrompt();
         log.info("Clova 프롬프트 로드 완료");
-        log.debug("Question Prompt: {}", questionPrompt);
-        log.debug("Sampling Resume Prompt: {}", samplingResumePrompt);
-        log.debug("Feedback Sampling Prompt: {}", feedbackSamplingPrompt);
     }
 
     @Async("clovaExecutor")
@@ -124,6 +120,7 @@ public class ClovaAiService {
             List<AiResumeQuestion> questions = extractQuestions(resumeId, response);
             interviewService.replaceAllAiQuestions(resumeId, questions);
         } catch (Exception e) {
+            log.error("Error : {}", e.getMessage(), e);
             throw new ClovaException(ClovaErrorCode.AI_RESPONSE_PARSING_FAILED, e);
         }
     }
@@ -149,6 +146,7 @@ public class ClovaAiService {
                     questionList.add(AiResumeQuestion.builder()
                             .resumeId(resumeId)
                             .question(q.asText())
+                            .interviewType(findInterviewTypeByDisplayName(field))
                             .build());
                 }
             }
@@ -178,5 +176,14 @@ public class ClovaAiService {
         }
 
         return reportsList;
+    }
+
+    private InterviewType findInterviewTypeByDisplayName(String displayName) {
+        for (InterviewType type : InterviewType.values()) {
+            if (type.getDisplayName().equals(displayName)) {
+                return type;
+            }
+        }
+        return null; // 또는 예외 처리
     }
 }
