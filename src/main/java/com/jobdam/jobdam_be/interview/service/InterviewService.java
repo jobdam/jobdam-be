@@ -30,7 +30,7 @@ public class InterviewService {
 
         List<InterviewDTO.Response> interviewResponseList =
                 interviews.stream().map((ijModel) -> {
-                    InterviewDTO.Response dto = modelMapper.map(ijModel,InterviewDTO.Response.class);
+                    InterviewDTO.Response dto = modelMapper.map(ijModel, InterviewDTO.Response.class);
                     dto.setInterviewDay(ijModel.getInterviewDay()
                             .toLocalDateTime()
                             .toLocalDate()
@@ -43,7 +43,7 @@ public class InterviewService {
                 interviewResponseList.stream()
                         .collect(Collectors.groupingBy(InterviewDTO.Response::getInterviewDay));
 
-        return  grouped.entrySet().stream()
+        return grouped.entrySet().stream()
                 .sorted(Map.Entry.<String, List<InterviewDTO.Response>>comparingByKey().reversed())
                 .map(entry -> InterviewDateGroupDTO.Response.builder()
                         .displayDate(formatDisplayDate(entry.getKey()))
@@ -114,16 +114,17 @@ public class InterviewService {
         //Ai질문을 인터뷰질문테이블로 복사
         interviewDAO.copyAiToInterviewQuestions(userId, interview.getId(), interview.getInterviewType());
     }
+
     //화경면접 초기데이터 가져오기(이력서+ai질문들)
     public InterviewFullDataDTO.Response getInterviewFullData(Long userId) {
         String resumeUrl = userService.getUserResumeUrl(userId);
 
         Interview interview = interviewDAO.findOneLatestInterviewByUserId(userId)
-                .orElseThrow( ()->new InterviewException(InterviewErrorCode.NOT_FOUND_EXCEPTION));
+                .orElseThrow(() -> new InterviewException(InterviewErrorCode.NOT_FOUND_EXCEPTION));
 
-        List<InterviewQuestionDTO.Response> questions =  interviewDAO.findAllLatestQuestionsByInterviewId(interview.getId())
+        List<InterviewQuestionDTO.Response> questions = interviewDAO.findAllLatestQuestionsByInterviewId(interview.getId())
                 .stream()
-                .map(iq  ->  InterviewQuestionDTO.Response.builder()
+                .map(iq -> InterviewQuestionDTO.Response.builder()
                         .interviewQuestionId(iq.getId())
                         .context(iq.getContext())
                         .build())
@@ -144,7 +145,7 @@ public class InterviewService {
                 .context(request.getContext())
                 .build();
         interviewDAO.saveQuestion(interviewQuestion);
-        if(Objects.isNull(interviewQuestion.getId()))
+        if (Objects.isNull(interviewQuestion.getId()))
             throw new InterviewException(InterviewErrorCode.DB_INSERT_ERROR);
 
         return interviewQuestion.getId();
@@ -175,8 +176,8 @@ public class InterviewService {
         interviewDAO.updateInterviewReports(interview);
     }
 
-    public Interview findOneLatestInterviewByUserId(Long userId){
+    public Interview findOneLatestInterviewByUserId(Long userId) {
         return interviewDAO.findOneLatestInterviewByUserId(userId)
-                .orElseThrow( ()->new InterviewException(InterviewErrorCode.NOT_FOUND_EXCEPTION));
+                .orElseThrow(() -> new InterviewException(InterviewErrorCode.NOT_FOUND_EXCEPTION));
     }
 }
