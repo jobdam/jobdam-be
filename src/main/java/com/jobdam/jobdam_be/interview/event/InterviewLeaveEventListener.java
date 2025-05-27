@@ -31,7 +31,6 @@ public class InterviewLeaveEventListener {
     @EventListener
     public void handleInterviewLeave(InterviewLeaveEvent event) throws Exception {
         log.info("[이벤트리너]userId{}", event.userId());
-        log.info(" AI 피드백 생성 시작 {}", new Date());
         Interview interview = interviewService.findOneLatestInterviewByUserId(event.userId());
 
         // 다른 유저들에게 받은 피드백을 String으로 변환하여 받음
@@ -54,7 +53,6 @@ public class InterviewLeaveEventListener {
         CompletableFuture<List<String>> result = clovaAiService.analyzeFeedback(feedbacks);
 
         result.thenAccept(reports -> {
-            log.info(" AI 피드백 생성 완료! {}", new Date());
             // List<String>(2) 으로 0번 1번 분류하여 update 쿼리 호출
             interviewService.insertFeedbackReport(/*인터뷰 아이디*/ interview.getId(), reports);
         });
