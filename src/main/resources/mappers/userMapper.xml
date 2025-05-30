@@ -5,7 +5,174 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.jobdam.jobdam_be.user.mapper.UserMapper">
 
-    <select id="findById" resultType="com.jobdam.jobdam_be.user.model.User">
-    select * from user where user_id = 1
+    <resultMap id="UserResultMap" type="com.jobdam.jobdam_be.user.model.User">
+        <result property="id" column="id"/>
+        <result property="email" column="email"/>
+        <result property="password" column="password"/>
+        <result property="name" column="name"/>
+        <result property="birthday" column="birthday"/>
+        <result property="targetCompanySize" column="target_company_size"/>
+        <result property="isDeleted" column="is_deleted"/>
+        <result property="blacklist" column="blacklist"/>
+        <result property="profileImgUrl" column="profile_img_url"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="jobCode" column="job_code"/>
+        <result property="jobDetailCode" column="job_detail_code"/>
+        <result property="experienceType" column="experience_type"/>
+        <result property="educationLevel" column="education_level"/>
+        <result property="educationStatus" column="education_status"/>
+        <result property="providerId" column="provider_id"/>
+    </resultMap>
+
+    <insert id="saveEmail">
+        INSERT INTO user (email,
+                          password)
+        VALUES (#{email},
+                #{password})
+    </insert>
+    <insert id="saveSocial">
+        INSERT INTO user (email,
+                          name,
+                          birthday,
+                          created_at,
+                          profile_img_url,
+                          provider_id)
+        VALUES (#{email},
+                #{name},
+                #{birthday},
+                now(),
+                #{profileImgUrl},
+                #{providerId})
+    </insert>
+
+    <!-- useGeneratedKeys="true" DB에서 생성된 자동 증가 키 값을 가져 옴 -->
+    <!-- keyProperty="resumeId" 어느 Java 객체의 어떤 필드에 넣을지 지정 -->
+    <insert id="saveOrUpdateResume" useGeneratedKeys="true" keyProperty="resumeId">
+        INSERT INTO resume (user_id, url)
+        VALUES (#{userId}, #{url})
+        ON DUPLICATE KEY UPDATE
+            url = #{url}, id = LAST_INSERT_ID(id)
+    </insert>
+
+    <update id="updateCreatedAtByEmail">
+        UPDATE user
+        SET created_at = now()
+        WHERE email = #{email}
+    </update>
+
+    <update id="updateSocialByEmail">
+        UPDATE user
+        SET provider_id = #{providerId},
+        Name = #{name}
+        <if test="birthday != null">
+            , birthday = #{birthday}
+        </if>
+        , profile_img_url = #{profileImgUrl}
+        WHERE email = #{email}
+    </update>
+
+    <update id="initProfile">
+        UPDATE user
+        SET name                = #{name},
+            birthday            = #{birthday},
+            target_company_size = #{targetCompanySize},
+            profile_img_url     = #{profileImgUrl},
+            job_code            = #{jobCode},
+            job_detail_code     = #{jobDetailCode},
+            experience_type     = #{experienceType},
+            education_level     = #{educationLevel},
+            education_status    = #{educationStatus}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateProfile">
+        UPDATE user
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="birthday != null">birthday = #{birthday},</if>
+            <if test="targetCompanySize != null">target_company_size = #{targetCompanySize},</if>
+            <if test="profileImgUrl != null">profile_img_url = #{profileImgUrl},</if>
+            <if test="jobCode != null">job_code = #{jobCode},</if>
+            <if test="jobDetailCode != null">job_detail_code = #{jobDetailCode},</if>
+            <if test="experienceType != null">experience_type = #{experienceType},</if>
+            <if test="educationLevel != null">education_level = #{educationLevel},</if>
+            <if test="educationStatus != null">education_status = #{educationStatus},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="findById" resultMap="UserResultMap">
+        select *
+        from user
+        where id = #{id}
+    </select>
+
+    <select id="findByEmail" resultMap="UserResultMap">
+        SELECT *
+        FROM user
+        WHERE email = #{email}
+    </select>
+
+    <select id="findIdByEmail" resultType="java.lang.Long">
+        SELECT id
+        FROM user
+        WHERE email = #{email}
+    </select>
+
+    <select id="findByProviderId" resultMap="UserResultMap">
+        SELECT *
+        FROM user
+        WHERE provider_id = #{providerId}
+    </select>
+
+    <select id="findProfileImgUrlById" resultType="java.lang.String">
+        SELECT profile_img_url
+        FROM user
+        WHERE id = #{id}
+    </select>
+
+    <select id="findResumeUrlById">
+        SELECT url
+        FROM resume
+        WHERE user_id = #{id}
+    </select>
+
+    <select id="existsByEmail" resultType="java.lang.Boolean">
+        SELECT COUNT(*) > 0
+        FROM user
+        WHERE email = #{email}
+    </select>
+
+    <select id="existsJobById" resultType="java.lang.Boolean">
+        SELECT count(*) > 0
+        FROM user
+        WHERE id = #{id}
+        <!-- 프로필 설정시 추가될 값들 -->
+        AND job_code IS NOT NULL
+        AND job_detail_code IS NOT NULL
+        AND experience_type IS NOT NULL
+        AND education_status IS NOT NULL
+        AND education_level IS NOT NULL
+    </select>
+
+    <!-- 유저정보+job정보(jobCode를 한글로 보여주기 위해) -->
+    <select id="findUserJobJoinById" resultType="com.jobdam.jobdam_be.user.model.UserJobJoinModel">
+        SELECT id,
+               email,
+               name,
+               birthday,
+               target_company_size  AS targetCompanySize,
+               profile_img_url      AS profileImgUrl,
+               user.job_code        AS jobCode,
+               job_group.job_group,
+               user.job_detail_code AS jobDetailCode,
+               job_detail.job_detail,
+               experience_type      AS experienceType,
+               education_level      AS educationLevel,
+               education_status     AS educationStatus
+        FROM user
+                 LEFT JOIN job_group ON user.job_code = job_group.job_code
+                 LEFT JOIN job_detail ON user.job_detail_code = job_detail.job_detail_code
+        WHERE id = #{id}
     </select>
 </mapper>

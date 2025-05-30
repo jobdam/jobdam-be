@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jobdam.jobdam_be.auth.mapper.EmailVerificationMapper">
+
+    <resultMap id="EmailVerificationResultMap" type="com.jobdam.jobdam_be.auth.model.EmailVerification">
+        <result property="email" column="email"/>
+        <result property="token" column="token"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <insert id="saveOrUpdateVerification" parameterType="com.jobdam.jobdam_be.auth.model.EmailVerification">
+        INSERT INTO email_verification (email, token, created_at)
+        VALUES (#{email}, #{token}, now()) AS new
+        ON DUPLICATE KEY
+        UPDATE
+            token = new.token,
+            created_at = new.created_at
+    </insert>
+
+    <select id="findByToken" resultMap="EmailVerificationResultMap">
+        SELECT email, token, created_at
+        FROM email_verification
+        WHERE token = #{token}
+    </select>
+
+    <delete id="deleteByEmail">
+        DELETE
+        FROM email_verification
+        WHERE email = #{email}
+    </delete>
+
+</mapper>
